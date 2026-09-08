@@ -1,0 +1,28 @@
+{
+  "id": "norikura_echo_line",
+  "name": "乗鞍ヒルクライム(乗鞍エコーライン)",
+  "source": "乗鞍ヒルクライム公式大会要項 / bikeclimbjournal.com (概算区間分割。実測GPXへの差し替えを推奨)",
+  "segments": [
+    {
+      "name": "乗鞍観光センター → 三本滝ゲート",
+      "startDistanceKm": 0.0,
+      "endDistanceKm": 8.7,
+      "startElevationM": 1460,
+      "endElevationM": 1870
+    },
+    {
+      "name": "三本滝ゲート → 位ヶ原山荘",
+      "startDistanceKm": 8.7,
+      "endDistanceKm": 17.0,
+      "startElevationM": 1870,
+      "endElevationM": 2350
+    },
+    {
+      "name": "位ヶ原山荘 → ゴール(長野・岐阜県境)",
+      "startDistanceKm": 17.0,
+      "endDistanceKm": 20.5,
+      "startElevationM": 2350,
+      "endElevationM": 2720
+    }
+  ]
+}
