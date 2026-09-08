@@ -8,6 +8,11 @@ plugins {
 // この開発環境は google() (dl.google.com) への到達がブロックされておりビルド未検証のため、
 // 実際に開くAndroid Studio / CI では最新版へのアップグレードを推奨する。
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 android {
     namespace = "dev.norikuratime.app"
     compileSdk = 34
