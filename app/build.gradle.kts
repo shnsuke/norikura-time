@@ -36,6 +36,8 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        // Scaffold の topBar に TopAppBar を使うため、Material3の実験的API opt-inが必要
+        freeCompilerArgs += "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
     }
 
     packaging {
