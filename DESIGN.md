@@ -1,48 +1,55 @@
 # 乗鞍ヒルクライム タイム予測アプリ 設計書
 
-体重(Health アプリ)・FTP(intervals.icu)・コースプロフィール(乗鞍エコーライン)から、
+体重(Health Connect)・FTP(intervals.icu)・コースプロフィール(乗鞍エコーライン)から、
 乗鞍ヒルクライムの完走タイムを物理モデルで予測するアプリの設計。
 
 ## 0. 前提・スコープ
 
-- プラットフォーム: **Flutter (iOS / Android クロスプラットフォーム)**
-  - 体重取得は iOS = HealthKit、Android = Health Connect を `health` パッケージ経由で吸収する。
+- プラットフォーム: **ネイティブAndroid (Kotlin + Jetpack Compose)**
+  - 当初はFlutter(クロスプラットフォーム)案で設計していたが、実際の開発・検証環境が
+    GitHub + Android(iOS実機・Flutter SDKなし)であることを踏まえ、ネイティブAndroidに
+    切り替えた。体重取得もiOS HealthKitではなくAndroidの **Health Connect** を使う。
 - 対象コース: 乗鞍ヒルクライム(乗鞍エコーライン) — 乗鞍観光センター 〜 畳平口(長野・岐阜県境)
-- 本ドキュメントは①コースプロフィール取得、②体重取得、③FTP取得、④予測エンジンの4点を設計し、
-  Flutterプロジェクトの実装土台をリポジトリに用意する。
+- Gradleマルチモジュール構成とし、Androidに依存しない予測ロジックを `:core` に分離。
+  これにより、Android SDKが使えない環境(このセッションのサンドボックス含む)でも
+  `:core` は実際にビルド・ユニットテストして動作確認できる。
 
 ## 1. 全体アーキテクチャ
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        Flutter App                            │
-│                                                                 │
-│  ┌───────────────┐   ┌───────────────────┐   ┌──────────────┐ │
-│  │ HealthService  │   │ IntervalsIcuService│   │CourseRepository│ │
-│  │ (health pkg)   │   │ (REST + APIキー)   │   │ (bundled JSON) │ │
-│  └───────┬────────┘   └─────────┬──────────┘   └──────┬───────┘ │
-│          │ weightKg             │ ftpWatts             │ course │
-│          ▼                      ▼                      ▼        │
-│               RiderProfile ─────┴───────────── CourseProfile     │
-│                        │                              │          │
-│                        ▼                              ▼          │
-│               ┌────────────────────────────────────────┐        │
-│               │        ClimbPredictionService            │       │
-│               │  (物理モデル: 区間ごとに目標W→速度→時間)    │       │
-│               └────────────────────┬─────────────────────┘       │
-│                                     ▼                             │
-│                            ClimbPrediction (結果)                 │
-│                                     ▼                             │
-│                              HomeScreen (UI表示)                  │
-└─────────────────────────────────────────────────────────────┘
-        ▲                       ▲                        ▲
-        │ HealthKit /           │ HTTPS Basic Auth       │ アプリ内蔵
-        │ Health Connect        │ (APIキーは             │ アセット
-        │ (OS権限)              │  secure storage保存)    │ (JSON)
+┌───────────────────────────── :app (Android, Jetpack Compose) ─────────────────────────────┐
+│                                                                                              │
+│  ┌────────────────────────┐   ┌─────────────────┐   ┌───────────────────────────────────┐  │
+│  │ HealthConnectRepository │   │ SettingsRepository│   │      CourseAssetLoader            │  │
+│  │ (Health Connect API)    │   │ (EncryptedSharedPreferences: intervals.icu認証情報)         │  │
+│  └────────────┬─────────────┘   └────────┬─────────┘   └────────────────┬──────────────────┘  │
+│               │ weightKg                 │ athleteId/apiKey             │ assets/JSON        │
+│               ▼                          ▼                              ▼                     │
+│                                    HomeScreen (Compose UI)                                     │
+└───────────────────────────────────────┬──────────────────────────────────────────────────────┘
+                                         │ 呼び出し
+┌────────────────────────────────────────▼──────────────────────────── :core (純Kotlin/JVM) ───┐
+│                                                                                                 │
+│  IntervalsIcuClient.fetchCurrentFtp() ──► ftpWatts ─┐                                           │
+│  CourseProfile.parse(json)            ──► course   ─┼─► RiderProfile + CourseProfile            │
+│                                                       │                                          │
+│                                                       ▼                                          │
+│                              ClimbPredictionService.predict()                                   │
+│                    (物理モデル: 区間ごとに目標W→速度→時間、Newton法で解く)                          │
+│                                                       │                                          │
+│                                                       ▼                                          │
+│                                        ClimbPrediction (結果)                                    │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-外部依存は「Health OS API」と「intervals.icu REST API」の2つのみ。コースプロフィールは
-外部APIが存在しないため、アプリにバンドルした静的データとして持つ（後述）。
+外部依存は「Health Connect (OS API)」と「intervals.icu REST API」の2つのみ。コースプロフィールは
+外部APIが存在しないため、アプリにバンドルした静的アセット(JSON)として持つ。
+
+`:core` はAndroid/Jetpack依存を一切持たないため、`IntervalsIcuClient`(OkHttp)と
+`CourseProfile.parse()`(kotlinx.serialization)、`ClimbPredictionService`(物理エンジン)を
+JVM単体テストで検証できる。実際にこのリポジトリでも `./gradlew :core:test` で
+CourseProfile/ClimbPredictionService/IntervalsIcuClient(MockWebServerでHTTPをモック)の
+計10件のテストがgreenであることを確認済み。
 
 ## 2. ①コースプロフィールの取得
 
@@ -74,7 +81,7 @@
 
 上記の確定区間(三本滝〜位ヶ原山荘 8.3km)から逆算し、スタート〜三本滝、位ヶ原山荘〜ゴールを
 概算で3区間に分割した。**区間ごとの勾配は概算値であり、実測GPXに差し替え可能な設計とする**
-(`assets/courses/norikura_echo_line.json` を差し替えるだけでよい)。
+(`app/src/main/assets/courses/norikura_echo_line.json` を差し替えるだけでよい)。
 
 | 区間 | 距離 | 標高(始→終) | 平均勾配(概算) |
 |---|---|---|---|
@@ -87,35 +94,35 @@
 
 ### 2.4 実装
 
-- `CourseProfile` / `CourseSegment` モデル (`lib/models/`)
-- `CourseRepository.loadNorikuraEcholine()` が `assets/courses/norikura_echo_line.json` を
-  `rootBundle` 経由で読み込みパースする
+- `CourseProfile` / `CourseSegment` (`:core`, kotlinx.serializationで `@Serializable`)
+- `CourseProfile.parse(jsonText)` がJSON文字列をパース(単体テスト済み)
+- `CourseAssetLoader` (`:app`) が `assets/courses/norikura_echo_line.json` を読み込み、
+  `CourseProfile.parse()` に渡す
 
-## 3. ②体重の取得 (Health アプリ連携)
+## 3. ②体重の取得 (Health Connect)
 
 ### 3.1 方式
 
-Flutter の `health` パッケージ (iOS: HealthKit / Android: Health Connect のラッパー) を使用。
+AndroidX の `androidx.health.connect:connect-client` を使用。
 
-1. `Health().configure()` で初期化
-2. `HealthDataType.WEIGHT` に対する読み取り権限を `requestAuthorization` でリクエスト
-3. 直近90日分の `WEIGHT` レコードを取得し、`dateTo` が最新のものを採用
-4. kg単位に正規化して `RiderProfile.weightKg` にセット
+1. `HealthConnectClient.getSdkStatus()` でHealth Connectアプリの有無を確認
+2. `HealthPermission.getReadPermission(WeightRecord::class)` の読み取り権限を
+   `PermissionController.createRequestPermissionResultContract()` でリクエスト
+   (Compose の `rememberLauncherForActivityResult` で呼び出す)
+3. 直近90日分の `WeightRecord` を `readRecords()` で取得し、`time` が最新のものを採用
+4. `record.weight.inKilograms` でkg単位を取得
 
 ### 3.2 権限・OS設定
 
-- iOS: `Info.plist` に `NSHealthShareUsageDescription` を追加、Xcodeで HealthKit Capability を有効化
-- Android: `Health Connect` アプリのインストールが前提。`AndroidManifest.xml` に
-  health permission を宣言
-
-これらは `flutter create` 実行後、ネイティブプロジェクトに対して行う設定のため、
-実装土台では `HealthService` (Dart側ロジック)のみを用意し、ネイティブ設定はREADMEに
-手順を記載する。
+- `AndroidManifest.xml` に `android.permission.health.READ_WEIGHT` を宣言
+- Health Connect アプリ (`com.google.android.apps.healthdata`) を検出するための `<queries>` 宣言
+- targetSdk 34+では権限リクエスト理由画面 (`ACTION_SHOW_PERMISSIONS_RATIONALE`) への
+  導線も必要 (`MainActivity` へのプレースホルダー実装済み。ストア公開時は要差し替え)
 
 ### 3.3 実装
 
-- `HealthService.fetchLatestWeightKg()` (`lib/services/health_service.dart`)
-- 権限拒否・データなしの場合は手動入力にフォールバックできるようUI側で許容する
+- `HealthConnectRepository` (`:app/data/HealthConnectRepository.kt`)
+- 権限拒否・データなしの場合はUI側でエラー表示(手動入力は今後対応予定)
 
 ## 4. ③FTPの取得 (intervals.icu API)
 
@@ -132,18 +139,19 @@ Flutter の `health` パッケージ (iOS: HealthKit / Android: Health Connect �
 
 ### 4.2 認証情報の保存
 
-- Athlete ID と APIキーは `flutter_secure_storage` (iOS Keychain / Android Keystore) に保存
+- Athlete ID と APIキーは `EncryptedSharedPreferences` (Android Keystore由来の鍵で暗号化) に保存
 - 設定画面 (`SettingsScreen`) で入力・保存
 
 ### 4.3 実装
 
-- `IntervalsIcuService.fetchCurrentFtp()` (`lib/services/intervals_icu_service.dart`)
-- 通信失敗時は前回キャッシュ値 or 手動入力にフォールバック
+- `IntervalsIcuClient` (`:core/IntervalsIcuClient.kt`, OkHttpベース。MockWebServerで
+  正常系・`icu_ftp`欠落・非2xxレスポンスの3パターンを単体テスト済み)
+- 通信失敗時は例外をUI側でキャッチしエラー表示
 
 ## 5. 予測エンジン (物理モデル)
 
 サイクリングパワーモデルの標準式を用い、区間ごとに「目標パワー→定常走行速度→区間タイム」を
-算出し合算する。
+算出し合算する。`:core/ClimbPredictionService.kt` に実装(単体テスト済み)。
 
 ```
 P_total = [ m·g·sin(θ)·v          (登坂抵抗)
@@ -175,24 +183,39 @@ P_total = [ m·g·sin(θ)·v          (登坂抵抗)
 | 〜120分 | 85% |
 | 120分〜 | 80% |
 
-初回は95%FTPで全区間を仮計算 → 合計時間から%FTPを再取得 → 収束するまで2〜3回反復する。
+初回は95%FTPで全区間を仮計算 → 合計時間から%FTPを再取得 → 収束するまで最大4回反復する。
 
-### 5.2 実装
+### 5.2 検証結果
 
-- `ClimbPredictionService.predict(CourseProfile, RiderProfile)` (`lib/services/climb_prediction_service.dart`)
-- Flutter非依存の純Dartロジックとして実装し、単体テスト可能にする (`test/climb_prediction_service_test.dart`)
+3.0 W/kg(65kg / 195W)のライダーで試算すると、予測タイムは約100分前後となり、
+乗鞍ヒルクライムの実際の完走タイム分布(中級者で90〜120分程度)と概ね整合する
+(`ClimbPredictionServiceTest` で60〜160分のレンジに収まることを確認)。
 
 ## 6. 画面構成
 
-- `HomeScreen`: 「体重・FTP・コースを取得して予測」ボタン → 3つのサービスを並列取得 →
-  予測結果(合計タイム、区間別内訳)を表示
-- `SettingsScreen`: intervals.icu の Athlete ID / APIキー、自転車重量、CdA等の物理パラメータを設定
+- `HomeScreen`: 「体重・FTP・コースを取得して予測」ボタン → Health Connect権限確認/リクエスト
+  → 体重・FTP・コースを取得 → 予測結果(合計タイム、区間別内訳)を表示
+- `SettingsScreen`: intervals.icu の Athlete ID / APIキー、自転車重量を設定
 
-## 7. 未確定事項 / 次のステップ
+## 7. この開発環境での検証状況と役割分担
+
+このセッションのサンドボックス環境は Java 21 / Gradle は使えるが、Android SDKは未導入で
+`dl.google.com` (Android Gradle Plugin・AndroxX・Health Connectライブラリの配布元) への
+到達がネットワークポリシーでブロックされている。そのため:
+
+| 領域 | 検証状況 |
+|---|---|
+| `:core` (モデル・JSONパース・物理エンジン・intervals.icu HTTPクライアント) | **このリポジトリで実際にビルド・テスト済み**。`./gradlew :core:test --configure-on-demand` で計10件のJUnit5テストがgreen |
+| `:app` (Health Connect連携・Compose UI・Android Manifest) | 未検証。Android SDKが必要なため、GitHub Actions (`.github/workflows/android-ci.yml`) 上でビルド・テストする設計とした |
+
+この分割自体が設計判断: 予測ロジックという「正しさが重要でテストで担保すべき部分」を
+Androidから切り離すことで、Android実行環境が無くても本質的なロジックの検証ができるようにした。
+
+## 8. 未確定事項 / 次のステップ
 
 1. コース区間データを実測GPX(Strava/RWGPS)に差し替えて精度向上
-2. `health` パッケージのバージョンに応じたAPI差異の確認 (`flutter pub get` はSDK未導入のためこの
-   セッションでは未実施)
-3. `flutter create .` をローカルで実行し `android/` `ios/` のネイティブプロジェクトを生成、
-   HealthKit Capability・Health Connect permission を設定
-4. intervals.icu APIキーの取得導線 (Settings > Developer Settings) をオンボーディングUIに追加
+2. GitHub Actions (`android-ci.yml`) を実際に走らせ、`:app` のビルド・テストをgreenにする
+   (AGP/AndroidXバージョンの解決や実際のコンパイルエラーはCI側で初めて検出できる)
+3. Health Connect の「権限の理由」画面の本実装、ストア公開に向けたプライバシーポリシー整備
+4. 体重・FTP取得に失敗した場合の手動入力フォールバックの実装
+5. intervals.icu APIキーの取得導線 (Settings > Developer Settings) をオンボーディングUIに追加
