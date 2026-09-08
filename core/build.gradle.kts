@@ -1,4 +1,5 @@
 plugins {
+    `java-library`
     kotlin("jvm") version "2.0.21"
     kotlin("plugin.serialization") version "2.0.21"
 }
@@ -9,7 +10,9 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // IntervalsIcuClientの公開コンストラクタがOkHttpClient型を引数に取るため、
+    // :appなど:coreを利用するモジュールからも型解決できるようapiで公開する
+    api("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
