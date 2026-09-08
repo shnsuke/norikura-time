@@ -2,8 +2,11 @@ name: Android CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'claude/**'
   pull_request:
+  workflow_dispatch:
 
 jobs:
   core:
