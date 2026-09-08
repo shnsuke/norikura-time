@@ -1,4 +1,4 @@
-name: Android CI
+name: CI
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   core:
-    name: core module (pure Kotlin/JVM)
+    name: core module (prediction engine)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,8 +22,8 @@ jobs:
       - name: Run core unit tests
         run: ./gradlew :core:test
 
-  app:
-    name: app module (Android)
+  web:
+    name: web module (Ktor server)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,9 +31,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
-      - name: Assemble debug APK
-        run: ./gradlew :app:assembleDebug
-      - name: Run app unit tests
-        run: ./gradlew :app:testDebugUnitTest
+      - name: Build
+        run: ./gradlew :web:build
