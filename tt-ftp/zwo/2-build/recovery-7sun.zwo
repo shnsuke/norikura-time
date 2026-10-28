@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>ビルド期 回復週 日 Z2（回復週）</name>
+  <description>ビルド期（閾値＋VO2強化）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="7200" Power="0.6"/>
+  </workout>
+</workout_file>

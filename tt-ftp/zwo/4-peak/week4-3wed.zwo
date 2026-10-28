@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>ピーク期 4週目 水 Z2（軽め）</name>
+  <description>ピーク期（ピーキング（4週））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="2700" Power="0.6"/>
+  </workout>
+</workout_file>

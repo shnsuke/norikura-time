@@ -1,0 +1,11 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>基礎期 回復週 火 Z2（回復週）</name>
+  <description>基礎期（ピラミッド型 約70:20:10）
+夜：デッドリフトは軽め（セット数を半分）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="3600" Power="0.6"/>
+  </workout>
+</workout_file>

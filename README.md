@@ -5,6 +5,9 @@
 
 設計の詳細は [DESIGN.md](./DESIGN.md) を参照。
 
+> 峠TTの結果からFTPを推定し、期分けメニューの設定パワーを表示する別アプリ
+> **峠TT FTPプランナー** は [`tt-ftp/`](./tt-ftp/README.md) にあります（ビルド不要の静的Webアプリ）。
+
 > 元はAndroidネイティブアプリ(Health Connectで体重を自動取得)として作っていましたが、
 > ブラウザから使えるWebアプリへの仕様変更に伴い、Health Connect連携を撤去し
 > ネイティブAndroidアプリ(`:app`)をKtorサーバー(`:web`)に置き換えました。

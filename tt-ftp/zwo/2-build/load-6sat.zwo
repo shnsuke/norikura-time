@@ -1,0 +1,13 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>ビルド期 負荷週 土 実坂 2×30分＋Z2（3〜3.5h）</name>
+  <description>ビルド期（閾値＋VO2強化）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="2700" Power="0.65"/>
+    <IntervalsT Repeat="1" OnDuration="1800" OffDuration="900" OnPower="0.925" OffPower="0.55"/>
+    <SteadyState Duration="1800" Power="0.925"/>
+    <SteadyState Duration="4500" Power="0.65"/>
+  </workout>
+</workout_file>

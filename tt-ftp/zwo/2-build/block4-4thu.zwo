@@ -1,0 +1,20 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>ビルド期 B4負荷週 木 オーバーアンダー</name>
+  <description>ビルド期（閾値＋VO2強化）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="900" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.075" OffPower="0.935"/>
+    <SteadyState Duration="60" Power="1.075"/>
+    <SteadyState Duration="300" Power="0.5"/>
+    <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.075" OffPower="0.935"/>
+    <SteadyState Duration="60" Power="1.075"/>
+    <SteadyState Duration="300" Power="0.5"/>
+    <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.075" OffPower="0.935"/>
+    <SteadyState Duration="60" Power="1.075"/>
+    <SteadyState Duration="900" Power="0.65"/>
+    <Cooldown Duration="600" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

@@ -1,0 +1,12 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>ピーク期 4週目 土 前日調整</name>
+  <description>ピーク期（ピーキング（4週））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="1800" Power="0.6"/>
+    <IntervalsT Repeat="1" OnDuration="60" OffDuration="120" OnPower="1.025" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1.025"/>
+  </workout>
+</workout_file>

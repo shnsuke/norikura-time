@@ -1,0 +1,13 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>ピーク期 3週目 木 閾値 短め 2×10分</name>
+  <description>ピーク期（ピーキング（4週））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="900" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="1" OnDuration="600" OffDuration="300" OnPower="0.975" OffPower="0.55"/>
+    <SteadyState Duration="600" Power="0.975"/>
+    <Cooldown Duration="600" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>
