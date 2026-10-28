@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>峠TT FTPプランナー</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@500;700&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">峠TT FTPプランナー</div>
+    <div class="ftp-summary" id="ftpSummary" aria-live="polite">
+      <span class="ftp-num" id="ftpHeadW">—</span><span class="unit">W</span>
+      <span class="ftp-num small" id="ftpHeadWkg">—</span><span class="unit">W/kg</span>
+      <span class="ftp-src" id="ftpHeadSrc"></span>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-menu" aria-controls="view-menu" aria-selected="true">メニュー</button>
+    <button role="tab" id="tab-tt" aria-controls="view-tt" aria-selected="false">TT入力</button>
+    <button role="tab" id="tab-history" aria-controls="view-history" aria-selected="false">履歴</button>
+    <button role="tab" id="tab-prefs" aria-controls="view-prefs" aria-selected="false">設定</button>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <!-- メニュー -->
+  <section id="view-menu" role="tabpanel" aria-labelledby="tab-menu">
+    <div class="notice" id="menuNotice" hidden></div>
+    <div class="today" id="todayCard"></div>
+
+    <div class="browse">
+      <label class="field inline">期
+        <select id="phaseSelect"></select>
+      </label>
+      <label class="field inline">週
+        <select id="weekSelect"></select>
+      </label>
+      <button type="button" class="ghost" id="backToday">今日に戻る</button>
+    </div>
+    <div class="week-strip" id="weekStrip" role="tablist" aria-label="曜日"></div>
+    <article class="day" id="dayDetail"></article>
+    <details class="phase-notes" id="phaseNotes"></details>
+  </section>
+
+  <!-- TT入力 -->
+  <section id="view-tt" role="tabpanel" aria-labelledby="tab-tt" hidden>
+    <form id="ttForm" novalidate>
+      <div class="seg-toggle" role="radiogroup" aria-label="入力モード">
+        <label><input type="radio" name="mode" id="modeA" value="A" checked> パワーメーターあり</label>
+        <label><input type="radio" name="mode" id="modeB" value="B"> タイムのみ</label>
+      </div>
+
+      <div class="grid2">
+        <label class="field">日付<input type="date" id="ttDate" required></label>
+        <label class="field">峠名<input type="text" id="ttName" placeholder="例：ヤビツ峠" autocomplete="off"></label>
+      </div>
+
+      <fieldset id="fieldsA" class="grid2">
+        <label class="field">平均パワー (W)<input type="number" id="aPower" inputmode="decimal" min="1" step="1" placeholder="330"></label>
+        <label class="field">所要時間 (分:秒)<input type="text" id="aTime" inputmode="numeric" placeholder="40:00" autocomplete="off"></label>
+      </fieldset>
+
+      <fieldset id="fieldsB" class="grid2" hidden>
+        <label class="field">距離 (km)<input type="number" id="bDist" inputmode="decimal" min="0.1" step="0.01" placeholder="11.6"></label>
+        <label class="field">獲得標高 (m)<input type="number" id="bGain" inputmode="decimal" min="0" step="1" placeholder="590"></label>
+        <label class="field">タイム (分:秒)<input type="text" id="bTime" inputmode="numeric" placeholder="38:20" autocomplete="off"></label>
+        <label class="field">平均標高 (m・任意)<input type="number" id="bAlt" inputmode="decimal" step="1" placeholder="未入力なら海面"></label>
+      </fieldset>
+
+      <div class="result" id="ttResult" aria-live="polite"></div>
+      <p class="hint" id="ttHint"></p>
+      <button type="submit" class="primary" id="ttSave" disabled>この結果を保存してFTPに反映</button>
+      <p class="toast" id="ttToast" role="status" hidden></p>
+    </form>
+  </section>
+
+  <!-- 履歴 -->
+  <section id="view-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+    <div class="table-scroll">
+      <table class="history">
+        <thead><tr><th>日付</th><th>峠名</th><th class="num">平均P</th><th class="num">FTP</th><th class="num">W/kg</th><th></th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+    <p class="hint" id="historyEmpty" hidden>まだ記録がありません。「TT入力」から保存すると、ここに一覧で残ります。</p>
+  </section>
+
+  <!-- 設定 -->
+  <section id="view-prefs" role="tabpanel" aria-labelledby="tab-prefs" hidden>
+    <form id="prefsForm" novalidate>
+      <div class="grid2">
+        <label class="field">体重 (kg・必須)<input type="number" id="pWeight" inputmode="decimal" min="20" step="0.1" placeholder="63.0" required></label>
+        <label class="field">FTP 手入力 (W・任意)<input type="number" id="pFtp" inputmode="decimal" min="1" step="1" placeholder="空欄ならTT結果"></label>
+      </div>
+      <p class="hint">FTP を手入力すると、TT結果より優先されます。空欄に戻すと最新のTT結果を使います。</p>
+      <details class="advanced">
+        <summary>詳細設定</summary>
+        <div class="grid2">
+          <label class="field">自転車＋装備 (kg)<input type="number" id="pBike" inputmode="decimal" step="0.1" min="0"></label>
+          <label class="field">CdA (m²)<input type="number" id="pCda" inputmode="decimal" step="0.01" min="0"></label>
+          <label class="field">Crr<input type="number" id="pCrr" inputmode="decimal" step="0.0005" min="0"></label>
+          <label class="field">駆動損失 (%)<input type="number" id="pLoss" inputmode="decimal" step="0.5" min="0" max="50"></label>
+          <label class="field">FTP換算の指数 k<input type="number" id="pK" inputmode="decimal" step="0.005"></label>
+        </div>
+        <button type="button" class="ghost" id="resetAdvanced">初期値に戻す</button>
+      </details>
+      <p class="toast" id="prefsToast" role="status" hidden>保存しました</p>
+    </form>
+  </section>
+</main>
+
+<script src="calc.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

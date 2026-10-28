@@ -1,0 +1,219 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const Calc = require('../calc.js');
+
+const menus = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'menus.json'), 'utf8'));
+
+const close = (actual, expected, tol, msg) =>
+  assert.ok(Math.abs(actual - expected) <= tol, `${msg || ''} expected ${expected}±${tol}, got ${actual}`);
+
+// ---------- FTP推定 ----------
+
+test('完了条件の例: 体重63kg, P=330W, t=40分 → FTP≈323.4W (5.13W/kg)', () => {
+  // 手計算: (40/60)^0.05 = exp(0.05 × ln(2/3)) = exp(−0.0202733) = 0.979931
+  //         330 × 0.979931 = 323.377
+  const ftp = Calc.ftpFromPower(330, 40);
+  close(ftp, 323.377, 0.01);
+  close(ftp / 63, 5.133, 0.001);
+});
+
+test('t=60分ならFTP=P、kを変えると結果が変わる', () => {
+  assert.equal(Calc.ftpFromPower(300, 60), 300);
+  close(Calc.ftpFromPower(330, 40, 0.07), 330 * Math.pow(40 / 60, 0.07), 1e-9);
+  assert.ok(Calc.ftpFromPower(330, 40, 0.07) < Calc.ftpFromPower(330, 40, 0.05));
+  // 20分: (1/3)^0.05 = 0.9466 → 20分×0.95 とほぼ同じになる
+  close(Calc.ftpFromPower(300, 20) / 300, 0.9466, 0.0001);
+});
+
+test('20分×0.95 の参考値', () => {
+  close(Calc.ftpFrom20min(330), 313.5, 1e-9);
+});
+
+test('所要時間 8〜60分の範囲外は警告', () => {
+  assert.equal(Calc.durationWarning(8), null);
+  assert.equal(Calc.durationWarning(60), null);
+  assert.equal(Calc.durationWarning(40), null);
+  assert.match(Calc.durationWarning(7.9), /8分未満/);
+  assert.match(Calc.durationWarning(61), /60分を超え/);
+});
+
+test('不正な入力は例外', () => {
+  assert.throws(() => Calc.ftpFromPower(0, 40), RangeError);
+  assert.throws(() => Calc.ftpFromPower(330, -1), RangeError);
+  assert.throws(() => Calc.ftpFromPower(NaN, 40), RangeError);
+});
+
+// ---------- モードB ----------
+
+test('空気密度: 海面1.225、標高とともに低下', () => {
+  assert.equal(Calc.airDensity(0), 1.225);
+  assert.equal(Calc.airDensity(undefined), 1.225);
+  assert.equal(Calc.airDensity(null), 1.225);
+  close(Calc.airDensity(1000), 1.1117, 0.0005);
+  close(Calc.airDensity(2000), 1.0066, 0.0005);
+});
+
+test('勾配: 道のりを斜辺として水平距離を求める', () => {
+  const g = Calc.climbGeometry(10, 600);
+  close(g.horizontalM, Math.sqrt(10000 ** 2 - 600 ** 2), 1e-9);
+  close(g.theta, Math.asin(600 / 10000), 1e-12);
+  close(g.gradePct, 6.0108, 0.0001);
+  assert.throws(() => Calc.climbGeometry(1, 1000), RangeError);
+  assert.throws(() => Calc.climbGeometry(10, -5), RangeError);
+});
+
+test('推定平均パワー: 式どおりに計算される', () => {
+  const opts = { distanceKm: 10, gainM: 600, minutes: 40, riderKg: 63, avgAltM: 1000 };
+  const r = Calc.estimatePower(opts);
+  // 手計算
+  const d = 10000, h = 600, t = 2400;
+  const theta = Math.atan(h / Math.sqrt(d * d - h * h));
+  const v = d / t;
+  const rho = 1.225 * Math.pow(1 - 2.25577e-5 * 1000, 4.25588);
+  const expected = (71 * 9.81 * v * (Math.sin(theta) + 0.004 * Math.cos(theta)) + 0.5 * rho * 0.32 * v ** 3) / 0.97;
+  close(r.power, expected, 1e-9);
+  close(r.power, 204.7, 0.1); // 重力+転がり 185.7W + 空気 12.9W = 198.6W → /0.97
+  close(r.speedKmh, 15, 1e-9);
+});
+
+test('推定平均パワー: 詳細設定(自転車重量・CdA・Crr・駆動損失)が効く', () => {
+  const base = { distanceKm: 10, gainM: 600, minutes: 40, riderKg: 63 };
+  const p0 = Calc.estimatePower(base).power;
+  assert.ok(Calc.estimatePower({ ...base, bikeKg: 9 }).power > p0);
+  assert.ok(Calc.estimatePower({ ...base, cda: 0.25 }).power < p0);
+  assert.ok(Calc.estimatePower({ ...base, crr: 0.006 }).power > p0);
+  close(Calc.estimatePower({ ...base, drivetrainLoss: 0 }).power, p0 * 0.97, 1e-9);
+});
+
+test('タイム文字列のパース', () => {
+  close(Calc.parseTime('40:30'), 40.5, 1e-9);
+  close(Calc.parseTime('1:05:00'), 65, 1e-9);
+  assert.equal(Calc.parseTime('45'), 45);
+  assert.ok(Number.isNaN(Calc.parseTime('40:75')));
+  assert.ok(Number.isNaN(Calc.parseTime('abc')));
+  assert.ok(Number.isNaN(Calc.parseTime('')));
+});
+
+// ---------- 期・週の判定 ----------
+
+const d = (s) => Calc.parseDate(s);
+
+test('期の区切りと週数: 12 / 12 / 15 / 4 週 = 43週', () => {
+  const weeks = menus.phases.map((p) => Calc.getPhaseAndWeek(d(p.end), menus).totalWeeks);
+  assert.deepEqual(weeks, [12, 12, 15, 4]);
+  // 期の開始日はすべて月曜
+  for (const p of menus.phases) assert.equal(d(p.start).getDay(), 1, p.name);
+});
+
+test('シーズン前・後', () => {
+  const before = Calc.getPhaseAndWeek(d('2026-10-28'), menus);
+  assert.equal(before.status, 'before');
+  assert.equal(before.daysUntilStart, 5);
+  const after = Calc.getPhaseAndWeek(d('2027-08-30'), menus);
+  assert.equal(after.status, 'after');
+});
+
+test('基礎期: 3週1ブロック、3週目が回復週', () => {
+  const w1 = Calc.getPhaseAndWeek(d('2026-11-02'), menus);
+  assert.equal(w1.phase.id, 'base');
+  assert.deepEqual([w1.week, w1.block, w1.weekInBlock, w1.isRecovery, w1.day], [1, 1, 1, false, 'mon']);
+  const w3 = Calc.getPhaseAndWeek(d('2026-11-22'), menus); // 3週目の日曜
+  assert.deepEqual([w3.week, w3.weekInBlock, w3.isRecovery, w3.day], [3, 3, true, 'sun']);
+  const w4 = Calc.getPhaseAndWeek(d('2026-11-23'), menus);
+  assert.deepEqual([w4.week, w4.block, w4.weekInBlock, w4.isRecovery], [4, 2, 1, false]);
+  const last = Calc.getPhaseAndWeek(d('2027-01-24'), menus);
+  assert.deepEqual([last.phase.id, last.week, last.block, last.isRecovery], ['base', 12, 4, true]);
+});
+
+test('期の境界: ビルド期・特異期・ピーク期', () => {
+  const b = Calc.getPhaseAndWeek(d('2027-01-25'), menus);
+  assert.deepEqual([b.phase.id, b.week, b.block], ['build', 1, 1]);
+  const s = Calc.getPhaseAndWeek(d('2027-08-01'), menus);
+  assert.deepEqual([s.phase.id, s.week, s.block, s.isRecovery], ['specific', 15, 5, true]);
+  const p = Calc.getPhaseAndWeek(d('2027-08-02'), menus);
+  assert.deepEqual([p.phase.id, p.week, p.weekType, p.isRecovery], ['peak', 1, 'week1', false]);
+  const race = Calc.getPhaseAndWeek(d('2027-08-29'), menus);
+  assert.deepEqual([race.phase.id, race.week, race.weekType, race.day], ['peak', 4, 'week4', 'sun']);
+});
+
+test('メニュー検索: block{B} → load{W} → load、回復週は recovery', () => {
+  const base = menus.phases[0];
+  // 基礎期ブロック1の木曜 → load (3×15)
+  let info = Calc.getPhaseAndWeek(d('2026-11-05'), menus);
+  assert.equal(Calc.findDayMenu(base, info, 'thu').key, 'load');
+  // 基礎期ブロック4の木曜 → block4 (2×30)
+  info = Calc.getPhaseAndWeek(d('2027-01-07'), menus);
+  assert.equal(info.block, 4);
+  assert.equal(Calc.findDayMenu(base, info, 'thu').menu.title, 'SST 2×30分');
+  assert.equal(Calc.findDayMenu(base, info, 'sat').key, 'load');
+  // 回復週の土曜 → FTPテスト
+  info = Calc.getPhaseAndWeek(d('2026-11-21'), menus);
+  assert.equal(Calc.findDayMenu(base, info, 'sat').menu.title, 'FTPテスト（峠TT）');
+  // 月曜は定義なし → null (休養)
+  assert.equal(Calc.findDayMenu(base, info, 'mon'), null);
+
+  // 特異期: 火曜は週ごとに 30/15 と 4〜6分走を交互
+  const spec = menus.phases[2];
+  const i1 = Calc.getPhaseAndWeek(d('2027-04-20'), menus);
+  const i2 = Calc.getPhaseAndWeek(d('2027-04-27'), menus);
+  assert.equal(Calc.findDayMenu(spec, i1, 'tue').menu.title, 'VO2 30/15');
+  assert.equal(Calc.findDayMenu(spec, i2, 'tue').menu.title, 'VO2 4〜6分走');
+});
+
+test('menus.json: 全期の負荷週・回復週で火木土のキーセッションが定義されている', () => {
+  for (const phase of menus.phases) {
+    const start = d(phase.start);
+    const end = d(phase.end);
+    for (let t = new Date(start); t <= end; t.setDate(t.getDate() + 1)) {
+      const info = Calc.getPhaseAndWeek(t, menus);
+      if (!['tue', 'thu', 'sat'].includes(info.day)) continue;
+      const found = Calc.findDayMenu(phase, info, info.day);
+      assert.ok(found, `${phase.name} ${info.week}週目 ${info.day} のメニューがありません`);
+      // すべての区間が解決できる
+      const r = Calc.resolveMenu(found.menu, 300, 60);
+      assert.ok(r.totalSec > 0);
+    }
+  }
+});
+
+// ---------- %FTP → W ----------
+
+test('5W単位の丸め', () => {
+  assert.equal(Calc.roundTo5(287.4), 285);
+  assert.equal(Calc.roundTo5(287.5), 290);
+  assert.equal(Calc.roundTo5(292.6), 295);
+});
+
+test('強度の解決: 単一値と範囲', () => {
+  const single = Calc.resolveIntensity(105, 323.4, 63);
+  assert.deepEqual(single.w, [340, 340]); // 339.57 → 340
+  close(single.wkg[0], 340 / 63, 1e-9);
+  assert.equal(single.isRange, false);
+  const range = Calc.resolveIntensity([88, 94], 323.4, 63);
+  assert.deepEqual(range.w, [285, 305]); // 284.6 → 285, 304.0 → 305
+  assert.equal(range.isRange, true);
+});
+
+test('区間の解決: 反復とセットの合計時間', () => {
+  const sst = Calc.resolveSegment(
+    { label: 'SST', reps: 3, work: { pct: [88, 94], min: 15 }, rest: { pct: 55, min: 5 } }, 300, 60);
+  assert.equal(sst.totalSec, (45 + 10) * 60);
+  assert.deepEqual(sst.work.w, [265, 280]);
+  const thirtyFifteen = Calc.resolveSegment({
+    label: '30/15', sets: 3, reps: 13,
+    work: { pct: 120, sec: 30 }, rest: { pct: 50, sec: 15 }, setRest: { pct: 50, min: 5 },
+  }, 300, 60);
+  assert.equal(thirtyFifteen.totalSec, 3 * (13 * 30 + 12 * 15) + 2 * 300);
+  const note = Calc.resolveSegment({ label: 'TT', note: '全力', min: 30 }, 300, 60);
+  assert.equal(note.type, 'note');
+  assert.equal(note.totalSec, 1800);
+});
+
+test('時間の表示', () => {
+  assert.equal(Calc.formatDuration(30), '30秒');
+  assert.equal(Calc.formatDuration(900), '15分');
+  assert.equal(Calc.formatDuration(5400), '1時間30分');
+  assert.equal(Calc.formatDuration(570), '9分30秒');
+});
