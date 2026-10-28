@@ -12,6 +12,7 @@ tt-ftp/
   style.css          見た目
   app.js             画面の制御・localStorage への保存
   calc.js            計算ロジック（FTP推定・パワー推定・期と週の判定・%FTP→W変換）
+  manifest.webmanifest / icons/  ホーム画面に入れるためのアプリ情報とアイコン
   menus.json         期分けメニュー（%FTP で定義。自由に編集できます）
   zwo.js             メニュー → Zwift ワークアウト(.zwo) 変換
   intervals.js       メニュー → intervals.icu の予定ワークアウト（テキスト形式）変換と登録
@@ -30,6 +31,16 @@ tt-ftp/
   Settings → Pages → Build and deployment → Source を **GitHub Actions** にしてください。
   公開URLは `https://<ユーザー名>.github.io/norikura-time/` です。
 - **ローカル**: `cd tt-ftp && python3 -m http.server 8000`（または `npx serve`）→ http://localhost:8000
+
+### スマホにアプリとして入れる
+
+`manifest.webmanifest` とアイコン（`icons/`）があるので、ホーム画面に専用アイコンで追加でき、全画面で開きます。
+
+- Android（Chrome）: ページを開き「︙」→「アプリをインストール」（または「ホーム画面に追加」→「インストール」）
+- iPhone（Safari）: 共有ボタン →「ホーム画面に追加」
+
+ホーム画面のアイコンを消しても Android ではアプリが残ることがあります。入れ直すときは
+Android の「設定」→「アプリ」から先にアンインストールしてください。更新は同じURLに公開されるので、入れ直さなくても開き直せば新しい版になります。
 
 データ（設定・TT履歴）はブラウザの localStorage に保存されます。端末・ブラウザごとに別々で、
 ブラウザのサイトデータを消すと消えます。
