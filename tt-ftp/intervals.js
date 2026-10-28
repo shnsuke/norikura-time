@@ -95,14 +95,18 @@
   const pad2 = (n) => String(n).padStart(2, '0');
   const iso = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
-  /** from〜to(両端含む)の各日について、メニューがある日を intervals.icu のイベントにする */
-  function buildEvents(menus, from, to) {
+  /**
+   * from〜to(両端含む)の各日について、メニューがある日を intervals.icu のイベントにする。
+   * transform(menu, date) を渡すと、ブロック振り返りの調整を反映したメニューで作る。
+   */
+  function buildEvents(menus, from, to, transform) {
     const events = [];
     for (let d = new Date(from.getFullYear(), from.getMonth(), from.getDate()); Calc.daysBetween(d, to) >= 0; d.setDate(d.getDate() + 1)) {
       const info = Calc.getPhaseAndWeek(d, menus);
       if (info.status !== 'in') continue;
       const found = Calc.findDayMenu(info.phase, info, info.day);
       if (!found) continue;
+      const menu = transform ? transform(found.menu, new Date(d)) : found.menu;
       const week = info.phase.blocks === false
         ? `${info.week}週目`
         : `B${info.block}${info.isRecovery ? '回復週' : '負荷週'}`;
@@ -110,23 +114,20 @@
         category: 'WORKOUT',
         start_date_local: `${iso(d)}T00:00:00`,
         type: 'VirtualRide',
-        name: `${found.menu.title}`,
-        description: `${info.phase.name} ${week}\n${menuToText(found.menu)}`,
+        name: `${menu.title}`,
+        description: `${info.phase.name} ${week}${menu.adjusted ? `（調整 ${menu.adjusted}）` : ''}\n${menuToText(menu)}`,
         external_id: `ttftp-${iso(d)}`,
       });
     }
     return events;
   }
 
-  /** 予定表に登録(同じ日付は上書き)。fetchImpl はテスト用 */
-  async function uploadEvents(apiKey, events, fetchImpl = fetch) {
-    const res = await fetchImpl(`${API_BASE}/athlete/0/events/bulk?upsert=true`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${btoa(`API_KEY:${apiKey}`)}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(events),
+  const auth = (apiKey) => `Basic ${btoa(`API_KEY:${apiKey}`)}`;
+
+  async function request(apiKey, path, opts, fetchImpl) {
+    const res = await fetchImpl(`${API_BASE}${path}`, {
+      ...opts,
+      headers: { Authorization: auth(apiKey), 'Content-Type': 'application/json', ...(opts && opts.headers) },
     });
     if (!res.ok) {
       const text = await res.text().catch(() => '');
@@ -135,5 +136,32 @@
     return res.json();
   }
 
-  return { menuToText, textDuration, buildEvents, uploadEvents, dur, API_BASE };
+  /** 予定表に登録(同じ日付は上書き)。fetchImpl はテスト用 */
+  function uploadEvents(apiKey, events, fetchImpl = fetch) {
+    return request(apiKey, '/athlete/0/events/bulk?upsert=true', { method: 'POST', body: JSON.stringify(events) }, fetchImpl);
+  }
+
+  /** 期間内の実施済みアクティビティ(新しい順)。oldest / newest は "YYYY-MM-DD" */
+  function fetchActivities(apiKey, oldest, newest, fetchImpl = fetch) {
+    return request(apiKey, `/athlete/0/activities?oldest=${oldest}&newest=${newest}`, { method: 'GET' }, fetchImpl);
+  }
+
+  /** アクティビティの区間(icu_intervals) */
+  async function fetchIntervals(apiKey, activityId, fetchImpl = fetch) {
+    const r = await request(apiKey, `/activity/${encodeURIComponent(activityId)}/intervals`, { method: 'GET' }, fetchImpl);
+    return (r && r.icu_intervals) || [];
+  }
+
+  /**
+   * その日のライド(Ride / VirtualRide)から振り返りに使う1件を選ぶ。
+   * 予定と対応づいたもの(paired_event_id)を優先し、無ければ一番長いもの。
+   */
+  function pickActivity(activities, dateIso, pairedEventIds = []) {
+    const rides = (activities || []).filter((a) => (a.start_date_local || '').slice(0, 10) === dateIso && /Ride/.test(a.type || ''));
+    if (!rides.length) return null;
+    return rides.find((a) => pairedEventIds.includes(a.paired_event_id))
+      || rides.sort((a, b) => (b.moving_time || 0) - (a.moving_time || 0))[0];
+  }
+
+  return { menuToText, textDuration, buildEvents, uploadEvents, fetchActivities, fetchIntervals, pickActivity, dur, API_BASE };
 });
