@@ -256,14 +256,39 @@ test('speedForPower は estimatePower の逆関数になっている', () => {
   close(Calc.estimatePower({ ...seg, minutes }).power, 300, 1e-6);
 });
 
-test('予想タイム: パワーとタイムが FTP 推定の式と釣り合う', () => {
-  const r = Calc.predictClimb({ ftp: 323.4, riderKg: 63 });
+test('予想タイム(高地補正なし): パワーとタイムが FTP 推定の式と釣り合う', () => {
+  const r = Calc.predictClimb({ ftp: 323.4, riderKg: 63, altitude: false });
   // 予想した平均パワーと所要時間を FTP 推定に戻すと元の FTP になる
   close(Calc.ftpFromPower(r.powerW, r.totalSec / 60), 323.4, 0.01);
-  close(r.totalSec, 56 * 60 + 42, 2); // 56:42
+  close(r.totalSec, 56 * 60 + 42, 3); // 56:42
   close(r.wkg, 5.15, 0.01);
+  close(r.altitudeLossPct, 0, 1e-9);
   // 区間タイムの合計 = 全体
   close(r.segments.reduce((a, s) => a + s.sec, 0), r.totalSec, 1e-6);
+});
+
+test('高地のパワー低下: Bassett et al. (1999) の式', () => {
+  close(Calc.altitudePowerFactor(0), 1, 1e-12);
+  close(Calc.altitudePowerFactor(2000), 0.87564, 1e-9); // 0.178·8 − 1.43·4 − 4.07·2 + 100
+  close(Calc.altitudePowerFactor(2000, true), 0.916348, 1e-9); // 99.921 − 1.122·4 − 1.8991·2
+  assert.ok(Calc.altitudePowerFactor(2720) < Calc.altitudePowerFactor(1460));
+  assert.ok(Calc.altitudePowerFactor(2500, true) > Calc.altitudePowerFactor(2500, false));
+});
+
+test('予想タイム(高地補正あり): 標高が上がるほど区間のパワーが下がり、補正なしより遅い', () => {
+  const opts = { ftp: 315, riderKg: 63 };
+  const flat = Calc.predictClimb({ ...opts, altitude: false });
+  const alt = Calc.predictClimb(opts);
+  const accl = Calc.predictClimb({ ...opts, acclimatized: true });
+  const fromHill = Calc.predictClimb({ ...opts, ftpAltM: 500 });
+  assert.ok(alt.totalSec > accl.totalSec && accl.totalSec > flat.totalSec);
+  assert.ok(fromHill.totalSec < alt.totalSec); // FTPを標高500mで測っていれば低下は小さい
+  const p = alt.segments.map((s) => s.powerW);
+  assert.ok(p[0] > p[1] && p[1] > p[2]);
+  // 1区間目(1460〜1870m)の平均パワーは基準パワー × その標高帯の係数の範囲に入る
+  assert.ok(p[0] < alt.basePowerW * Calc.altitudePowerFactor(1460) && p[0] > alt.basePowerW * Calc.altitudePowerFactor(1870));
+  close(alt.altitudeLossPct, (1 - alt.powerW / alt.basePowerW) * 100, 1e-9);
+  close(alt.totalSec, 65 * 60 + 34, 3); // 1:05:34
 });
 
 test('予想タイム: 体重が軽い・FTPが高いほど速い', () => {

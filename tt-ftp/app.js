@@ -113,8 +113,18 @@
     pWeight: 'weight', pFtp: 'ftpOverride', pBike: 'bikeKg', pCda: 'cda', pCrr: 'crr', pLoss: 'lossPct', pK: 'k',
   };
 
+  function altSettings() {
+    const s = state.settings;
+    return { altitude: s.altOn !== false, acclimatized: s.acclimatized === true, ftpAltM: num(s.ftpAltM) || 0 };
+  }
+
   function fillPrefs() {
     $('pIcuKey').value = state.settings.icuKey || '';
+    const a = altSettings();
+    $('pAltOn').checked = a.altitude;
+    $('pAccl').value = a.acclimatized ? 'yes' : 'no';
+    $('pFtpAlt').value = num(state.settings.ftpAltM) === null ? '' : state.settings.ftpAltM;
+    $('pAccl').disabled = $('pFtpAlt').disabled = !a.altitude;
     for (const [id, key] of Object.entries(prefFields)) {
       const v = state.settings[key];
       $(id).value = v === null || v === undefined ? '' : v;
@@ -135,6 +145,22 @@
     prefsToastTimer = setTimeout(() => ($('prefsToast').hidden = true), 1500);
   });
   $('prefsForm').addEventListener('submit', (e) => e.preventDefault());
+  $('pAltOn').addEventListener('change', (e) => {
+    state.settings.altOn = e.target.checked;
+    $('pAccl').disabled = $('pFtpAlt').disabled = !e.target.checked;
+    save();
+    renderPrediction();
+  });
+  $('pAccl').addEventListener('change', (e) => {
+    state.settings.acclimatized = e.target.value === 'yes';
+    save();
+    renderPrediction();
+  });
+  $('pFtpAlt').addEventListener('input', (e) => {
+    state.settings.ftpAltM = num(e.target.value);
+    save();
+    renderPrediction();
+  });
   $('pIcuKey').addEventListener('input', (e) => {
     state.settings.icuKey = e.target.value.trim();
     save();
@@ -168,7 +194,8 @@
       return;
     }
     const ps = physicsSettings();
-    const opts = { ...ps, ftp, riderKg: weight };
+    const alt = altSettings();
+    const opts = { ...ps, ...alt, ftp, riderKg: weight };
     let r;
     try {
       r = C.predictClimb(opts);
@@ -177,8 +204,13 @@
       return;
     }
     const rows = r.segments.map((s) => `<tr>
-      <td>${esc(s.name)}</td><td class="num">${fmt(s.distanceKm, 1)}</td><td class="num">${fmt(s.gradePct, 1)}%</td>
-      <td class="num">${fmt(s.speedKmh, 1)}</td><td class="num">${C.formatClock(s.sec)}</td></tr>`).join('');
+      <td>${esc(s.name)}<br><span class="hint">${fmt(s.distanceKm, 1)}km・${fmt(s.gradePct, 1)}%</span></td>
+      <td class="num">${fmt(s.powerW)}</td><td class="num">${fmt(s.speedKmh, 1)}</td><td class="num">${C.formatClock(s.sec)}</td></tr>`).join('');
+    const flat = alt.altitude ? C.predictClimb({ ...opts, altitude: false }) : null;
+    const altLine = flat
+      ? `<p class="sub">高地で平均 <b>−${fmt(r.altitudeLossPct, 1)}</b>%（${fmt(r.basePowerW)}W → ${fmt(r.powerW)}W）。
+         高地の影響が無ければ <b>${C.formatClock(flat.totalSec)}</b>（${C.formatClock(r.totalSec - flat.totalSec)} 速い）</p>`
+      : '<p class="sub">高地によるパワー低下は考慮していません。</p>';
     // 期分けの減量目標(60kg・58kg)で試算
     const whatIf = [60, 58].filter((w) => w < weight - 0.05).map((w) => {
       const x = C.predictClimb({ ...opts, riderKg: w });
@@ -191,11 +223,12 @@
         <span>平均 <b>${fmt(r.powerW)}</b> W</span><span><b>${fmt(r.wkg, 2)}</b> W/kg</span>
         <span>FTPの <b>${fmt(r.pctFtp)}</b>%</span><span>平均 <b>${fmt(r.speedKmh, 1)}</b> km/h</span>
       </div>
+      ${altLine}
       <div class="scroll"><table>
-        <thead><tr><th>区間</th><th class="num">km</th><th class="num">勾配</th><th class="num">km/h</th><th class="num">タイム</th></tr></thead>
+        <thead><tr><th>区間</th><th class="num">W</th><th class="num">km/h</th><th class="num">タイム</th></tr></thead>
         <tbody>${rows}</tbody></table></div>
       ${whatIf ? `<div class="scroll"><table><thead><tr><th>FTP ${fmt(ftp)}W のまま</th><th class="num"></th><th class="num">予想</th><th class="num">差</th></tr></thead><tbody>${whatIf}</tbody></table></div>` : ''}
-      <p class="hint">FTP ${fmt(ftp)}W・体重 ${fmt(weight, 1)}kg・詳細設定の値で計算。所要時間に見合うパワー（FTP × (60/分)^k）で区間ごとに一定ペースで登る想定です。区間の勾配は大会要項からの概算で、風・集団走行・路面状況は考慮していません。</p>`;
+      <p class="hint">FTP ${fmt(ftp)}W・体重 ${fmt(weight, 1)}kg・詳細設定の値で計算。所要時間に見合うパワー（FTP × (60/分)^k）を基準に、${alt.altitude ? `標高に応じて下がるパワー（Bassett ら 1999 の式・高地順応${alt.acclimatized ? 'あり' : 'なし'}、FTP計測地 ${fmt(alt.ftpAltM)}m 基準）で` : '一定ペースで'}登る想定です。区間の勾配は大会要項からの概算で、風・集団走行・路面状況は考慮していません。</p>`;
   }
 
   // ---------- TT入力 ----------

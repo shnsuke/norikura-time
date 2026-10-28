@@ -150,35 +150,70 @@
   }
 
   /**
-   * コースを一定パワーで登ったときの予想タイム。
-   * パワーは FTP 推定と同じ式の逆 P = FTP × (60 / t)^k で、所要時間 t に見合う値を反復で求める。
-   * opts: { ftp, riderKg, bikeKg, cda, crr, drivetrainLoss, k, course }
+   * 標高による有酸素パワーの低下(海面 = 1.0)。Bassett et al. (1999) の回帰式、x は標高(km)。
+   *   高地順応なし: % = 0.178x³ − 1.43x² − 4.07x + 100
+   *   高地順応あり: % = −1.122x² − 1.8991x + 99.921
+   */
+  function altitudePowerFactor(altM, acclimatized = false) {
+    const x = Math.max(0, altM || 0) / 1000;
+    const pct = acclimatized
+      ? -1.122 * x * x - 1.8991 * x + 99.921
+      : 0.178 * x * x * x - 1.43 * x * x - 4.07 * x + 100;
+    return pct / 100;
+  }
+
+  /**
+   * コースを登ったときの予想タイム。
+   * 基準パワーは FTP 推定と同じ式の逆 P = FTP × (60 / t)^k で、所要時間 t に見合う値を反復で求める。
+   * altitude が true なら、各地点のパワーを altitudePowerFactor(標高) / altitudePowerFactor(FTP計測地の標高) 倍にする。
+   * 標高と空気密度の変化を反映するため、各区間を slices 個に分けて計算する(勾配は区間内で一定)。
+   * opts: { ftp, riderKg, bikeKg, cda, crr, drivetrainLoss, k, course, altitude, acclimatized, ftpAltM, slices }
    */
   function predictClimb(opts) {
-    const o = Object.assign({}, DEFAULTS, { course: NORIKURA_COURSE }, opts);
+    const o = Object.assign({}, DEFAULTS, { course: NORIKURA_COURSE, altitude: true, acclimatized: false, ftpAltM: 0, slices: 10 }, opts);
     assertPositive('FTP', o.ftp);
     assertPositive('体重', o.riderKg);
-    const run = (powerW) => o.course.segments.map((seg) => {
+    const factorAt = (altM) => (o.altitude
+      ? altitudePowerFactor(altM, o.acclimatized) / altitudePowerFactor(o.ftpAltM, o.acclimatized)
+      : 1);
+    const run = (basePowerW) => o.course.segments.map((seg) => {
       const gainM = seg.endElevM - seg.startElevM;
-      const v = speedForPower({ ...o, powerW, distanceKm: seg.distanceKm, gainM, avgAltM: (seg.startElevM + seg.endElevM) / 2 });
+      const sliceKm = seg.distanceKm / o.slices;
+      const sliceGain = gainM / o.slices;
+      let sec = 0;
+      let work = 0;
+      for (let i = 0; i < o.slices; i++) {
+        const altM = seg.startElevM + sliceGain * (i + 0.5);
+        const powerW = basePowerW * factorAt(altM);
+        const v = speedForPower({ ...o, powerW, distanceKm: sliceKm, gainM: sliceGain, avgAltM: altM });
+        const t = (sliceKm * 1000) / v;
+        sec += t;
+        work += powerW * t;
+      }
       const geo = climbGeometry(seg.distanceKm, gainM);
-      return { name: seg.name, distanceKm: seg.distanceKm, gainM, gradePct: geo.gradePct, speedKmh: v * 3.6, sec: (seg.distanceKm * 1000) / v };
+      return {
+        name: seg.name, distanceKm: seg.distanceKm, gainM, gradePct: geo.gradePct,
+        powerW: work / sec, speedKmh: (seg.distanceKm * 3600) / sec, sec,
+      };
     });
     let minutes = 60;
-    let powerW = o.ftp;
-    let segments = run(powerW);
+    let basePowerW = o.ftp;
+    let segments = run(basePowerW);
     for (let i = 0; i < 30; i++) {
-      powerW = o.ftp * Math.pow(60 / minutes, o.k);
-      segments = run(powerW);
+      basePowerW = o.ftp * Math.pow(60 / minutes, o.k);
+      segments = run(basePowerW);
       const next = segments.reduce((a, s) => a + s.sec, 0) / 60;
       if (Math.abs(next - minutes) < 1e-4) { minutes = next; break; }
       minutes = next;
     }
     const totalSec = segments.reduce((a, s) => a + s.sec, 0);
     const distanceKm = segments.reduce((a, s) => a + s.distanceKm, 0);
+    const powerW = segments.reduce((a, s) => a + s.powerW * s.sec, 0) / totalSec;
     return {
       totalSec,
       powerW,
+      basePowerW,
+      altitudeLossPct: (1 - powerW / basePowerW) * 100,
       wkg: powerW / o.riderKg,
       pctFtp: (powerW / o.ftp) * 100,
       speedKmh: distanceKm / (totalSec / 3600),
@@ -377,6 +412,7 @@
     formatDuration,
     NORIKURA_COURSE,
     speedForPower,
+    altitudePowerFactor,
     predictClimb,
     formatClock,
   };

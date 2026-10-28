@@ -190,6 +190,11 @@ button { font: inherit; cursor: pointer; }
 .predict th:last-child, .predict td:last-child { padding-right: 0; }
 .predict .num { text-align: right; font-family: var(--font-display); font-variant-numeric: tabular-nums; font-size: 0.95rem; }
 .predict .scroll { overflow-x: auto; }
+.alt-opts { display: grid; gap: 10px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.predict .sub { font-size: 0.8rem; color: var(--muted); margin: 0; font-variant-numeric: tabular-nums; }
+.predict .sub b { font-family: var(--font-display); color: var(--ink); }
 .link-box { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
 .link-box h2 { font-size: 1rem; }
 .steps { margin: 0; padding-left: 1.3em; font-size: 0.85rem; display: grid; gap: 4px; }
