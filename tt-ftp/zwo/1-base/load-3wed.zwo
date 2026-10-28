@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>基礎期 負荷週 水 Z2</name>
+  <description>基礎期（ピラミッド型 約70:20:10）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="7200" Power="0.65"/>
+  </workout>
+</workout_file>

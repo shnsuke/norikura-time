@@ -1,0 +1,11 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>特異期 負荷週 日 Z2ロング（調整弁）</name>
+  <description>特異期（ポラライズド寄り＋レース特異的）
+Z2の後：デッドリフト</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="9000" Power="0.65"/>
+  </workout>
+</workout_file>

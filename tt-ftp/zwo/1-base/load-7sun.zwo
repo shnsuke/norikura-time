@@ -1,0 +1,11 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>基礎期 負荷週 日 Z2ロング</name>
+  <description>基礎期（ピラミッド型 約70:20:10）
+Z2の後：デッドリフト 4〜6回×4セット</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="10800" Power="0.65"/>
+  </workout>
+</workout_file>

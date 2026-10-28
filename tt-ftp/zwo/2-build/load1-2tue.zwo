@@ -1,0 +1,15 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>ビルド期 負荷週1 火 VO2 5×5分</name>
+  <description>ビルド期（閾値＋VO2強化）
+夜：デッドリフト 2〜3回×3セット（VO2から6時間以上空ける）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="900" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="4" OnDuration="300" OffDuration="300" OnPower="1.15" OffPower="0.5"/>
+    <SteadyState Duration="300" Power="1.15"/>
+    <SteadyState Duration="900" Power="0.65"/>
+    <Cooldown Duration="600" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

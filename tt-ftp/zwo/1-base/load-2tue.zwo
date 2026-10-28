@@ -1,0 +1,36 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>基礎期 負荷週 火 VO2維持（Rattlesnake×2）</name>
+  <description>基礎期（ピラミッド型 約70:20:10）
+追い込みすぎない
+夜：デッドリフト 4〜6回×4セット（VO2から6時間以上空ける）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="180" PowerLow="0.4" PowerHigh="0.6"/>
+    <SteadyState Duration="180" Power="0.65"/>
+    <SteadyState Duration="180" Power="0.8"/>
+    <SteadyState Duration="20" Power="1.2"/>
+    <SteadyState Duration="30" Power="0.4"/>
+    <SteadyState Duration="30" Power="1.2"/>
+    <SteadyState Duration="30" Power="0.4"/>
+    <SteadyState Duration="40" Power="1.2"/>
+    <SteadyState Duration="165" Power="0.5"/>
+    <SteadyState Duration="60" Power="1.4"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.2"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.17"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.14"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.12"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.1"/>
+    <SteadyState Duration="180" Power="0.5"/>
+    <SteadyState Duration="60" Power="1.4"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.2"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.17"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.14"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.12"/>
+    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.1"/>
+    <SteadyState Duration="180" Power="0.5"/>
+    <SteadyState Duration="1800" Power="0.65"/>
+    <Cooldown Duration="600" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

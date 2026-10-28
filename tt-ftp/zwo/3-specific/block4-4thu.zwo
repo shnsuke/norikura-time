@@ -1,0 +1,12 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>特異期 B4負荷週 木 閾値ロング 1×60分</name>
+  <description>特異期（ポラライズド寄り＋レース特異的）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="900" PowerLow="0.55" PowerHigh="0.65"/>
+    <SteadyState Duration="3600" Power="0.925"/>
+    <Cooldown Duration="600" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

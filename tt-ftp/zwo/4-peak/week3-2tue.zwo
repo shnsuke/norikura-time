@@ -1,0 +1,14 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>ピーク期 3週目 火 VO2 短め 3×4分</name>
+  <description>ピーク期（ピーキング（4週））
+夜：デッドリフト最終回（8/19より前に終える）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="900" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="240" OffDuration="240" OnPower="1.105" OffPower="0.5"/>
+    <SteadyState Duration="240" Power="1.105"/>
+    <Cooldown Duration="600" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

@@ -446,6 +446,7 @@
     $('menuNotice').hidden = notice.length === 0;
 
     if (!found) {
+      zwoTarget = null;
       el.innerHTML = `<div class="day-head"><h2>${dayHead} 休養</h2></div><p class="rest-day">この日のメニューはありません。</p>`;
       return;
     }
@@ -486,8 +487,32 @@
       <div class="day-head"><h2>${dayHead} ${esc(r.title)}</h2><span class="day-total">${C.formatDuration(r.totalSec)}</span></div>
       <div class="profile" aria-hidden="true">${profile}</div>
       <ul class="segs">${segs}</ul>
-      ${r.notes.length ? `<ul class="day-notes">${r.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}`;
+      ${r.notes.length ? `<ul class="day-notes">${r.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+      <div class="zwo-row">
+        <button type="button" class="ghost" id="zwoSave">Zwift用ファイル（.zwo）を保存</button>
+        <span class="hint">強度は%FTPで入るので、Zwift側のFTPを${ftp ? ` ${fmt(ftp)}W に` : 'このアプリと同じ値に'}合わせてください。保存できない場合は GitHub の tt-ftp/zwo フォルダに全メニューがあります。</span>
+      </div>`;
+    zwoTarget = {
+      menu: found.menu,
+      name: `${mdLabel(date)}（${C.DAY_LABELS[sel.day]}）${phase.name} ${found.menu.title}`,
+      description: `${phase.name} ${weekLabel(info)}`,
+      file: `${isoDate(date)}_${phase.id}_${sel.day}.zwo`,
+    };
   }
+
+  let zwoTarget = null;
+  $('dayDetail').addEventListener('click', (e) => {
+    if (!e.target.closest('#zwoSave') || !zwoTarget) return;
+    const xml = window.Zwo.menuToZwo(zwoTarget.menu, { name: zwoTarget.name, description: zwoTarget.description });
+    const url = URL.createObjectURL(new Blob([xml], { type: 'application/xml' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = zwoTarget.file;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
 
   function renderWeekStrip() {
     const phase = menus.phases[sel.phase];
