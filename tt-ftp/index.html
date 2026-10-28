@@ -110,6 +110,18 @@
       <p class="hint">FTP を手入力すると、TT結果より優先されます。空欄に戻すと最新のTT結果を使います。</p>
 
       <div class="predict" id="climbPrediction" aria-live="polite"></div>
+      <fieldset class="alt-opts">
+        <label class="check"><input type="checkbox" id="pAltOn"> 高地によるパワー低下を考慮する</label>
+        <div class="grid2">
+          <label class="field">高地順応
+            <select id="pAccl">
+              <option value="no">なし（直前に現地入り）</option>
+              <option value="yes">あり（2週間以上滞在）</option>
+            </select>
+          </label>
+          <label class="field">FTPを測った場所の標高 (m)<input type="number" id="pFtpAlt" inputmode="numeric" step="10" min="0" placeholder="0"></label>
+        </div>
+      </fieldset>
       <details class="advanced">
         <summary>詳細設定</summary>
         <div class="grid2">
