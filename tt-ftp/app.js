@@ -20,6 +20,7 @@
     history: [],
     weightLog: [],
     sessionLog: {},
+    adjustments: {},
     tab: 'menu',
     mode: 'A',
   });
@@ -37,6 +38,7 @@
         history: Array.isArray(saved.history) ? saved.history : [],
         weightLog: Array.isArray(saved.weightLog) ? saved.weightLog : [],
         sessionLog: saved.sessionLog && typeof saved.sessionLog === 'object' ? saved.sessionLog : {},
+        adjustments: saved.adjustments && typeof saved.adjustments === 'object' ? saved.adjustments : {},
       };
     } catch (e) {
       return s;
@@ -107,7 +109,7 @@
     save();
     if (name === 'menu') renderMenu();
     if (name === 'weight') renderWeight();
-    if (name === 'history') renderHistory();
+    if (name === 'history') { renderHistory(); renderReviewSelect(); renderReview(); }
     if (name === 'prefs') renderPrediction();
   }
   for (const t of TABS) $(`tab-${t}`).addEventListener('click', () => showTab(t));
@@ -616,6 +618,285 @@
     resizeTimer = setTimeout(() => { if (state.tab === 'weight') renderWeight(); }, 150);
   });
 
+  // ---------- ブロック振り返り ----------
+
+  const R = () => window.Review;
+  const KIND_ORDER = ['vo2', 'threshold', 'sst', 'race'];
+  let reviewData = null;
+
+  /** 振り返れるブロック(今のブロックまで)。値は "期のindex:ブロック" */
+  function reviewableBlocks() {
+    if (!menus) return [];
+    const now = C.getPhaseAndWeek(new Date(), menus);
+    const out = [];
+    menus.phases.forEach((p, pi) => {
+      const total = p.blocks === false ? 1 : C.getPhaseAndWeek(C.parseDate(p.end), menus).block;
+      for (let b = 1; b <= total; b++) {
+        const block = p.blocks === false ? null : b;
+        const r = R().blockRange(menus, pi, block);
+        if (now.status === 'before' || C.daysBetween(new Date(), r.start) > 0) return;
+        out.push({ value: `${pi}:${block === null ? 'all' : block}`, pi, block, range: r,
+          label: `${p.name}${block === null ? '' : ` ブロック${block}`}（${mdLabel(r.start)}〜${mdLabel(r.end)}）` });
+      }
+    });
+    return out;
+  }
+
+  function renderReviewSelect() {
+    const opts = reviewableBlocks();
+    const sel2 = $('reviewBlock');
+    const prev = sel2.value;
+    sel2.innerHTML = opts.length
+      ? opts.map((o) => `<option value="${o.value}">${esc(o.label)}</option>`).join('')
+      : '<option value="">シーズンが始まると選べます</option>';
+    if (opts.some((o) => o.value === prev)) sel2.value = prev;
+    else if (opts.length) {
+      // 既定: 回復週なら今のブロック、それ以外は1つ前のブロック
+      const now = C.getPhaseAndWeek(new Date(), menus);
+      const idx = now.status === 'in' && (now.isRecovery || now.phase.blocks === false) ? opts.length - 1 : Math.max(0, opts.length - 2);
+      sel2.value = opts[idx].value;
+    }
+    $('reviewFetch').disabled = $('reviewLocal').disabled = !opts.length;
+    $('pMaxHr').value = num(state.settings.maxHr) || '';
+  }
+
+  /** ブロック内のキーセッションと Z2 の日 */
+  function blockSchedule(pi, block) {
+    const r = R().blockRange(menus, pi, block);
+    const keys = [];
+    const z2 = [];
+    for (let d = new Date(r.start); C.daysBetween(d, r.end) >= 0; d.setDate(d.getDate() + 1)) {
+      const date = new Date(d);
+      const info = C.getPhaseAndWeek(date, menus);
+      const f = info.status === 'in' ? findAdjusted(info.phase, info, info.day, date) : null;
+      if (!f) continue;
+      const iso = isoDate(date);
+      if (C.isKeySession(f.menu)) {
+        keys.push({ date, iso, kind: f.menu.kind, title: f.menu.title, plannedSec: C.resolveMenu(f.menu, 100, null).totalSec, log: state.sessionLog[iso] || null });
+      } else if (f.menu.kind === 'z2') z2.push({ date, iso });
+    }
+    return { range: r, keys, z2 };
+  }
+
+  function previousBlock(pi, block) {
+    if (block !== null && block > 1) return { pi, block: block - 1 };
+    if (pi === 0) return null;
+    const p = menus.phases[pi - 1];
+    return { pi: pi - 1, block: p.blocks === false ? null : C.getPhaseAndWeek(C.parseDate(p.end), menus).block };
+  }
+
+  const meanOf = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+  const median = (xs) => { const a = [...xs].sort((x, y) => x - y); return a.length ? a[Math.floor((a.length - 1) / 2)] : null; };
+
+  async function runReview(useIntervals) {
+    const status = $('reviewStatus');
+    status.hidden = false;
+    const [piS, blkS] = $('reviewBlock').value.split(':');
+    if (piS === '') return;
+    const pi = Number(piS);
+    const block = blkS === 'all' ? null : Number(blkS);
+    const sch = blockSchedule(pi, block);
+    const maxHrSet = num(state.settings.maxHr);
+    let maxHr = maxHrSet;
+    let efNow = null;
+    let efPrev = null;
+    let fetched = false;
+
+    if (useIntervals) {
+      const key = (state.settings.icuKey || '').trim();
+      if (!key) { status.textContent = '「設定」で intervals.icu の API キーを入れてください。記録だけで判定することもできます。'; return; }
+      status.textContent = 'intervals.icu から取得中…';
+      try {
+        const prev = previousBlock(pi, block);
+        const oldest = prev ? R().blockRange(menus, prev.pi, prev.block).start : sch.range.start;
+        const acts = await window.Intervals.fetchActivities(key, isoDate(oldest), isoDate(sch.range.end));
+        if (!maxHr) {
+          const withMax = acts.find((a) => a.athlete_max_hr);
+          if (withMax) { maxHr = withMax.athlete_max_hr; state.settings.maxHr = maxHr; save(); }
+        }
+        for (const k of sch.keys) {
+          const a = window.Intervals.pickActivity(acts, k.iso);
+          if (!a) continue;
+          k.activity = { id: a.id, movingSec: a.moving_time, ftp: a.icu_ftp };
+          const ivs = await window.Intervals.fetchIntervals(key, a.id);
+          const minW = (a.icu_ftp || currentFtp().ftp || 0) * 0.85;
+          k.hr = R().hrMetrics(ivs, maxHr, minW) || R().hrMetrics(ivs, maxHr, 0);
+        }
+        const efOf = (dates) => meanOf(dates.map((z) => window.Intervals.pickActivity(acts, z.iso)).filter((a) => a && a.icu_efficiency_factor).map((a) => a.icu_efficiency_factor));
+        efNow = efOf(sch.z2);
+        if (prev) efPrev = efOf(blockSchedule(prev.pi, prev.block).z2);
+        fetched = true;
+      } catch (err) {
+        status.textContent = err instanceof TypeError
+          ? 'intervals.icu に接続できませんでした。GitHub Pages 版で開いているか、ネットワーク接続を確認してください。'
+          : `${err.message}。API キーが正しいか確認してください。`;
+        return;
+      }
+    }
+
+    for (const k of sch.keys) k.judge = R().judgeSession(k.kind, k.log, k.hr || null);
+    const ftpBefore = median(sch.keys.map((k) => (k.log && k.log.ftp) || (k.activity && k.activity.ftp)).filter(Boolean));
+    const ftpAfter = currentFtp().ftp;
+    const proposal = R().proposeAdjustments(sch.keys.map((k) => ({ kind: k.kind, verdict: k.judge.verdict })),
+      { z2: { efNow, efPrev }, ftp: { before: ftpBefore, after: ftpAfter } });
+    const target = R().nextBlock(menus, pi, block);
+    reviewData = { pi, block, sch, proposal, target, maxHr, efNow, efPrev, ftpBefore, ftpAfter, fetched };
+    status.textContent = fetched
+      ? `${sch.keys.filter((k) => k.activity).length} / ${sch.keys.length} 回分のライドを intervals.icu から取得しました。${maxHr ? `maxHR ${maxHr} で計算しています。` : 'maxHR が分からないため心拍は使っていません。'}`
+      : '記録（実施結果・RPE）だけで判定しました。';
+    renderReview();
+  }
+
+  function renderReview() {
+    const el = $('reviewResult');
+    if (!reviewData) { el.innerHTML = ''; renderAdjHistory(); return; }
+    const { sch, proposal, target, efNow, efPrev, ftpBefore, ftpAfter } = reviewData;
+    const kindLabel = (k) => C.SESSION_KINDS[k];
+    const rows = sch.keys.map((k) => {
+      const log = k.log;
+      const rec = !log || !log.result ? '<span class="hint">未記録</span>'
+        : log.result === 'skipped' ? '休んだ'
+        : `${log.result === 'partial' ? '途中まで' : '完了'}${log.rpe ? `・RPE ${log.rpe}` : ''}`;
+      const time = k.activity ? `${Math.round(k.activity.movingSec / 60)}/${Math.round(k.plannedSec / 60)}分` : '—';
+      const hr = k.hr ? `${k.hr[R().CRITERIA[k.kind].hrMetric].toFixed(0)}%${k.hr.drift !== null && R().CRITERIA[k.kind].drift ? `<br><span class="hint">上昇 ${k.hr.drift >= 0 ? '+' : ''}${k.hr.drift.toFixed(1)}</span>` : ''}` : '—';
+      const v = k.judge.verdict;
+      const short = k.activity && k.plannedSec && k.activity.movingSec < k.plannedSec * 0.95 && log && log.result === 'done'
+        ? '<br><span class="hint">時間が予定より短い</span>' : '';
+      return `<tr><td>${mdLabel(k.date)}<br><span class="hint">${esc(kindLabel(k.kind))}</span></td>
+        <td>${rec}${short}</td><td class="num">${time}</td><td class="num">${hr}</td>
+        <td>${v ? `<span class="verdict ${v}">${R().VERDICTS[v].label}</span>` : '<span class="hint">—</span>'}</td></tr>`;
+    }).join('');
+    const missing = sch.keys.filter((k) => !k.log || !k.log.result).length;
+    const adjOptions = (cur) => [-3, -2, -1, 0, 1, 2, 3].map((v) => `<option value="${v}"${v === cur ? ' selected' : ''}>${v > 0 ? '+' : ''}${v}%</option>`).join('');
+    const kindRows = KIND_ORDER.map((k) => {
+      const x = proposal.kinds[k];
+      const c = x.counts;
+      const why = x.n
+        ? `余裕${c.easy}・適正${c.ok}・きつい${c.hard}・未完了${c.failed}（平均 ${x.avg >= 0 ? '+' : ''}${x.avg.toFixed(2)}）${x.n === 1 ? '・1回分のため ±1% まで' : ''}${x.cappedByFtp ? '・FTP上昇で上限' : ''}`
+        : '判定できたセッションがありません';
+      return `<div class="proposal-row"><b>${esc(kindLabel(k))}</b>
+        <select class="inline" data-adj="${k}" aria-label="${esc(kindLabel(k))}の調整">${adjOptions(x.adj)}</select>
+        <span class="why">${why}</span></div>`;
+    }).join('');
+    const z2Opts = [0, -20, -30].map((v) => `<option value="${v}"${v === proposal.z2Pct ? ' selected' : ''}>${v ? `${v}%` : 'そのまま'}</option>`).join('');
+    const efLine = efNow && efPrev
+      ? `心拍効率 ${efNow.toFixed(2)}（前のブロック ${efPrev.toFixed(2)}、${proposal.efDrop >= 0 ? '−' : '+'}${Math.abs(proposal.efDrop).toFixed(1)}%）`
+      : efNow ? `心拍効率 ${efNow.toFixed(2)}（前のブロックのデータなし）` : '心拍効率のデータなし';
+    const targetLabel = target
+      ? (() => { const p = menus.phases[target.phaseIndex]; const r = R().blockRange(menus, target.phaseIndex, target.block); return `${p.name}${target.block === null ? '' : ` ブロック${target.block}`}（${mdLabel(r.start)}〜${mdLabel(r.end)}）`; })()
+      : null;
+    el.innerHTML = `
+      <div class="scroll"><table>
+        <thead><tr><th>日</th><th>記録</th><th class="num">時間</th><th class="num">心拍</th><th>判定</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="5" class="hint">このブロックにキーセッションはありません。</td></tr>'}</tbody></table></div>
+      ${missing ? `<p class="hint">未記録が ${missing} 回あります。メニュータブでその日を開くと記録できます（記録後にもう一度判定してください）。</p>` : ''}
+      <p class="hint">心拍：VO2 は最後の本の最高心拍、それ以外は本番区間の平均心拍（maxHR 比）。上昇は最後の本 − 最初の本（ポイント）。</p>
+      <h3>次のブロックの調整案${targetLabel ? `：${esc(targetLabel)}` : ''}</h3>
+      ${targetLabel ? `
+      <div class="proposal">
+        ${kindRows}
+        <div class="proposal-row"><b>Z2 の量（水・日）</b><select class="inline" id="adjZ2" aria-label="Z2 の量">${z2Opts}</select>
+          <span class="why">${esc(efLine)}${proposal.fatigue.length ? `／疲労のサイン：${esc(proposal.fatigue.join('、'))}` : ''}</span></div>
+      </div>
+      ${proposal.notes.map((n) => `<p class="hint">${esc(n)}</p>`).join('')}
+      <p class="hint">FTP：${ftpBefore ? `${fmt(ftpBefore)}W → ` : ''}${ftpAfter ? `${fmt(ftpAfter)}W` : '未設定'}。強度の調整は本番区間の %FTP に足します（同じ期のあいだは累積）。</p>
+      <button type="button" class="primary" id="approveAdj">承認して次のブロックに反映</button>` : '<p class="hint">次のブロックはありません（シーズン最後のブロックです）。</p>'}`;
+    renderAdjHistory();
+  }
+
+  $('reviewFetch').addEventListener('click', () => runReview(true));
+  $('reviewLocal').addEventListener('click', () => runReview(false));
+  $('reviewBlock').addEventListener('change', () => { reviewData = null; $('reviewStatus').hidden = true; renderReview(); });
+  $('pMaxHr').addEventListener('input', (e) => { state.settings.maxHr = num(e.target.value); save(); });
+  $('openReview').addEventListener('click', () => showTab('history'));
+
+  async function uploadBlock(target) {
+    const key = (state.settings.icuKey || '').trim();
+    if (!key || !target) return null;
+    const r = R().blockRange(menus, target.phaseIndex, target.block);
+    const events = window.Intervals.buildEvents(menus, r.start, r.end, adjustMenu);
+    await window.Intervals.uploadEvents(key, events);
+    return { r, n: events.length };
+  }
+
+  $('reviewResult').addEventListener('click', async (e) => {
+    if (!e.target.closest('#approveAdj') || !reviewData || !reviewData.target) return;
+    const kinds = {};
+    $('reviewResult').querySelectorAll('[data-adj]').forEach((sel3) => {
+      const v = Number(sel3.value);
+      if (v) kinds[sel3.dataset.adj] = v;
+    });
+    const t = reviewData.target;
+    const k = R().keyOf(t.phase, t.block);
+    state.adjustments[k] = {
+      kinds, z2Pct: Number($('adjZ2').value), approvedAt: Date.now(), ftp: reviewData.ftpAfter,
+      from: R().keyOf(menus.phases[reviewData.pi].id, reviewData.block),
+    };
+    save();
+    const status = $('reviewStatus');
+    status.hidden = false;
+    status.textContent = '保存しました。';
+    try {
+      const up = await uploadBlock(t);
+      status.textContent = up
+        ? `保存し、${mdLabel(up.r.start)}〜${mdLabel(up.r.end)} の ${up.n} 件を intervals.icu の予定表に上書き登録しました。直近7日分が Zwift に送られます。`
+        : '保存しました。intervals.icu の API キーが無いため、予定表には登録していません。';
+    } catch (err) {
+      status.textContent = `保存しましたが、intervals.icu への登録に失敗しました（${err.message}）。「設定」の登録ボタンで登録し直してください。`;
+    }
+    renderAdjHistory();
+  });
+
+  function renderAdjHistory() {
+    const el = $('adjHistory');
+    const entries = Object.entries(state.adjustments || {});
+    if (!entries.length || !menus) { el.innerHTML = ''; return; }
+    const label = (key) => {
+      const [phase, blk] = key.split(':');
+      const p = menus.phases.find((x) => x.id === phase);
+      return `${p ? p.name : phase}${blk === 'all' ? '' : ` ブロック${blk}`}`;
+    };
+    const order = (key) => { const [phase, blk] = key.split(':'); return menus.phases.findIndex((x) => x.id === phase) * 10 + (blk === 'all' ? 0 : Number(blk)); };
+    el.innerHTML = `<h3>反映済みの調整</h3><div class="scroll"><table><thead><tr><th>対象</th><th>強度</th><th>Z2</th><th></th></tr></thead><tbody>${
+      entries.sort((a, b) => order(a[0]) - order(b[0])).map(([key, a]) => `<tr><td>${esc(label(key))}</td>
+        <td>${Object.entries(a.kinds || {}).map(([k, v]) => `${esc(C.SESSION_KINDS[k])} ${v > 0 ? '+' : ''}${v}%`).join('<br>') || 'そのまま'}</td>
+        <td>${a.z2Pct ? `${a.z2Pct}%` : 'そのまま'}</td>
+        <td><button type="button" class="del" data-adjkey="${esc(key)}">取り消す</button></td></tr>`).join('')
+    }</tbody></table></div>`;
+  }
+
+  $('adjHistory').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-adjkey]');
+    if (!btn) return;
+    if (!btn.classList.contains('confirm')) {
+      btn.classList.add('confirm');
+      btn.textContent = 'もう一度押して取り消す';
+      setTimeout(() => { if (btn.isConnected) { btn.classList.remove('confirm'); btn.textContent = '取り消す'; } }, 3000);
+      return;
+    }
+    const key = btn.dataset.adjkey;
+    delete state.adjustments[key];
+    save();
+    const [phase, blk] = key.split(':');
+    const pi = menus.phases.findIndex((x) => x.id === phase);
+    const status = $('reviewStatus');
+    status.hidden = false;
+    try {
+      // 取り消したブロック以降(同じ期)の予定を登録し直す
+      const p = menus.phases[pi];
+      const r0 = R().blockRange(menus, pi, blk === 'all' ? null : Number(blk));
+      const key2 = (state.settings.icuKey || '').trim();
+      if (key2) {
+        const events = window.Intervals.buildEvents(menus, r0.start, C.parseDate(p.end), adjustMenu);
+        await window.Intervals.uploadEvents(key2, events);
+        status.textContent = `取り消し、${mdLabel(r0.start)}〜${mdLabel(C.parseDate(p.end))} の予定を登録し直しました。`;
+      } else status.textContent = '取り消しました。';
+    } catch (err) {
+      status.textContent = `取り消しましたが、intervals.icu への登録に失敗しました（${err.message}）。`;
+    }
+    renderAdjHistory();
+  });
+
   // ---------- 履歴 ----------
 
   function renderHistory() {
@@ -654,6 +935,17 @@
     renderHistory();
     renderHeader();
   });
+
+  // ---------- ブロック振り返りの調整を反映したメニュー ----------
+
+  function adjustMenu(menu, date) {
+    return window.Review.applyAdjustment(menu, window.Review.adjustmentFor(date, menus, state.adjustments));
+  }
+
+  function findAdjusted(phase, info, day, date) {
+    const f = C.findDayMenu(phase, info, day);
+    return f ? { ...f, menu: adjustMenu(f.menu, date) } : null;
+  }
 
   // ---------- メニュー ----------
 
@@ -787,7 +1079,7 @@
     const phase = menus.phases[sel.phase];
     const date = dateOf(sel.phase, sel.week, sel.day);
     const info = C.getPhaseAndWeek(date, menus);
-    const found = C.findDayMenu(phase, info, sel.day);
+    const found = findAdjusted(phase, info, sel.day, date);
     const el = $('dayDetail');
     const dayHead = `${mdLabel(date)}（${C.DAY_LABELS[sel.day]}）`;
     const notice = [];
@@ -836,7 +1128,7 @@
     }).join('');
 
     el.innerHTML = `
-      <div class="day-head"><h2>${dayHead} ${esc(r.title)}</h2><span class="day-total">${C.formatDuration(r.totalSec)}</span></div>
+      <div class="day-head"><h2>${dayHead} ${esc(r.title)}${found.menu.adjusted ? ` <span class="chip peak">調整 ${esc(found.menu.adjusted)}</span>` : ''}</h2><span class="day-total">${C.formatDuration(r.totalSec)}</span></div>
       <div class="profile" aria-hidden="true">${profile}</div>
       <ul class="segs">${segs}</ul>
       ${r.notes.length ? `<ul class="day-notes">${r.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
@@ -893,6 +1185,7 @@
       ...prev, ...patch,
       kind: logTarget.menu.kind, title: logTarget.menu.title,
       phase: logTarget.phase, week: logTarget.week, block: logTarget.block ?? null, savedAt: Date.now(),
+      ftp: currentFtp().ftp,
     };
     if (rec.result === 'skipped') delete rec.rpe;
     state.sessionLog[logTarget.date] = rec;
@@ -951,7 +1244,7 @@
     $('weekStrip').innerHTML = C.WEEK_ORDER.map((day) => {
       const date = dateOf(sel.phase, sel.week, day);
       const info = C.getPhaseAndWeek(date, menus);
-      const found = C.findDayMenu(phase, info, day);
+      const found = findAdjusted(phase, info, day, date);
       let meta = '休';
       let bar = 'var(--line)';
       if (found) {
@@ -985,6 +1278,8 @@
   function renderMenu() {
     renderWeighPrompt();
     if (!menus) return;
+    const nowInfo = C.getPhaseAndWeek(new Date(), menus);
+    $('reviewPrompt').hidden = !(nowInfo.status === 'in' && nowInfo.isRecovery && ['sat', 'sun'].includes(nowInfo.day));
     renderToday();
     renderSelectors();
     renderWeekStrip();
@@ -1035,7 +1330,7 @@
       to.setDate(to.getDate() + weeks * 7 - 1);
       if (C.daysBetween(to, seasonEnd) < 0) to = seasonEnd;
     }
-    const events = window.Intervals.buildEvents(menus, from, to);
+    const events = window.Intervals.buildEvents(menus, from, to, adjustMenu);
     if (!events.length) {
       status.textContent = '登録するメニューがありません（シーズン期間外です）。';
       return;
@@ -1064,6 +1359,7 @@
       selectToday();
       renderMenu();
       if (state.tab === 'weight') renderWeight();
+      if (state.tab === 'history') { renderReviewSelect(); renderReview(); }
     } catch (e) {
       const n = $('menuNotice');
       n.hidden = false;

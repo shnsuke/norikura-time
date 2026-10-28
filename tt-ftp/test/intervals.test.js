@@ -77,3 +77,38 @@ test('登録: API キーで Basic 認証し、upsert で送る', async () => {
   const failing = async () => ({ ok: false, status: 401, text: async () => 'Unauthorized' });
   await assert.rejects(Intervals.uploadEvents('bad', events, failing), /401/);
 });
+
+test('取得: アクティビティと区間を API キーで取得する', async () => {
+  const calls = [];
+  const fake = async (url, opts) => {
+    calls.push({ url, auth: opts.headers.Authorization, method: opts.method });
+    return { ok: true, json: async () => (url.endsWith('/intervals') ? { icu_intervals: [{ type: 'WORK' }] } : [{ id: 'i1' }]) };
+  };
+  assert.deepEqual(await Intervals.fetchActivities('k', '2026-11-02', '2026-11-22', fake), [{ id: 'i1' }]);
+  assert.deepEqual(await Intervals.fetchIntervals('k', 'i1', fake), [{ type: 'WORK' }]);
+  assert.equal(calls[0].url, 'https://intervals.icu/api/v1/athlete/0/activities?oldest=2026-11-02&newest=2026-11-22');
+  assert.equal(calls[1].url, 'https://intervals.icu/api/v1/activity/i1/intervals');
+  assert.equal(calls[0].method, 'GET');
+  assert.equal(calls[0].auth, `Basic ${Buffer.from('API_KEY:k').toString('base64')}`);
+});
+
+test('その日のライドを選ぶ: 予定と対応づいたものを優先、無ければ一番長いもの', () => {
+  const acts = [
+    { id: 'a', start_date_local: '2026-11-05T07:00:00', type: 'Ride', moving_time: 3600 },
+    { id: 'b', start_date_local: '2026-11-05T19:00:00', type: 'VirtualRide', moving_time: 5400 },
+    { id: 'c', start_date_local: '2026-11-05T20:00:00', type: 'WeightTraining', moving_time: 9000 },
+    { id: 'p', start_date_local: '2026-11-05T21:00:00', type: 'VirtualRide', moving_time: 600, paired_event_id: 42 },
+  ];
+  assert.equal(Intervals.pickActivity(acts, '2026-11-05').id, 'b');
+  assert.equal(Intervals.pickActivity(acts, '2026-11-05', [42]).id, 'p');
+  assert.equal(Intervals.pickActivity(acts, '2026-11-06'), null);
+});
+
+test('予定の作成: 調整を反映したメニューで作れる', () => {
+  const R = require('../review.js');
+  const adj = { 'base:1': { kinds: { sst: 2 }, z2Pct: 0 } };
+  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-11-05'), Calc.parseDate('2026-11-05'),
+    (menu, date) => R.applyAdjustment(menu, R.adjustmentFor(date, menus, adj)));
+  assert.match(events[0].description, /調整 強度 \+2%/);
+  assert.match(events[0].description, /- 15m 90-96%/);
+});

@@ -49,6 +49,10 @@
       </label>
     </div>
     <div class="today" id="todayCard"></div>
+    <div class="review-prompt" id="reviewPrompt" hidden>
+      <span>回復週です。土日の FTP テストのあとに、このブロックを振り返って次のブロックの強度を決めましょう。</span>
+      <button type="button" class="ghost" id="openReview">ブロック振り返りを開く</button>
+    </div>
 
     <div class="browse">
       <label class="field inline">期
@@ -131,6 +135,23 @@
   </section>
 
   <section id="view-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+    <div class="review" id="reviewBox">
+      <h2>ブロック振り返り</h2>
+      <p class="hint">キーセッションの記録（実施結果・RPE）と intervals.icu の心拍から判定し、次のブロックの強度と Z2 の量を提案します。</p>
+      <div class="grid2">
+        <label class="field">振り返るブロック<select id="reviewBlock"></select></label>
+        <label class="field">最大心拍 maxHR (bpm)<input type="number" id="pMaxHr" inputmode="numeric" min="100" max="230" step="1" placeholder="intervals.icu の値を使います"></label>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="primary" id="reviewFetch">intervals.icu から取得して判定</button>
+        <button type="button" class="ghost" id="reviewLocal">記録だけで判定</button>
+      </div>
+      <p class="toast" id="reviewStatus" role="status" hidden></p>
+      <div id="reviewResult"></div>
+      <div id="adjHistory"></div>
+    </div>
+
+    <h2 class="section-title">TT の履歴</h2>
     <div class="table-scroll">
       <table class="history">
         <thead><tr><th>日付</th><th>峠名</th><th class="num">平均P</th><th class="num">FTP</th><th class="num">W/kg</th><th></th></tr></thead>
@@ -197,6 +218,7 @@
 <script src="calc.js"></script>
 <script src="zwo.js"></script>
 <script src="intervals.js"></script>
+<script src="review.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
