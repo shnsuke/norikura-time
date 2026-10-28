@@ -240,3 +240,40 @@ test('Rattlesnake: 2セットのワークアウト本体が44分45秒、%どお�
   const build = menus.phases[1].templates.load2.tue.segments;
   assert.equal(build.filter((s) => /：入り$/.test(s.label)).length, 3);
 });
+
+// ---------- 乗鞍の予想タイム ----------
+
+test('乗鞍コース: 20.5km・標高差1260m', () => {
+  const segs = Calc.NORIKURA_COURSE.segments;
+  close(segs.reduce((a, s) => a + s.distanceKm, 0), 20.5, 1e-9);
+  assert.equal(segs.reduce((a, s) => a + (s.endElevM - s.startElevM), 0), 1260);
+});
+
+test('speedForPower は estimatePower の逆関数になっている', () => {
+  const seg = { distanceKm: 8.3, gainM: 480, avgAltM: 2110, riderKg: 63 };
+  const v = Calc.speedForPower({ ...seg, powerW: 300 });
+  const minutes = (8300 / v) / 60;
+  close(Calc.estimatePower({ ...seg, minutes }).power, 300, 1e-6);
+});
+
+test('予想タイム: パワーとタイムが FTP 推定の式と釣り合う', () => {
+  const r = Calc.predictClimb({ ftp: 323.4, riderKg: 63 });
+  // 予想した平均パワーと所要時間を FTP 推定に戻すと元の FTP になる
+  close(Calc.ftpFromPower(r.powerW, r.totalSec / 60), 323.4, 0.01);
+  close(r.totalSec, 56 * 60 + 42, 2); // 56:42
+  close(r.wkg, 5.15, 0.01);
+  // 区間タイムの合計 = 全体
+  close(r.segments.reduce((a, s) => a + s.sec, 0), r.totalSec, 1e-6);
+});
+
+test('予想タイム: 体重が軽い・FTPが高いほど速い', () => {
+  const base = Calc.predictClimb({ ftp: 300, riderKg: 63 }).totalSec;
+  assert.ok(Calc.predictClimb({ ftp: 300, riderKg: 58 }).totalSec < base);
+  assert.ok(Calc.predictClimb({ ftp: 320, riderKg: 63 }).totalSec < base);
+  assert.ok(Calc.predictClimb({ ftp: 300, riderKg: 63, bikeKg: 7 }).totalSec < base);
+});
+
+test('時刻表示', () => {
+  assert.equal(Calc.formatClock(56 * 60 + 42), '56:42');
+  assert.equal(Calc.formatClock(3600 + 5 * 60 + 3), '1:05:03');
+});
