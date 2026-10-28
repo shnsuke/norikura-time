@@ -14,9 +14,10 @@ tt-ftp/
   calc.js            計算ロジック（FTP推定・パワー推定・期と週の判定・%FTP→W変換）
   menus.json         期分けメニュー（%FTP で定義。自由に編集できます）
   zwo.js             メニュー → Zwift ワークアウト(.zwo) 変換
+  intervals.js       メニュー → intervals.icu の予定ワークアウト（テキスト形式）変換と登録
   zwo/               全メニューの .zwo（tools/export-zwo.js で生成）
   tools/export-zwo.js
-  test/              calc.js / zwo.js のユニットテスト
+  test/              calc.js / zwo.js / intervals.js のユニットテスト
 ```
 
 ## 開き方
@@ -119,7 +120,23 @@ FTP = P × (t / 60)^k        k の初期値 0.05
 編集後は `node --test` を実行すると、全期間の火・木・土にメニューがあるかと、
 すべての区間が計算できるかを確認できます。
 
-## Zwift に入れる
+## Zwift に入れる（スマホだけで）
+
+intervals.icu の Zwift 連携を使います。intervals.icu の予定表に入れたワークアウトのうち、
+直近7日分が Zwift に自動で送られます（Zwift のホーム画面／カスタムワークアウトに表示）。
+
+1. intervals.icu の Settings → Zwift の「Connect」で Zwift と連携する（初回だけ）
+2. intervals.icu の Settings → Developer Settings で API キーを確認する
+3. このアプリの「設定」→「Zwift に送る」に API キーを貼り、「今日から4週間を登録」か「レースまで全部登録」を押す
+
+- 予定は日付ごとに `external_id`（`ttftp-YYYY-MM-DD`）付きで登録するので、登録し直すと同じ日の予定が上書きされます。
+  `menus.json` を変えたり FTP を更新したりした後も、もう一度押せば反映されます。
+- 強度は %FTP で入ります。Zwift と intervals.icu の FTP をこのアプリの FTP に合わせてください。
+- claude.ai 上のページからは外部サービスに接続できないため、登録ボタンは **GitHub Pages 版**で使ってください。
+  claude.ai 上のページでは、メニュー画面の「intervals.icu 用にコピー」で1日分のテキストをコピーし、
+  intervals.icu でワークアウトを追加して説明欄に貼る方法が使えます。
+
+## Zwift に入れる（PC / Mac にファイルを置く）
 
 .zwo の強度は %FTP で書かれるため、**Zwift の FTP をこのアプリと同じ値に合わせて**ください
 （Zwift のメニュー → 設定 → ユーザー情報 → FTP）。W は Zwift 側で FTP × % で計算されます。

@@ -176,6 +176,12 @@ button { font: inherit; cursor: pointer; }
 
 .day-notes { margin: 0; padding-left: 1.2em; font-size: 0.85rem; color: var(--muted); display: grid; gap: 2px; }
 .zwo-row { display: grid; gap: 6px; justify-items: start; border-top: 1px solid var(--line); padding-top: 12px; }
+.link-box { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+.link-box h2 { font-size: 1rem; }
+.steps { margin: 0; padding-left: 1.3em; font-size: 0.85rem; display: grid; gap: 4px; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-row .primary { width: auto; flex: 1 1 auto; }
+.copy-area { width: 100%; min-height: 8em; font: 0.8rem/1.4 ui-monospace, monospace; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
 .rest-day { color: var(--muted); margin: 0; }
 
 .phase-notes { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; }

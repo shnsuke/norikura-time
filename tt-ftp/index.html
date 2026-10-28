@@ -112,12 +112,29 @@
         <button type="button" class="ghost" id="resetAdvanced">初期値に戻す</button>
       </details>
       <p class="toast" id="prefsToast" role="status" hidden>保存しました</p>
+
+      <div class="link-box">
+        <h2>Zwift に送る（intervals.icu 経由）</h2>
+        <ol class="steps">
+          <li>intervals.icu の Settings → Zwift の「Connect」で Zwift と連携しておく（初回だけ）</li>
+          <li>intervals.icu の Settings → Developer Settings にある API キーを下に貼る</li>
+          <li>「登録」を押すと、メニューが intervals.icu の予定表に入り、直近7日分が Zwift に送られる</li>
+        </ol>
+        <label class="field">intervals.icu の API キー<input type="password" id="pIcuKey" autocomplete="off" spellcheck="false"></label>
+        <div class="btn-row">
+          <button type="button" class="primary" id="icuUpload4">今日から4週間を登録</button>
+          <button type="button" class="ghost" id="icuUploadAll">レースまで全部登録</button>
+        </div>
+        <p class="hint">同じ日付を登録し直すと上書きされます。強度は%FTPで入るので、Zwift と intervals.icu の FTP をこのアプリの FTP に合わせてください。API キーはこの端末のブラウザにだけ保存されます。</p>
+        <p class="toast" id="icuStatus" role="status" hidden></p>
+      </div>
     </form>
   </section>
 </main>
 
 <script src="calc.js"></script>
 <script src="zwo.js"></script>
+<script src="intervals.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

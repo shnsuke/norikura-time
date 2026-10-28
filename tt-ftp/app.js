@@ -113,6 +113,7 @@
   };
 
   function fillPrefs() {
+    $('pIcuKey').value = state.settings.icuKey || '';
     for (const [id, key] of Object.entries(prefFields)) {
       const v = state.settings[key];
       $(id).value = v === null || v === undefined ? '' : v;
@@ -132,6 +133,10 @@
     prefsToastTimer = setTimeout(() => ($('prefsToast').hidden = true), 1500);
   });
   $('prefsForm').addEventListener('submit', (e) => e.preventDefault());
+  $('pIcuKey').addEventListener('input', (e) => {
+    state.settings.icuKey = e.target.value.trim();
+    save();
+  });
 
   $('resetAdvanced').addEventListener('click', () => {
     const d = defaultState().settings;
@@ -489,8 +494,12 @@
       <ul class="segs">${segs}</ul>
       ${r.notes.length ? `<ul class="day-notes">${r.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
       <div class="zwo-row">
-        <button type="button" class="ghost" id="zwoSave">Zwift用ファイル（.zwo）を保存</button>
-        <span class="hint">強度は%FTPで入るので、Zwift側のFTPを${ftp ? ` ${fmt(ftp)}W に` : 'このアプリと同じ値に'}合わせてください。保存できない場合は GitHub の tt-ftp/zwo フォルダに全メニューがあります。</span>
+        <div class="btn-row">
+          <button type="button" class="ghost" id="icuCopy">intervals.icu 用にコピー</button>
+          <button type="button" class="ghost" id="zwoSave">.zwo を保存</button>
+        </div>
+        <span class="hint">「設定」の intervals.icu 連携で予定表にまとめて登録すると、Zwift に自動で入ります。コピーしたテキストは intervals.icu のワークアウトの説明欄に貼るとそのまま組み立てられます。Zwift側のFTPは${ftp ? ` ${fmt(ftp)}W に` : 'このアプリと同じ値に'}合わせてください。</span>
+        <textarea class="copy-area" id="icuCopyArea" readonly hidden></textarea>
       </div>`;
     zwoTarget = {
       menu: found.menu,
@@ -502,6 +511,25 @@
 
   let zwoTarget = null;
   $('dayDetail').addEventListener('click', (e) => {
+    if (e.target.closest('#icuCopy') && zwoTarget) {
+      const text = window.Intervals.menuToText(zwoTarget.menu);
+      const btn = $('icuCopy');
+      const fallback = () => {
+        // クリップボードが使えない環境では選択状態のテキストを表示して手でコピーしてもらう
+        const area = $('icuCopyArea');
+        area.value = text;
+        area.hidden = false;
+        area.focus();
+        area.select();
+        btn.textContent = '下のテキストを長押ししてコピー';
+      };
+      try {
+        navigator.clipboard.writeText(text).then(() => (btn.textContent = 'コピーしました'), fallback);
+      } catch (err) {
+        fallback();
+      }
+      return;
+    }
     if (!e.target.closest('#zwoSave') || !zwoTarget) return;
     const xml = window.Zwo.menuToZwo(zwoTarget.menu, { name: zwoTarget.name, description: zwoTarget.description });
     const url = URL.createObjectURL(new Blob([xml], { type: 'application/xml' }));
@@ -578,6 +606,49 @@
     selectToday();
     renderMenu();
   });
+
+  async function uploadToIntervals(weeks) {
+    const status = $('icuStatus');
+    status.hidden = false;
+    const key = (state.settings.icuKey || '').trim();
+    if (!key) {
+      status.textContent = 'intervals.icu の API キーを入れてください。';
+      return;
+    }
+    if (!menus) {
+      status.textContent = 'メニューを読み込めていないため登録できません。';
+      return;
+    }
+    const today = new Date();
+    const seasonStart = C.parseDate(menus.phases[0].start);
+    const seasonEnd = C.parseDate(menus.phases[menus.phases.length - 1].end);
+    const from = C.daysBetween(today, seasonStart) > 0 ? seasonStart : today;
+    let to = seasonEnd;
+    if (weeks) {
+      to = new Date(from);
+      to.setDate(to.getDate() + weeks * 7 - 1);
+      if (C.daysBetween(to, seasonEnd) < 0) to = seasonEnd;
+    }
+    const events = window.Intervals.buildEvents(menus, from, to);
+    if (!events.length) {
+      status.textContent = '登録するメニューがありません（シーズン期間外です）。';
+      return;
+    }
+    status.textContent = `${events.length}件を送信中…`;
+    for (const id of ['icuUpload4', 'icuUploadAll']) $(id).disabled = true;
+    try {
+      await window.Intervals.uploadEvents(key, events);
+      status.textContent = `${mdLabel(from)}〜${mdLabel(to)} の ${events.length} 件を intervals.icu の予定表に登録しました。直近7日分が Zwift に送られます。`;
+    } catch (err) {
+      status.textContent = err instanceof TypeError
+        ? 'intervals.icu に接続できませんでした。claude.ai 上のページからは外部に接続できないため、GitHub Pages 版で開いてください。ネットワーク接続も確認してください。'
+        : `${err.message}。API キーが正しいか確認してください。`;
+    } finally {
+      for (const id of ['icuUpload4', 'icuUploadAll']) $(id).disabled = false;
+    }
+  }
+  $('icuUpload4').addEventListener('click', () => uploadToIntervals(4));
+  $('icuUploadAll').addEventListener('click', () => uploadToIntervals(null));
 
   async function loadMenus() {
     try {
