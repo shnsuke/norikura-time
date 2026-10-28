@@ -116,6 +116,88 @@
     return parts[0] * 60 + parts[1] + parts[2] / 60;
   }
 
+  // ---------- 乗鞍ヒルクライムの予想タイム ----------
+
+  /** 乗鞍エコーライン(乗鞍観光センター → 畳平口)。公式大会要項ベースの概算区間 */
+  const NORIKURA_COURSE = Object.freeze({
+    name: '乗鞍ヒルクライム',
+    segments: Object.freeze([
+      { name: '観光センター → 三本滝ゲート', distanceKm: 8.7, startElevM: 1460, endElevM: 1870 },
+      { name: '三本滝ゲート → 位ヶ原山荘', distanceKm: 8.3, startElevM: 1870, endElevM: 2350 },
+      { name: '位ヶ原山荘 → ゴール', distanceKm: 3.5, startElevM: 2350, endElevM: 2720 },
+    ]),
+  });
+
+  /**
+   * 一定パワーで走ったときの速度(m/s)。estimatePower と同じ式を v について解く(二分法)。
+   * opts: { powerW, distanceKm, gainM, avgAltM, riderKg, bikeKg, cda, crr, drivetrainLoss }
+   */
+  function speedForPower(opts) {
+    const o = Object.assign({}, DEFAULTS, opts);
+    const geo = climbGeometry(o.distanceKm, o.gainM);
+    const rho = airDensity(o.avgAltM);
+    const mass = o.riderKg + o.bikeKg;
+    const wheel = o.powerW * (1 - o.drivetrainLoss);
+    const need = (v) => mass * G * v * (Math.sin(geo.theta) + o.crr * Math.cos(geo.theta)) + 0.5 * rho * o.cda * v * v * v;
+    let lo = 0;
+    let hi = 40;
+    for (let i = 0; i < 80; i++) {
+      const mid = (lo + hi) / 2;
+      if (need(mid) > wheel) hi = mid;
+      else lo = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  /**
+   * コースを一定パワーで登ったときの予想タイム。
+   * パワーは FTP 推定と同じ式の逆 P = FTP × (60 / t)^k で、所要時間 t に見合う値を反復で求める。
+   * opts: { ftp, riderKg, bikeKg, cda, crr, drivetrainLoss, k, course }
+   */
+  function predictClimb(opts) {
+    const o = Object.assign({}, DEFAULTS, { course: NORIKURA_COURSE }, opts);
+    assertPositive('FTP', o.ftp);
+    assertPositive('体重', o.riderKg);
+    const run = (powerW) => o.course.segments.map((seg) => {
+      const gainM = seg.endElevM - seg.startElevM;
+      const v = speedForPower({ ...o, powerW, distanceKm: seg.distanceKm, gainM, avgAltM: (seg.startElevM + seg.endElevM) / 2 });
+      const geo = climbGeometry(seg.distanceKm, gainM);
+      return { name: seg.name, distanceKm: seg.distanceKm, gainM, gradePct: geo.gradePct, speedKmh: v * 3.6, sec: (seg.distanceKm * 1000) / v };
+    });
+    let minutes = 60;
+    let powerW = o.ftp;
+    let segments = run(powerW);
+    for (let i = 0; i < 30; i++) {
+      powerW = o.ftp * Math.pow(60 / minutes, o.k);
+      segments = run(powerW);
+      const next = segments.reduce((a, s) => a + s.sec, 0) / 60;
+      if (Math.abs(next - minutes) < 1e-4) { minutes = next; break; }
+      minutes = next;
+    }
+    const totalSec = segments.reduce((a, s) => a + s.sec, 0);
+    const distanceKm = segments.reduce((a, s) => a + s.distanceKm, 0);
+    return {
+      totalSec,
+      powerW,
+      wkg: powerW / o.riderKg,
+      pctFtp: (powerW / o.ftp) * 100,
+      speedKmh: distanceKm / (totalSec / 3600),
+      distanceKm,
+      gainM: segments.reduce((a, s) => a + s.gainM, 0),
+      segments,
+    };
+  }
+
+  /** 秒 → "1:23:45" */
+  function formatClock(sec) {
+    const t = Math.round(sec);
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const s = t % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+    return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+  }
+
   // ---------- 期・週の判定 ----------
 
   /** "YYYY-MM-DD" → ローカル時刻の Date (00:00) */
@@ -293,5 +375,9 @@
     resolveSegment,
     resolveMenu,
     formatDuration,
+    NORIKURA_COURSE,
+    speedForPower,
+    predictClimb,
+    formatClock,
   };
 });

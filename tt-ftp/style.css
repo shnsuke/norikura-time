@@ -176,6 +176,20 @@ button { font: inherit; cursor: pointer; }
 
 .day-notes { margin: 0; padding-left: 1.2em; font-size: 0.85rem; color: var(--muted); display: grid; gap: 2px; }
 .zwo-row { display: grid; gap: 6px; justify-items: start; border-top: 1px solid var(--line); padding-top: 12px; }
+.predict { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+.predict h2 { font-size: 1rem; }
+.predict .eyebrow { font-size: 0.72rem; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+.predict-time { font-family: var(--font-display); font-weight: 700; font-size: 2.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.predict-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.predict-meta b { font-family: var(--font-display); font-size: 1.05rem; color: var(--ink); font-weight: 700; }
+.predict table { width: 100%; border-collapse: collapse; font-size: 0.8rem; white-space: nowrap; }
+.predict th, .predict td { padding: 6px 6px; border-top: 1px solid var(--line); text-align: left; }
+.predict th { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
+.predict td:first-child { white-space: normal; padding-left: 0; }
+.predict th:first-child { padding-left: 0; }
+.predict th:last-child, .predict td:last-child { padding-right: 0; }
+.predict .num { text-align: right; font-family: var(--font-display); font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+.predict .scroll { overflow-x: auto; }
 .link-box { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
 .link-box h2 { font-size: 1rem; }
 .steps { margin: 0; padding-left: 1.3em; font-size: 0.85rem; display: grid; gap: 4px; }

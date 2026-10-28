@@ -103,6 +103,7 @@
     save();
     if (name === 'menu') renderMenu();
     if (name === 'history') renderHistory();
+    if (name === 'prefs') renderPrediction();
   }
   for (const t of TABS) $(`tab-${t}`).addEventListener('click', () => showTab(t));
 
@@ -128,6 +129,7 @@
     save();
     renderHeader();
     computeTT();
+    renderPrediction();
     $('prefsToast').hidden = false;
     clearTimeout(prefsToastTimer);
     prefsToastTimer = setTimeout(() => ($('prefsToast').hidden = true), 1500);
@@ -144,6 +146,7 @@
     save();
     fillPrefs();
     computeTT();
+    renderPrediction();
   });
 
   function physicsSettings() {
@@ -151,6 +154,48 @@
     const d = defaultState().settings;
     const pick = (k) => (num(s[k]) === null ? d[k] : num(s[k]));
     return { bikeKg: pick('bikeKg'), cda: pick('cda'), crr: pick('crr'), drivetrainLoss: pick('lossPct') / 100, k: pick('k') };
+  }
+
+  // ---------- 乗鞍の予想タイム ----------
+
+  function renderPrediction() {
+    const el = $('climbPrediction');
+    const { ftp } = currentFtp();
+    const weight = currentWeight();
+    const head = '<div class="eyebrow">乗鞍ヒルクライム 予想タイム</div>';
+    if (!ftp || !weight) {
+      el.innerHTML = `${head}<p class="hint">体重と FTP（TT結果か手入力）が入ると、乗鞍エコーライン 20.5km・標高差1260m の予想タイムを表示します。</p>`;
+      return;
+    }
+    const ps = physicsSettings();
+    const opts = { ...ps, ftp, riderKg: weight };
+    let r;
+    try {
+      r = C.predictClimb(opts);
+    } catch (e) {
+      el.innerHTML = `${head}<p class="warn">${esc(e.message)}</p>`;
+      return;
+    }
+    const rows = r.segments.map((s) => `<tr>
+      <td>${esc(s.name)}</td><td class="num">${fmt(s.distanceKm, 1)}</td><td class="num">${fmt(s.gradePct, 1)}%</td>
+      <td class="num">${fmt(s.speedKmh, 1)}</td><td class="num">${C.formatClock(s.sec)}</td></tr>`).join('');
+    // 期分けの減量目標(60kg・58kg)で試算
+    const whatIf = [60, 58].filter((w) => w < weight - 0.05).map((w) => {
+      const x = C.predictClimb({ ...opts, riderKg: w });
+      return `<tr><td>体重 ${w}kg</td><td class="num">${fmt(ftp / w, 2)} W/kg</td><td class="num">${C.formatClock(x.totalSec)}</td>
+        <td class="num">${C.formatClock(r.totalSec - x.totalSec)} 短縮</td></tr>`;
+    }).join('');
+    el.innerHTML = `${head}
+      <div class="predict-time">${C.formatClock(r.totalSec)}</div>
+      <div class="predict-meta">
+        <span>平均 <b>${fmt(r.powerW)}</b> W</span><span><b>${fmt(r.wkg, 2)}</b> W/kg</span>
+        <span>FTPの <b>${fmt(r.pctFtp)}</b>%</span><span>平均 <b>${fmt(r.speedKmh, 1)}</b> km/h</span>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>区間</th><th class="num">km</th><th class="num">勾配</th><th class="num">km/h</th><th class="num">タイム</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+      ${whatIf ? `<div class="scroll"><table><thead><tr><th>FTP ${fmt(ftp)}W のまま</th><th class="num"></th><th class="num">予想</th><th class="num">差</th></tr></thead><tbody>${whatIf}</tbody></table></div>` : ''}
+      <p class="hint">FTP ${fmt(ftp)}W・体重 ${fmt(weight, 1)}kg・詳細設定の値で計算。所要時間に見合うパワー（FTP × (60/分)^k）で区間ごとに一定ペースで登る想定です。区間の勾配は大会要項からの概算で、風・集団走行・路面状況は考慮していません。</p>`;
   }
 
   // ---------- TT入力 ----------
