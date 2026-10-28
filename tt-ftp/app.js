@@ -419,8 +419,9 @@
       else {
         for (let set = 0; set < s.sets; set++) {
           for (let r = 0; r < s.reps; r++) {
+            if (s.restFirst) blocks.push({ sec: s.rest.sec, pct: mid(s.rest), zone: zoneOf(s.rest.pct) });
             blocks.push({ sec: s.work.sec, pct: mid(s.work), zone: zoneOf(s.work.pct) });
-            if (s.rest && r < s.reps - 1) blocks.push({ sec: s.rest.sec, pct: mid(s.rest), zone: zoneOf(s.rest.pct) });
+            if (s.rest && !s.restFirst && r < s.reps - 1) blocks.push({ sec: s.rest.sec, pct: mid(s.rest), zone: zoneOf(s.rest.pct) });
           }
           if (s.setRest && set < s.sets - 1) blocks.push({ sec: s.setRest.sec, pct: mid(s.setRest), zone: zoneOf(s.setRest.pct) });
         }
@@ -467,7 +468,10 @@
           <span class="power">${powerLine(s, hasFtp)}</span>
           ${s.note ? `<span class="sub">${esc(s.note)}</span>` : ''}</li>`;
       }
-      const reps = `${s.sets > 1 ? `${s.sets}セット × ` : ''}${s.reps} × ${C.formatDuration(s.work.sec)}`;
+      const one = s.restFirst
+        ? `(${C.formatDuration(s.rest.sec)}つなぎ → ${C.formatDuration(s.work.sec)})`
+        : C.formatDuration(s.work.sec);
+      const reps = `${s.sets > 1 ? `${s.sets}セット × ` : ''}${s.reps} × ${one}`;
       const lines = [];
       if (s.rest) lines.push(`つなぎ ${inlinePower(s.rest, s.rest.sec, hasFtp)}`);
       if (s.setRest) lines.push(`セット間 ${inlinePower(s.setRest, s.setRest.sec, hasFtp)}`);

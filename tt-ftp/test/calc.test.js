@@ -217,3 +217,26 @@ test('時間の表示', () => {
   assert.equal(Calc.formatDuration(5400), '1時間30分');
   assert.equal(Calc.formatDuration(570), '9分30秒');
 });
+
+test('restFirst: (つなぎ→本番)×reps で合計時間を数える', () => {
+  const s = Calc.resolveSegment(
+    { label: '30/15', reps: 3, restFirst: true, work: { pct: 120, sec: 30 }, rest: { pct: 40, sec: 15 } }, 300, 60);
+  assert.equal(s.restFirst, true);
+  assert.equal(s.totalSec, 3 * 45);
+  assert.deepEqual(s.work.w, [360, 360]);
+  assert.deepEqual(s.rest.w, [120, 120]);
+});
+
+test('Rattlesnake: 2セットのワークアウト本体が44分45秒、%どおりにFTPから換算される', () => {
+  const tue = menus.phases[0].templates.load.tue;
+  const body = tue.segments.filter((s) => !['Z2', 'CD'].includes(s.label));
+  const r = Calc.resolveMenu({ ...tue, segments: body }, 250, 60);
+  assert.equal(r.totalSec, 44 * 60 + 45);
+  const pcts = r.segments.filter((s) => s.type === 'interval').map((s) => s.work.pct[0]);
+  assert.deepEqual(pcts, [120, 117, 114, 112, 110, 120, 117, 114, 112, 110]);
+  // FTP 250W の 140% = 350W
+  assert.deepEqual(r.segments.find((s) => s.label === 'セット1：入り').w, [350, 350]);
+  // ビルド期は3セット
+  const build = menus.phases[1].templates.load2.tue.segments;
+  assert.equal(build.filter((s) => /：入り$/.test(s.label)).length, 3);
+});

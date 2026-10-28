@@ -222,7 +222,7 @@
   /**
    * 区間を表示用に解決する。区間の書式:
    *   単一: { label, pct, min | sec }
-   *   反復: { label, reps, work: {pct, min|sec}, rest?: {pct, min|sec}, sets?, setRest?: {pct, min|sec} }
+   *   反復: { label, reps, work: {pct, min|sec}, rest?: {pct, min|sec}, restFirst?, sets?, setRest?: {pct, min|sec} }
    *   メモ: { label, note }  (パワー無し)
    */
   function resolveSegment(seg, ftp, weightKg) {
@@ -234,10 +234,11 @@
       const setRest = seg.setRest && sets > 1
         ? { ...resolveIntensity(seg.setRest.pct, ftp, weightKg), sec: durationSec(seg.setRest) }
         : null;
-      // 1セット = work×reps + rest×(reps−1)。セット間休息は sets−1 回
-      const perSet = work.sec * reps + (rest ? rest.sec * (reps - 1) : 0);
+      // 1セット = work×reps + rest×(reps−1)。restFirst なら (rest→work)×reps。セット間休息は sets−1 回
+      const restFirst = !!(seg.restFirst && rest);
+      const perSet = work.sec * reps + (rest ? rest.sec * (restFirst ? reps : reps - 1) : 0);
       const totalSec = perSet * sets + (setRest ? setRest.sec * (sets - 1) : 0);
-      return { type: 'interval', label: seg.label, note: seg.note, reps, sets, work, rest, setRest, totalSec };
+      return { type: 'interval', label: seg.label, note: seg.note, reps, sets, restFirst, work, rest, setRest, totalSec };
     }
     if (seg.pct === undefined) {
       return { type: 'note', label: seg.label, note: seg.note, totalSec: durationSec(seg) };

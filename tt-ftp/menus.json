@@ -25,22 +25,53 @@
           "tue": {
             "title": "VO2維持（Rattlesnake×2）",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "Rattlesnake（仮構成）", "sets": 2, "reps": 6, "work": { "pct": [115, 120], "min": 1 }, "rest": { "pct": 50, "min": 1 }, "setRest": { "pct": 50, "min": 8 }, "note": "セット構成は仮。手持ちのワークアウトに合わせて編集してください" },
+              { "label": "Warm-Up", "pct": [40, 60], "min": 3, "note": "元ワークアウトは%指定なし。軽めに" },
+              { "label": "Active", "pct": 65, "min": 3 },
+              { "label": "Active", "pct": 80, "min": 3 },
+              { "label": "Active", "pct": 120, "sec": 20 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 30 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 40 },
+              { "label": "Active", "pct": 50, "min": 2, "sec": 45 },
+              { "label": "セット1：入り", "pct": 140, "min": 1 },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：回復", "pct": 50, "min": 3 },
+              { "label": "セット2：入り", "pct": 140, "min": 1 },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：回復", "pct": 50, "min": 3 },
               { "label": "Z2", "pct": [60, 70], "min": 30 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ],
-            "notes": ["追い込みすぎない", "夜：デッドリフト 4〜6回×4セット（VO2から6時間以上空ける）"]
+            "notes": [
+              "追い込みすぎない",
+              "夜：デッドリフト 4〜6回×4セット（VO2から6時間以上空ける）"
+            ]
           },
           "wed": {
             "title": "Z2",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 120 }]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 120 }
+            ]
           },
           "thu": {
             "title": "SST 3×15分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "SST", "reps": 3, "work": { "pct": [88, 94], "min": 15 }, "rest": { "pct": 55, "min": 5 } },
+              {
+                "label": "SST",
+                "reps": 3,
+                "work": { "pct": [88, 94], "min": 15 },
+                "rest": { "pct": 55, "min": 5 }
+              },
               { "label": "Z2", "pct": [60, 70], "min": 20 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
@@ -49,14 +80,24 @@
             "title": "実坂ロング 3.5〜4h（坂でSST〜テンポ×2）",
             "segments": [
               { "label": "Z2（坂まで）", "pct": [60, 70], "min": 60 },
-              { "label": "坂 SST〜テンポ", "reps": 2, "work": { "pct": [80, 92], "min": 20 }, "rest": { "pct": 55, "min": 15 }, "note": "1本の長さは坂に合わせて15〜30分で調整" },
+              {
+                "label": "坂 SST〜テンポ",
+                "reps": 2,
+                "work": { "pct": [80, 92], "min": 20 },
+                "rest": { "pct": 55, "min": 15 },
+                "note": "1本の長さは坂に合わせて15〜30分で調整"
+              },
               { "label": "Z2", "pct": [60, 70], "min": 120 }
             ]
           },
           "sun": {
             "title": "Z2ロング",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 180 }],
-            "notes": ["Z2の後：デッドリフト 4〜6回×4セット"]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 180 }
+            ],
+            "notes": [
+              "Z2の後：デッドリフト 4〜6回×4セット"
+            ]
           }
         },
         "block2": {
@@ -64,7 +105,12 @@
             "title": "SST 3×20分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "SST", "reps": 3, "work": { "pct": [88, 94], "min": 20 }, "rest": { "pct": 55, "min": 5 } },
+              {
+                "label": "SST",
+                "reps": 3,
+                "work": { "pct": [88, 94], "min": 20 },
+                "rest": { "pct": 55, "min": 5 }
+              },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
           }
@@ -74,7 +120,12 @@
             "title": "SST 2×25分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "SST", "reps": 2, "work": { "pct": [88, 94], "min": 25 }, "rest": { "pct": 55, "min": 8 } },
+              {
+                "label": "SST",
+                "reps": 2,
+                "work": { "pct": [88, 94], "min": 25 },
+                "rest": { "pct": 55, "min": 8 }
+              },
               { "label": "Z2", "pct": [60, 70], "min": 15 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
@@ -85,7 +136,12 @@
             "title": "SST 2×30分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "SST", "reps": 2, "work": { "pct": [88, 94], "min": 30 }, "rest": { "pct": 55, "min": 10 } },
+              {
+                "label": "SST",
+                "reps": 2,
+                "work": { "pct": [88, 94], "min": 30 },
+                "rest": { "pct": 55, "min": 10 }
+              },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
           }
@@ -93,18 +149,29 @@
         "recovery": {
           "tue": {
             "title": "Z2（回復週）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 60 }],
-            "notes": ["夜：デッドリフトは軽め（セット数を半分）"]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 60 }
+            ],
+            "notes": [
+              "夜：デッドリフトは軽め（セット数を半分）"
+            ]
           },
           "wed": {
             "title": "Z2（回復週）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 75 }]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 75 }
+            ]
           },
           "thu": {
             "title": "キーセッション：SST 2×15分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "SST", "reps": 2, "work": { "pct": [88, 94], "min": 15 }, "rest": { "pct": 55, "min": 5 } },
+              {
+                "label": "SST",
+                "reps": 2,
+                "work": { "pct": [88, 94], "min": 15 },
+                "rest": { "pct": 55, "min": 5 }
+              },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
           },
@@ -119,7 +186,9 @@
           },
           "sun": {
             "title": "Z2（回復週）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 150 }]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 150 }
+            ]
           }
         }
       }
@@ -141,35 +210,79 @@
             "title": "VO2 5×5分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "VO2", "reps": 5, "work": { "pct": [110, 120], "min": 5 }, "rest": { "pct": 50, "min": 5 } },
+              {
+                "label": "VO2",
+                "reps": 5,
+                "work": { "pct": [110, 120], "min": 5 },
+                "rest": { "pct": 50, "min": 5 }
+              },
               { "label": "Z2", "pct": [60, 70], "min": 15 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ],
-            "notes": ["夜：デッドリフト 2〜3回×3セット（VO2から6時間以上空ける）"]
+            "notes": [
+              "夜：デッドリフト 2〜3回×3セット（VO2から6時間以上空ける）"
+            ]
           }
         },
         "load2": {
           "tue": {
-            "title": "VO2 Rattlesnake×3",
+            "title": "VO2 Rattlesnake×3セット",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "Rattlesnake（仮構成）", "sets": 3, "reps": 6, "work": { "pct": [115, 120], "min": 1 }, "rest": { "pct": 50, "min": 1 }, "setRest": { "pct": 50, "min": 8 }, "note": "セット構成は仮。手持ちのワークアウトに合わせて編集してください" },
+              { "label": "Warm-Up", "pct": [40, 60], "min": 3, "note": "元ワークアウトは%指定なし。軽めに" },
+              { "label": "Active", "pct": 65, "min": 3 },
+              { "label": "Active", "pct": 80, "min": 3 },
+              { "label": "Active", "pct": 120, "sec": 20 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 30 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 40 },
+              { "label": "Active", "pct": 50, "min": 2, "sec": 45 },
+              { "label": "セット1：入り", "pct": 140, "min": 1 },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：回復", "pct": 50, "min": 3 },
+              { "label": "セット2：入り", "pct": 140, "min": 1 },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：回復", "pct": 50, "min": 3 },
+              { "label": "セット3：入り", "pct": 140, "min": 1 },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：回復", "pct": 50, "min": 3 },
               { "label": "Z2", "pct": [60, 70], "min": 15 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ],
-            "notes": ["夜：デッドリフト 2〜3回×3セット（VO2から6時間以上空ける）"]
+            "notes": [
+              "夜：デッドリフト 2〜3回×3セット（VO2から6時間以上空ける）"
+            ]
           }
         },
         "load": {
           "wed": {
             "title": "Z2",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 120 }]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 120 }
+            ]
           },
           "thu": {
             "title": "閾値 2×20分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "閾値", "reps": 2, "work": { "pct": [95, 105], "min": 20 }, "rest": { "pct": 55, "min": 10 } },
+              {
+                "label": "閾値",
+                "reps": 2,
+                "work": { "pct": [95, 105], "min": 20 },
+                "rest": { "pct": 55, "min": 10 }
+              },
               { "label": "Z2", "pct": [60, 70], "min": 20 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
@@ -178,14 +291,23 @@
             "title": "実坂 2×30分＋Z2（3〜3.5h）",
             "segments": [
               { "label": "Z2（坂まで）", "pct": [60, 70], "min": 45 },
-              { "label": "実坂", "reps": 2, "work": { "pct": [90, 95], "min": 30 }, "rest": { "pct": 55, "min": 15 } },
+              {
+                "label": "実坂",
+                "reps": 2,
+                "work": { "pct": [90, 95], "min": 30 },
+                "rest": { "pct": 55, "min": 15 }
+              },
               { "label": "Z2", "pct": [60, 70], "min": 75 }
             ]
           },
           "sun": {
             "title": "Z2ロング",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 180 }],
-            "notes": ["Z2の後：デッドリフト 2〜3回×3セット"]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 180 }
+            ],
+            "notes": [
+              "Z2の後：デッドリフト 2〜3回×3セット"
+            ]
           }
         },
         "block3": {
@@ -193,7 +315,15 @@
             "title": "オーバーアンダー",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "オーバー/アンダー", "sets": 3, "reps": 5, "work": { "pct": 105, "min": 1 }, "rest": { "pct": [92, 95], "min": 2 }, "setRest": { "pct": 50, "min": 5 }, "note": "1分オーバー／2分アンダーの繰り返し" },
+              {
+                "label": "オーバー/アンダー",
+                "sets": 3,
+                "reps": 5,
+                "work": { "pct": 105, "min": 1 },
+                "rest": { "pct": [92, 95], "min": 2 },
+                "setRest": { "pct": 50, "min": 5 },
+                "note": "1分オーバー／2分アンダーの繰り返し"
+              },
               { "label": "Z2", "pct": [60, 70], "min": 15 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
@@ -204,7 +334,15 @@
             "title": "オーバーアンダー",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "オーバー/アンダー", "sets": 3, "reps": 5, "work": { "pct": [105, 110], "min": 1 }, "rest": { "pct": [92, 95], "min": 2 }, "setRest": { "pct": 50, "min": 5 }, "note": "1分オーバー／2分アンダーの繰り返し" },
+              {
+                "label": "オーバー/アンダー",
+                "sets": 3,
+                "reps": 5,
+                "work": { "pct": [105, 110], "min": 1 },
+                "rest": { "pct": [92, 95], "min": 2 },
+                "setRest": { "pct": 50, "min": 5 },
+                "note": "1分オーバー／2分アンダーの繰り返し"
+              },
               { "label": "Z2", "pct": [60, 70], "min": 15 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
@@ -213,18 +351,29 @@
         "recovery": {
           "tue": {
             "title": "Z2（回復週）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 60 }],
-            "notes": ["夜：デッドリフトは軽め（セット数を減らす）"]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 60 }
+            ],
+            "notes": [
+              "夜：デッドリフトは軽め（セット数を減らす）"
+            ]
           },
           "wed": {
             "title": "Z2（回復週）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 60 }]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 60 }
+            ]
           },
           "thu": {
             "title": "キーセッション：閾値 2×12分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "閾値", "reps": 2, "work": { "pct": [95, 100], "min": 12 }, "rest": { "pct": 55, "min": 6 } },
+              {
+                "label": "閾値",
+                "reps": 2,
+                "work": { "pct": [95, 100], "min": 12 },
+                "rest": { "pct": 55, "min": 6 }
+              },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
           },
@@ -239,7 +388,9 @@
           },
           "sun": {
             "title": "Z2（回復週）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 120 }]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 120 }
+            ]
           }
         }
       }
@@ -263,11 +414,20 @@
             "title": "VO2 30/15",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "30/15", "sets": 3, "reps": 13, "work": { "pct": [115, 125], "sec": 30 }, "rest": { "pct": 50, "sec": 15 }, "setRest": { "pct": 50, "min": 5 } },
+              {
+                "label": "30/15",
+                "sets": 3,
+                "reps": 13,
+                "work": { "pct": [115, 125], "sec": 30 },
+                "rest": { "pct": 50, "sec": 15 },
+                "setRest": { "pct": 50, "min": 5 }
+              },
               { "label": "Z2", "pct": [60, 70], "min": 20 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ],
-            "notes": ["夜：デッドリフト（5月まで。6月からは日曜のみ）"]
+            "notes": [
+              "夜：デッドリフト（5月まで。6月からは日曜のみ）"
+            ]
           }
         },
         "load2": {
@@ -275,17 +435,26 @@
             "title": "VO2 4〜6分走",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "VO2（4〜6分。5分で設定）", "reps": 5, "work": { "pct": [106, 115], "min": 5 }, "rest": { "pct": 50, "min": 4 } },
+              {
+                "label": "VO2（4〜6分。5分で設定）",
+                "reps": 5,
+                "work": { "pct": [106, 115], "min": 5 },
+                "rest": { "pct": 50, "min": 4 }
+              },
               { "label": "Z2", "pct": [60, 70], "min": 20 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ],
-            "notes": ["夜：デッドリフト（5月まで。6月からは日曜のみ）"]
+            "notes": [
+              "夜：デッドリフト（5月まで。6月からは日曜のみ）"
+            ]
           }
         },
         "load": {
           "wed": {
             "title": "Z2（調整弁）",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 90 }]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 90 }
+            ]
           },
           "thu": {
             "title": "閾値ロング 1×45分",
@@ -303,12 +472,18 @@
               { "label": "レースシミュレーション", "pct": [95, 102], "min": 55, "note": "目標ペース・本番の機材とギア比で" },
               { "label": "Z2", "pct": [60, 70], "min": 90 }
             ],
-            "notes": ["7月のどこかで乗鞍試走に置き換える"]
+            "notes": [
+              "7月のどこかで乗鞍試走に置き換える"
+            ]
           },
           "sun": {
             "title": "Z2ロング（調整弁）",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 150 }],
-            "notes": ["Z2の後：デッドリフト"]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
+            ],
+            "notes": [
+              "Z2の後：デッドリフト"
+            ]
           }
         },
         "block4": {
@@ -334,11 +509,15 @@
         "recovery": {
           "tue": {
             "title": "Z2（回復週）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 60 }]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 60 }
+            ]
           },
           "wed": {
             "title": "Z2（回復週）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 60 }]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 60 }
+            ]
           },
           "thu": {
             "title": "キーセッション：閾値 1×20分",
@@ -359,7 +538,9 @@
           },
           "sun": {
             "title": "Z2（回復週）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 120 }]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 120 }
+            ]
           }
         }
       }
@@ -382,14 +563,21 @@
             "title": "VO2 4〜6分走（最後の高負荷週）",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "VO2", "reps": 5, "work": { "pct": [106, 115], "min": 5 }, "rest": { "pct": 50, "min": 4 } },
+              {
+                "label": "VO2",
+                "reps": 5,
+                "work": { "pct": [106, 115], "min": 5 },
+                "rest": { "pct": 50, "min": 4 }
+              },
               { "label": "Z2", "pct": [60, 70], "min": 20 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
           },
           "wed": {
             "title": "Z2",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 90 }]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 90 }
+            ]
           },
           "thu": {
             "title": "閾値ロング 1×60分",
@@ -409,8 +597,12 @@
           },
           "sun": {
             "title": "Z2ロング",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 150 }],
-            "notes": ["Z2の後：デッドリフト"]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
+            ],
+            "notes": [
+              "Z2の後：デッドリフト"
+            ]
           }
         },
         "week2": {
@@ -418,18 +610,27 @@
             "title": "VO2 4×5分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "VO2", "reps": 4, "work": { "pct": [106, 115], "min": 5 }, "rest": { "pct": 50, "min": 4 } },
+              {
+                "label": "VO2",
+                "reps": 4,
+                "work": { "pct": [106, 115], "min": 5 },
+                "rest": { "pct": 50, "min": 4 }
+              },
               { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
           },
           "wed": {
             "title": "Z2",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 75 }]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 75 }
+            ]
           },
           "thu": {
             "title": "Z2（軽め）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 60 }]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 60 }
+            ]
           },
           "sat": {
             "title": "レースシミュレーション1本",
@@ -441,8 +642,12 @@
           },
           "sun": {
             "title": "Z2",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 120 }],
-            "notes": ["Z2の後：デッドリフト（最後から2回目）"]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 120 }
+            ],
+            "notes": [
+              "Z2の後：デッドリフト（最後から2回目）"
+            ]
           }
         },
         "week3": {
@@ -450,20 +655,34 @@
             "title": "VO2 短め 3×4分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "VO2", "reps": 3, "work": { "pct": [106, 115], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              {
+                "label": "VO2",
+                "reps": 3,
+                "work": { "pct": [106, 115], "min": 4 },
+                "rest": { "pct": 50, "min": 4 }
+              },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ],
-            "notes": ["夜：デッドリフト最終回（8/19より前に終える）"]
+            "notes": [
+              "夜：デッドリフト最終回（8/19より前に終える）"
+            ]
           },
           "wed": {
             "title": "Z2",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 60 }]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 60 }
+            ]
           },
           "thu": {
             "title": "閾値 短め 2×10分",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "閾値", "reps": 2, "work": { "pct": [95, 100], "min": 10 }, "rest": { "pct": 55, "min": 5 } },
+              {
+                "label": "閾値",
+                "reps": 2,
+                "work": { "pct": [95, 100], "min": 10 },
+                "rest": { "pct": 55, "min": 5 }
+              },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
           },
@@ -477,7 +696,9 @@
           },
           "sun": {
             "title": "Z2",
-            "segments": [{ "label": "Z2", "pct": [60, 70], "min": 90 }]
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 90 }
+            ]
           }
         },
         "week4": {
@@ -485,13 +706,20 @@
             "title": "Z2＋短い刺激",
             "segments": [
               { "label": "Z2", "pct": [60, 70], "min": 50 },
-              { "label": "刺激", "reps": 2, "work": { "pct": [100, 105], "min": 2 }, "rest": { "pct": 50, "min": 3 } },
+              {
+                "label": "刺激",
+                "reps": 2,
+                "work": { "pct": [100, 105], "min": 2 },
+                "rest": { "pct": 50, "min": 3 }
+              },
               { "label": "CD", "pct": [45, 55], "min": 10 }
             ]
           },
           "wed": {
             "title": "Z2（軽め）",
-            "segments": [{ "label": "Z2", "pct": [55, 65], "min": 45 }]
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 45 }
+            ]
           },
           "thu": {
             "title": "刺激入れ（レース3日前）",
@@ -506,7 +734,12 @@
             "title": "前日調整",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 30 },
-              { "label": "オープナー", "reps": 2, "work": { "pct": [100, 105], "min": 1 }, "rest": { "pct": 50, "min": 2 } }
+              {
+                "label": "オープナー",
+                "reps": 2,
+                "work": { "pct": [100, 105], "min": 1 },
+                "rest": { "pct": 50, "min": 2 }
+              }
             ]
           },
           "sun": {
