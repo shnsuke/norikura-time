@@ -354,3 +354,25 @@ test('体重の注意: 急な減量・特異期の減らしすぎ・計画より
   const behind = Calc.weightStats([{ date: d('2027-01-18'), kg: 61.5 }], plan, menus);
   assert.deepEqual(behind.warnings.map((w) => w.code), ['behind']);
 });
+
+// ---------- セッションの種類 ----------
+
+test('menus.json: すべてのメニューに kind があり、負荷週の火・木・土はキーセッション', () => {
+  for (const phase of menus.phases) {
+    for (const [key, days] of Object.entries(phase.templates)) {
+      for (const [day, menu] of Object.entries(days)) {
+        assert.ok(menu.kind in Calc.SESSION_KINDS, `${phase.name} ${key} ${day} の kind が不正: ${menu.kind}`);
+      }
+    }
+  }
+  for (const phase of menus.phases.filter((p) => p.blocks !== false)) {
+    for (let t = d(phase.start); t <= d(phase.end); t.setDate(t.getDate() + 1)) {
+      const info = Calc.getPhaseAndWeek(t, menus);
+      if (info.isRecovery || !['tue', 'thu', 'sat'].includes(info.day)) continue;
+      assert.ok(Calc.isKeySession(Calc.findDayMenu(phase, info, info.day).menu), `${phase.name} ${info.week}週目 ${info.day}`);
+    }
+  }
+  // 回復週はキーセッションが木曜の1本だけ
+  const rec = menus.phases[0].templates.recovery;
+  assert.deepEqual(Object.keys(rec).filter((day) => Calc.isKeySession(rec[day])), ['thu']);
+});

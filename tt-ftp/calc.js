@@ -397,6 +397,16 @@
     return null;
   }
 
+  // ---------- セッションの種類 ----------
+
+  /** menus.json の kind。強度判定の対象(キーセッション)は vo2 / threshold / sst / race */
+  const SESSION_KINDS = Object.freeze({
+    vo2: 'VO2', threshold: '閾値', sst: 'SST・閾値ロング', race: 'レースシミュレーション',
+    z2: 'Z2', test: 'FTPテスト', opener: '刺激入れ・調整', event: 'レース',
+  });
+  const KEY_KINDS = Object.freeze(['vo2', 'threshold', 'sst', 'race']);
+  const isKeySession = (menu) => !!menu && KEY_KINDS.includes(menu.kind);
+
   // ---------- %FTP → W 変換 ----------
 
   function roundTo5(w) {
@@ -485,6 +495,9 @@
     getPhaseAndWeek,
     templateChain,
     findDayMenu,
+    SESSION_KINDS,
+    KEY_KINDS,
+    isKeySession,
     roundTo5,
     resolveIntensity,
     resolveSegment,

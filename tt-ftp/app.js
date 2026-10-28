@@ -19,6 +19,7 @@
     },
     history: [],
     weightLog: [],
+    sessionLog: {},
     tab: 'menu',
     mode: 'A',
   });
@@ -35,6 +36,7 @@
         settings: { ...s.settings, ...(saved.settings || {}) },
         history: Array.isArray(saved.history) ? saved.history : [],
         weightLog: Array.isArray(saved.weightLog) ? saved.weightLog : [],
+        sessionLog: saved.sessionLog && typeof saved.sessionLog === 'object' ? saved.sessionLog : {},
       };
     } catch (e) {
       return s;
@@ -796,6 +798,7 @@
 
     if (!found) {
       zwoTarget = null;
+      logTarget = null;
       el.innerHTML = `<div class="day-head"><h2>${dayHead} 休養</h2></div><p class="rest-day">この日のメニューはありません。</p>`;
       return;
     }
@@ -837,6 +840,7 @@
       <div class="profile" aria-hidden="true">${profile}</div>
       <ul class="segs">${segs}</ul>
       ${r.notes.length ? `<ul class="day-notes">${r.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+      ${C.isKeySession(found.menu) ? sessionLogHtml(date, found.menu) : ''}
       <div class="zwo-row">
         <div class="btn-row">
           <button type="button" class="ghost" id="icuCopy">intervals.icu 用にコピー</button>
@@ -845,6 +849,7 @@
         <span class="hint">「設定」の intervals.icu 連携で予定表にまとめて登録すると、Zwift に自動で入ります。コピーしたテキストは intervals.icu のワークアウトの説明欄に貼るとそのまま組み立てられます。Zwift側のFTPは${ftp ? ` ${fmt(ftp)}W に` : 'このアプリと同じ値に'}合わせてください。</span>
         <textarea class="copy-area" id="icuCopyArea" readonly hidden></textarea>
       </div>`;
+    logTarget = { date: isoDate(date), menu: found.menu, phase: phase.id, week: info.week, block: info.block };
     zwoTarget = {
       menu: found.menu,
       name: `${mdLabel(date)}（${C.DAY_LABELS[sel.day]}）${phase.name} ${found.menu.title}`,
@@ -852,6 +857,60 @@
       file: `${isoDate(date)}_${phase.id}_${sel.day}.zwo`,
     };
   }
+
+  // ---------- キーセッションの記録(RPE・実施結果) ----------
+
+  const RESULTS = { done: '最後までできた', partial: '途中でやめた・ERGを下げた', skipped: '休んだ' };
+  const rpeLabel = (n) => (n <= 2 ? 'とても楽' : n <= 4 ? '楽' : n <= 6 ? 'ややきつい' : n <= 8 ? 'きつい' : n === 9 ? 'とてもきつい' : '限界');
+  let logTarget = null;
+
+  function sessionLogHtml(date, menu) {
+    const key = isoDate(date);
+    if (C.daysBetween(new Date(), date) > 0) {
+      return `<div class="session-log"><div class="log-head"><b>記録</b><span class="hint">当日になると RPE と実施結果を記録できます。</span></div></div>`;
+    }
+    const rec = state.sessionLog[key] || {};
+    const rpeBtns = Array.from({ length: 10 }, (_, i) => i + 1)
+      .map((n) => `<button type="button" role="radio" aria-checked="${rec.rpe === n}" data-rpe="${n}"${rec.result === 'skipped' ? ' disabled' : ''}>${n}</button>`).join('');
+    const resBtns = Object.entries(RESULTS)
+      .map(([k, label]) => `<button type="button" role="radio" aria-checked="${rec.result === k}" data-result="${k}">${label}</button>`).join('');
+    const summary = rec.result
+      ? `${RESULTS[rec.result]}${rec.rpe && rec.result !== 'skipped' ? `・RPE ${rec.rpe}（${rpeLabel(rec.rpe)}）` : ''}`
+      : '未記録';
+    return `<div class="session-log" id="sessionLog">
+      <div class="log-head"><b>記録</b><span class="chip${rec.result === 'done' ? ' recovery' : rec.result === 'partial' ? ' load' : ''}" id="logSummary">${esc(summary)}</span></div>
+      <div class="field">実施結果<div class="result-toggle" role="radiogroup" aria-label="実施結果">${resBtns}</div></div>
+      <div class="field">RPE（きつさ 1〜10）<span class="hint" id="rpeHint">${rec.rpe ? `${rec.rpe}：${rpeLabel(rec.rpe)}` : '1 とても楽 〜 10 限界'}</span>
+        <div class="rpe-grid" role="radiogroup" aria-label="RPE">${rpeBtns}</div></div>
+      <label class="field">メモ（任意）<input type="text" id="logNote" value="${esc(rec.note || '')}" placeholder="例：4本目で心拍が上がりきった" autocomplete="off"></label>
+    </div>`;
+  }
+
+  function saveSessionLog(patch) {
+    if (!logTarget) return;
+    const prev = state.sessionLog[logTarget.date] || {};
+    const rec = {
+      ...prev, ...patch,
+      kind: logTarget.menu.kind, title: logTarget.menu.title,
+      phase: logTarget.phase, week: logTarget.week, block: logTarget.block ?? null, savedAt: Date.now(),
+    };
+    if (rec.result === 'skipped') delete rec.rpe;
+    state.sessionLog[logTarget.date] = rec;
+    save();
+  }
+
+  $('dayDetail').addEventListener('click', (e) => {
+    const rpe = e.target.closest('[data-rpe]');
+    const res = e.target.closest('[data-result]');
+    if (!rpe && !res) return;
+    if (rpe) saveSessionLog({ rpe: Number(rpe.dataset.rpe), result: (state.sessionLog[logTarget.date] || {}).result || 'done' });
+    if (res) saveSessionLog({ result: res.dataset.result });
+    renderDay();
+    renderWeekStrip();
+  });
+  $('dayDetail').addEventListener('change', (e) => {
+    if (e.target.id === 'logNote') saveSessionLog({ note: e.target.value.trim() });
+  });
 
   let zwoTarget = null;
   $('dayDetail').addEventListener('click', (e) => {
@@ -905,6 +964,8 @@
         bar = `var(--${zoneOf(peak || 50)})`;
       }
       const isToday = isoDate(date) === today;
+      const rec = found && C.isKeySession(found.menu) ? state.sessionLog[isoDate(date)] : null;
+      if (rec && rec.result) meta = rec.result === 'skipped' ? '休んだ' : rec.rpe ? `RPE${rec.rpe}` : '✓';
       return `<button type="button" role="tab" aria-selected="${day === sel.day}" data-day="${day}">
         <span class="dname${isToday ? ' today-mark' : ''}">${C.DAY_LABELS[day]}</span>
         <span class="dbar" style="background:${bar}"></span>
