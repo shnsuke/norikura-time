@@ -302,3 +302,55 @@ test('時刻表示', () => {
   assert.equal(Calc.formatClock(56 * 60 + 42), '56:42');
   assert.equal(Calc.formatClock(3600 + 5 * 60 + 3), '1:05:03');
 });
+
+// ---------- 体重 ----------
+
+test('週の月曜', () => {
+  assert.equal(Calc.mondayOf(d('2026-10-28')).getDate(), 26); // 水曜 → 10/26(月)
+  assert.equal(Calc.mondayOf(d('2026-11-02')).getDate(), 2); // 月曜はそのまま
+  assert.equal(Calc.mondayOf(d('2026-11-08')).getDate(), 2); // 日曜 → その週の月曜
+});
+
+test('減量計画: 下限値で 1/24 に60kg、4/18 に58kg、以降は58kgを維持', () => {
+  const plan = Calc.weightPlan(menus, 63);
+  assert.deepEqual(plan.map((p) => [p.date.getMonth() + 1, p.date.getDate(), p.kg]),
+    [[11, 2, 63], [1, 24, 60], [4, 18, 58], [8, 1, 58], [8, 29, 58]]);
+  assert.equal(Calc.targetWeightAt(plan, d('2026-10-26')), 63);
+  assert.equal(Calc.targetWeightAt(plan, d('2027-01-24')), 60);
+  // 11/2〜1/24 は83日で3kg → 中間の日は 63 − 3×(41/83)
+  close(Calc.targetWeightAt(plan, d('2026-12-13')), 63 - 3 * 41 / 83, 1e-9);
+  assert.equal(Calc.targetWeightAt(plan, d('2027-06-01')), 58);
+  assert.equal(Calc.targetWeightAt(plan, d('2027-09-30')), 58);
+});
+
+test('体重の集計: 目標との差・必要なペース・直近のペース', () => {
+  const plan = Calc.weightPlan(menus, 63);
+  const log = [
+    { date: d('2026-11-02'), kg: 63.0 },
+    { date: d('2026-11-09'), kg: 62.8 },
+    { date: d('2026-11-16'), kg: 62.7 },
+    { date: d('2026-11-23'), kg: 62.5 },
+    { date: d('2026-11-30'), kg: 62.4 },
+  ];
+  const s = Calc.weightStats(log, plan, menus);
+  assert.equal(s.latest.kg, 62.4);
+  close(s.target, 63 - 3 * 28 / 83, 1e-9);
+  close(s.diff, 62.4 - s.target, 1e-9);
+  assert.equal(s.next.kg, 60);
+  close(s.next.weeks, 55 / 7, 1e-9); // 11/30 → 1/24
+  close(s.next.pacePerWeek, (60 - 62.4) / (55 / 7), 1e-9);
+  close(s.recentPace, (62.4 - 63.0) / 4, 1e-9); // ちょうど4週前の 11/2 と比較
+  close(s.lastChange, -0.1, 1e-9);
+  assert.deepEqual(s.warnings, []);
+  assert.equal(Calc.weightStats([], plan, menus), null);
+});
+
+test('体重の注意: 急な減量・特異期の減らしすぎ・計画より重い', () => {
+  const plan = Calc.weightPlan(menus, 63);
+  const fast = Calc.weightStats([{ date: d('2026-11-02'), kg: 63 }, { date: d('2026-11-09'), kg: 62.2 }], plan, menus);
+  assert.deepEqual(fast.warnings.map((w) => w.code), ['fast-loss']);
+  const spec = Calc.weightStats([{ date: d('2027-05-03'), kg: 59.5 }, { date: d('2027-05-17'), kg: 58.6 }], plan, menus);
+  assert.deepEqual(spec.warnings.map((w) => w.code), ['specific-deficit']);
+  const behind = Calc.weightStats([{ date: d('2027-01-18'), kg: 61.5 }], plan, menus);
+  assert.deepEqual(behind.warnings.map((w) => w.code), ['behind']);
+});

@@ -18,6 +18,7 @@
       k: C.DEFAULTS.k,
     },
     history: [],
+    weightLog: [],
     tab: 'menu',
     mode: 'A',
   });
@@ -33,6 +34,7 @@
         ...saved,
         settings: { ...s.settings, ...(saved.settings || {}) },
         history: Array.isArray(saved.history) ? saved.history : [],
+        weightLog: Array.isArray(saved.weightLog) ? saved.weightLog : [],
       };
     } catch (e) {
       return s;
@@ -92,7 +94,7 @@
 
   // ---------- タブ ----------
 
-  const TABS = ['menu', 'tt', 'history', 'prefs'];
+  const TABS = ['menu', 'tt', 'weight', 'history', 'prefs'];
   function showTab(name) {
     if (!TABS.includes(name)) name = 'menu';
     for (const t of TABS) {
@@ -102,6 +104,7 @@
     state.tab = name;
     save();
     if (name === 'menu') renderMenu();
+    if (name === 'weight') renderWeight();
     if (name === 'history') renderHistory();
     if (name === 'prefs') renderPrediction();
   }
@@ -346,6 +349,269 @@
       ? `保存しました。設定で FTP を手入力（${overridden}W）しているため、メニューは手入力の値で計算されます。`
       : `保存しました。メニューを FTP ${fmt(rec.ftp)}W で計算します。`;
     toast.hidden = false;
+  });
+
+  // ---------- 体重 ----------
+
+  const weightEntries = () => state.weightLog
+    .map((e) => ({ date: C.parseDate(e.date), kg: e.kg }))
+    .sort((a, b) => a.date - b.date);
+
+  /** その日の週(月曜)に体重を記録し、設定の体重も最新の記録に合わせる */
+  function recordWeight(date, kg) {
+    const key = isoDate(C.mondayOf(date));
+    state.weightLog = state.weightLog.filter((e) => e.date !== key);
+    state.weightLog.push({ date: key, kg });
+    const latest = weightEntries().pop();
+    state.settings.weight = latest.kg;
+    save();
+    fillPrefs();
+    renderHeader();
+    computeTT();
+    return key;
+  }
+
+  function planStartKg() {
+    const set = num(state.settings.planStartKg);
+    if (set) return set;
+    const first = weightEntries()[0];
+    return first ? first.kg : currentWeight();
+  }
+
+  function weightPlanNow() {
+    const start = planStartKg();
+    return menus && start ? C.weightPlan(menus, start) : null;
+  }
+
+  // 月曜にメニュー画面を開いたら、今週の記録が無ければ入力欄を出す
+  function renderWeighPrompt() {
+    const today = new Date();
+    const week = isoDate(C.mondayOf(today));
+    const show = today.getDay() === 1 && !state.weightLog.some((e) => e.date === week);
+    $('weighPrompt').hidden = !show;
+  }
+  $('promptSave').addEventListener('click', () => {
+    const kg = num($('promptKg').value);
+    if (!kg || kg < 20) { $('promptKg').focus(); return; }
+    recordWeight(new Date(), kg);
+    renderMenu();
+  });
+
+  $('weighForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const kg = num($('weighKg').value);
+    const toast = $('weighToast');
+    toast.hidden = false;
+    if (!kg || kg < 20) {
+      toast.textContent = '体重を kg で入れてください。';
+      return;
+    }
+    const date = $('weighDate').value ? C.parseDate($('weighDate').value) : new Date();
+    const key = recordWeight(date, kg);
+    toast.textContent = `${key.slice(5).replace('-', '/')} の週に ${fmt(kg, 1)}kg を記録しました。`;
+    $('weighKg').value = '';
+    renderWeight();
+  });
+
+  $('planStartKg').addEventListener('input', (e) => {
+    state.settings.planStartKg = num(e.target.value);
+    save();
+    renderWeight();
+  });
+
+  $('weighBody').addEventListener('click', (e) => {
+    const btn = e.target.closest('.del');
+    if (!btn) return;
+    if (!btn.classList.contains('confirm')) {
+      btn.classList.add('confirm');
+      btn.textContent = 'もう一度押して削除';
+      setTimeout(() => { if (btn.isConnected) { btn.classList.remove('confirm'); btn.textContent = '削除'; } }, 3000);
+      return;
+    }
+    state.weightLog = state.weightLog.filter((x) => x.date !== btn.dataset.date);
+    const latest = weightEntries().pop();
+    if (latest) state.settings.weight = latest.kg;
+    save();
+    fillPrefs();
+    renderHeader();
+    renderWeight();
+  });
+
+  const signed = (x, d = 1) => `${x > 0 ? '+' : x < 0 ? '−' : '±'}${Math.abs(x).toFixed(d)}`;
+
+  function renderWeight() {
+    if (!$('weighDate').value) $('weighDate').value = isoDate(C.mondayOf(new Date()));
+    $(state.weighRange === 'all' ? 'rangeAll' : 'rangeRecent').checked = true;
+    $('planStartKg').value = num(state.settings.planStartKg) === null ? '' : state.settings.planStartKg;
+    const entries = weightEntries();
+    const plan = weightPlanNow();
+
+    // 一覧(新しい順)
+    $('weighEmpty').hidden = entries.length > 0;
+    $('weighBody').innerHTML = [...entries].reverse().map((e, i, arr) => {
+      const t = plan ? C.targetWeightAt(plan, e.date) : null;
+      const prev = arr[i + 1];
+      const wk = prev && C.daysBetween(prev.date, e.date) === 7 ? signed(e.kg - prev.kg) : '—';
+      return `<tr><td>${mdLabel(e.date)}</td><td class="num">${fmt(e.kg, 1)}</td>
+        <td class="num">${t === null ? '—' : fmt(t, 1)}</td><td class="num">${t === null ? '—' : signed(e.kg - t)}</td>
+        <td class="num">${wk}</td><td><button type="button" class="del" data-date="${isoDate(e.date)}">削除</button></td></tr>`;
+    }).join('');
+
+    // 集計
+    const st = $('weighStats');
+    if (!plan || !entries.length) {
+      st.innerHTML = '';
+    } else {
+      const r = C.weightStats(entries, plan, menus);
+      const status = r.diff <= 0
+        ? `<span class="chip recovery">計画どおり</span>`
+        : r.diff < 1 ? `<span class="chip load">計画より重い</span>` : `<span class="chip load">要注意</span>`;
+      const next = r.next
+        ? `<span>${mdLabel(r.next.date)} に ${fmt(r.next.kg, 0)}kg → 必要なペース <b class="diff">${signed(r.next.pacePerWeek, 2)}</b> kg/週</span>`
+        : '';
+      const recent = r.recentPace === null ? '' : `<span>直近4週のペース <b class="diff">${signed(r.recentPace, 2)}</b> kg/週</span>`;
+      st.innerHTML = `
+        <div class="today">
+          <div class="eyebrow">最新 ${mdLabel(r.latest.date)} の週</div>
+          <div class="headline">${fmt(r.latest.kg, 1)}kg <span class="hint">目標 ${fmt(r.target, 1)}kg より <b class="diff">${signed(r.diff)}</b>kg</span></div>
+          <div class="chips">${status}</div>
+          <div class="predict-meta">${next}${recent}</div>
+        </div>
+        ${r.warnings.map((w) => `<p class="warn">${esc(w.text)}</p>`).join('')}`;
+    }
+    renderWeightChart(entries, plan);
+  }
+
+  /** 体重のグラフ(SVG)。横=日付、縦=kg。計画は破線、実測は実線＋点。ホバーで週の値を表示 */
+  function renderWeightChart(entries, plan) {
+    const box = $('weighChart');
+    if (!menus || (!plan && !entries.length)) {
+      box.innerHTML = '<p class="hint">体重を記録すると、ここにグラフが出ます。</p>';
+      return;
+    }
+    const W = Math.max(300, Math.round(box.clientWidth || 340));
+    const H = 220;
+    const m = { l: 34, r: 34, t: 22, b: 24 };
+    const seasonStart = C.parseDate(menus.phases[0].start);
+    const raceDay = C.parseDate(menus.raceDate || menus.phases[menus.phases.length - 1].end);
+    // 表示期間: 全期間 = シーズン開始(それより前の記録があればそこ)〜レース、直近12週 = 最新の記録の11週前〜4週後
+    let x0 = entries.length && entries[0].date < seasonStart ? C.mondayOf(entries[0].date) : seasonStart;
+    let x1 = raceDay;
+    const range = state.weighRange === 'all' ? 'all' : 'recent';
+    if (range === 'recent') {
+      const anchor = entries.length ? entries[entries.length - 1].date : C.mondayOf(new Date());
+      x0 = new Date(anchor); x0.setDate(x0.getDate() - 77);
+      if (entries.length && entries[0].date > x0) x0 = new Date(entries[0].date);
+      x1 = new Date(anchor); x1.setDate(x1.getDate() + 28);
+    }
+    const days = Math.max(7, C.daysBetween(x0, x1));
+    const inView = (d) => C.daysBetween(x0, d) >= 0 && C.daysBetween(d, x1) >= 0;
+    const shown = entries.filter((e) => inView(e.date));
+    // 計画線は表示期間で切り取る(両端は補間値)
+    const planPts = plan
+      ? [{ date: x0, kg: C.targetWeightAt(plan, x0) }, ...plan.filter((p) => C.daysBetween(x0, p.date) > 0 && C.daysBetween(p.date, x1) > 0), { date: x1, kg: C.targetWeightAt(plan, x1) }]
+      : [];
+    const kgs = [...shown.map((e) => e.kg), ...planPts.map((p) => p.kg)];
+    let lo = Math.floor(Math.min(...kgs) - 0.5);
+    let hi = Math.ceil(Math.max(...kgs) + 0.5);
+    if (hi - lo < 4) { lo = Math.floor((lo + hi) / 2 - 2); hi = lo + 4; }
+    const X = (d) => m.l + ((W - m.l - m.r) * C.daysBetween(x0, d)) / days;
+    const Y = (kg) => m.t + ((H - m.t - m.b) * (hi - kg)) / (hi - lo);
+    const step = hi - lo > 8 ? 2 : 1;
+    let g = '';
+    // 横の目盛り(kg)
+    for (let kg = lo; kg <= hi; kg += step) {
+      g += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${Y(kg)}" y2="${Y(kg)}"></line>
+        <text class="axis" x="${m.l - 6}" y="${Y(kg) + 3}" text-anchor="end">${kg}</text>`;
+    }
+    // 日付の目盛り: 全期間は各月、直近12週は4週ごと
+    if (range === 'all') {
+      g += `<text class="axis" x="${X(x0)}" y="${H - 6}" text-anchor="start">${mdLabel(x0)}</text>`;
+      for (let d = new Date(x0.getFullYear(), x0.getMonth() + 1, 1); d <= x1; d.setMonth(d.getMonth() + 1)) {
+        if (X(d) - X(x0) > 28) g += `<text class="axis" x="${X(d)}" y="${H - 6}" text-anchor="middle">${d.getMonth() + 1}月</text>`;
+      }
+    } else {
+      for (let d = new Date(x0); d <= x1; d.setDate(d.getDate() + 28)) {
+        g += `<text class="axis" x="${X(d)}" y="${H - 6}" text-anchor="middle">${mdLabel(d)}</text>`;
+      }
+    }
+    // 期の区切りと名前
+    menus.phases.forEach((p, i) => {
+      const a = C.parseDate(p.start);
+      const b = C.parseDate(p.end);
+      if (C.daysBetween(b, x0) > 0 || C.daysBetween(x1, a) > 0) return;
+      const ca = a < x0 ? x0 : a;
+      const cb = b > x1 ? x1 : b;
+      if (i > 0 && inView(a)) g += `<line class="phase-line" x1="${X(a)}" x2="${X(a)}" y1="${m.t - 8}" y2="${H - m.b}"></line>`;
+      if (X(cb) - X(ca) > 24) g += `<text class="phase-label" x="${(X(ca) + X(cb)) / 2}" y="${m.t - 10}" text-anchor="middle">${esc(p.name.replace('期', ''))}</text>`;
+    });
+    // 今日
+    const today = new Date();
+    if (inView(today)) {
+      g += `<line class="today-line" x1="${X(today)}" x2="${X(today)}" y1="${m.t}" y2="${H - m.b}"></line>`;
+    }
+    // 計画
+    if (plan) {
+      g += `<polyline class="plan-line" points="${planPts.map((p) => `${X(p.date)},${Y(p.kg)}`).join(' ')}"></polyline>`;
+      plan.slice(1, 3).filter((p) => inView(p.date)).forEach((p) => {
+        g += `<circle class="plan-goal" cx="${X(p.date)}" cy="${Y(p.kg)}" r="4"></circle>
+          <text class="label muted" x="${X(p.date)}" y="${Y(p.kg) - 8}" text-anchor="middle">${fmt(p.kg, 0)}kg</text>`;
+      });
+    }
+    // 実測
+    if (shown.length) {
+      if (shown.length > 1) g += `<polyline class="actual-line" points="${shown.map((e) => `${X(e.date)},${Y(e.kg)}`).join(' ')}"></polyline>`;
+      g += shown.map((e) => `<circle class="actual-dot" cx="${X(e.date)}" cy="${Y(e.kg)}" r="4"></circle>`).join('');
+      const last = shown[shown.length - 1];
+      g += `<text class="label" x="${X(last.date) + 7}" y="${Y(last.kg) + 4}">${fmt(last.kg, 1)}</text>`;
+    }
+    g += `<line class="cross" id="weighCross" x1="0" x2="0" y1="${m.t}" y2="${H - m.b}" visibility="hidden"></line>
+      <rect id="weighHit" x="${m.l}" y="0" width="${W - m.l - m.r}" height="${H}" fill="transparent"></rect>`;
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img"
+      aria-label="体重の推移と減量計画のグラフ。値は下の表にもあります。">${g}</svg><div class="chart-tip" id="weighTip" hidden></div>`;
+
+    // ホバー/タップ: 一番近い週の実測と計画を表示
+    const svg = box.querySelector('svg');
+    const tip = $('weighTip');
+    const cross = $('weighCross');
+    const move = (ev) => {
+      const rect = svg.getBoundingClientRect();
+      const px = ((ev.clientX - rect.left) / rect.width) * W;
+      const d = new Date(x0);
+      d.setDate(d.getDate() + Math.round(((px - m.l) / (W - m.l - m.r)) * days));
+      const wk = C.mondayOf(d);
+      const near = entries.find((e) => C.daysBetween(e.date, wk) === 0);
+      const t = plan ? C.targetWeightAt(plan, wk) : null;
+      cross.setAttribute('x1', X(wk));
+      cross.setAttribute('x2', X(wk));
+      cross.setAttribute('visibility', 'visible');
+      tip.innerHTML = `${mdLabel(wk)} の週<br>実測 <b>${near ? `${fmt(near.kg, 1)}kg` : '—'}</b><br>計画 <b>${t === null ? '—' : `${fmt(t, 1)}kg`}</b>${near && t !== null ? `<br>差 <b>${signed(near.kg - t)}kg</b>` : ''}`;
+      tip.hidden = false;
+      // 十字線と重ならないよう、左半分なら右側、右半分なら左側に出す
+      const left = (X(wk) / W) * rect.width;
+      const pos = left < rect.width / 2 ? left + 10 : left - tip.offsetWidth - 10;
+      tip.style.left = `${Math.min(Math.max(0, pos), rect.width - tip.offsetWidth)}px`;
+      tip.style.top = `${(m.t / H) * rect.height}px`;
+    };
+    const leave = () => { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); };
+    const hit = $('weighHit');
+    hit.addEventListener('pointermove', move);
+    hit.addEventListener('pointerdown', move);
+    hit.addEventListener('pointerleave', leave);
+  }
+
+  for (const id of ['rangeRecent', 'rangeAll']) {
+    $(id).addEventListener('change', (e) => {
+      state.weighRange = e.target.value;
+      save();
+      renderWeight();
+    });
+  }
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { if (state.tab === 'weight') renderWeight(); }, 150);
   });
 
   // ---------- 履歴 ----------
@@ -656,6 +922,7 @@
   }
 
   function renderMenu() {
+    renderWeighPrompt();
     if (!menus) return;
     renderToday();
     renderSelectors();
@@ -735,6 +1002,7 @@
       menus = await res.json();
       selectToday();
       renderMenu();
+      if (state.tab === 'weight') renderWeight();
     } catch (e) {
       const n = $('menuNotice');
       n.hidden = false;

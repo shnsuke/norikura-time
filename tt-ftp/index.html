@@ -31,6 +31,7 @@
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-menu" aria-controls="view-menu" aria-selected="true">メニュー</button>
     <button role="tab" id="tab-tt" aria-controls="view-tt" aria-selected="false">TT入力</button>
+    <button role="tab" id="tab-weight" aria-controls="view-weight" aria-selected="false">体重</button>
     <button role="tab" id="tab-history" aria-controls="view-history" aria-selected="false">履歴</button>
     <button role="tab" id="tab-prefs" aria-controls="view-prefs" aria-selected="false">設定</button>
   </nav>
@@ -41,6 +42,12 @@
   <!-- メニュー -->
   <section id="view-menu" role="tabpanel" aria-labelledby="tab-menu">
     <div class="notice" id="menuNotice" hidden></div>
+    <div class="weigh-prompt" id="weighPrompt" hidden>
+      <label class="field">今週の体重を記録（月曜）
+        <span class="inline-input"><input type="number" id="promptKg" inputmode="decimal" step="0.1" min="20" placeholder="62.5"><span class="unit">kg</span>
+        <button type="button" class="primary" id="promptSave">記録</button></span>
+      </label>
+    </div>
     <div class="today" id="todayCard"></div>
 
     <div class="browse">
@@ -90,6 +97,39 @@
   </section>
 
   <!-- 履歴 -->
+  <!-- 体重 -->
+  <section id="view-weight" role="tabpanel" aria-labelledby="tab-weight" hidden>
+    <form class="weigh-form" id="weighForm" novalidate>
+      <label class="field">週（月曜の日付で記録）<input type="date" id="weighDate"></label>
+      <label class="field">体重 (kg)<input type="number" id="weighKg" inputmode="decimal" step="0.1" min="20" placeholder="62.5"></label>
+      <button type="submit" class="primary" id="weighSave">記録</button>
+    </form>
+    <p class="toast" id="weighToast" role="status" hidden></p>
+    <div class="weigh-stats" id="weighStats" aria-live="polite"></div>
+    <figure class="weigh-chart">
+      <figcaption class="chart-head">
+        <span class="chart-title">体重の推移と減量計画</span>
+        <span class="legend">
+          <span class="key actual"><svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5"></line><circle cx="11" cy="5" r="3.5"></circle></svg>実測</span>
+          <span class="key plan"><svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5"></line></svg>計画（下限）</span>
+        </span>
+      </figcaption>
+      <div class="range-toggle" role="radiogroup" aria-label="表示期間">
+        <label><input type="radio" name="weighRange" id="rangeRecent" value="recent" checked> 直近12週</label>
+        <label><input type="radio" name="weighRange" id="rangeAll" value="all"> 全期間</label>
+      </div>
+      <div class="chart-box" id="weighChart"></div>
+    </figure>
+    <label class="field">計画の開始体重（11/2・kg）<input type="number" id="planStartKg" inputmode="decimal" step="0.1" min="20" placeholder="最初の記録を使います"></label>
+    <div class="table-scroll">
+      <table class="history">
+        <thead><tr><th>週</th><th class="num">体重</th><th class="num">計画</th><th class="num">差</th><th class="num">前週比</th><th></th></tr></thead>
+        <tbody id="weighBody"></tbody>
+      </table>
+    </div>
+    <p class="hint" id="weighEmpty" hidden>まだ記録がありません。毎週月曜に体重を記録すると、ここに一覧とグラフが出ます。</p>
+  </section>
+
   <section id="view-history" role="tabpanel" aria-labelledby="tab-history" hidden>
     <div class="table-scroll">
       <table class="history">

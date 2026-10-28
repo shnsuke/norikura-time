@@ -233,6 +233,86 @@
     return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
   }
 
+  // ---------- 体重の記録と減量計画 ----------
+
+  /** その日を含む週の月曜(ローカル 00:00) */
+  function mondayOf(date) {
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    return d;
+  }
+
+  /**
+   * 減量計画の折れ線: シーズン開始日に startKg、各期の終わりに weightGoalKg。
+   * 戻り値は日付順の [{ date, kg }]
+   */
+  function weightPlan(menus, startKg) {
+    const points = [{ date: parseDate(menus.phases[0].start), kg: startKg }];
+    for (const p of menus.phases) {
+      if (typeof p.weightGoalKg === 'number') points.push({ date: parseDate(p.end), kg: p.weightGoalKg });
+    }
+    return points;
+  }
+
+  /** 計画の折れ線上で date の目標体重(線形補間。範囲外は端の値) */
+  function targetWeightAt(plan, date) {
+    if (daysBetween(plan[0].date, date) <= 0) return plan[0].kg;
+    for (let i = 1; i < plan.length; i++) {
+      const a = plan[i - 1];
+      const b = plan[i];
+      if (daysBetween(date, b.date) >= 0) {
+        const span = daysBetween(a.date, b.date);
+        return span > 0 ? a.kg + ((b.kg - a.kg) * daysBetween(a.date, date)) / span : b.kg;
+      }
+    }
+    return plan[plan.length - 1].kg;
+  }
+
+  /**
+   * 記録 [{ date: Date, kg }] と計画から、最新値・目標との差・ペース・注意を求める。
+   * menus を渡すと、特異期の減量ペースの注意も判定する。
+   */
+  function weightStats(log, plan, menus) {
+    const entries = [...log].sort((a, b) => a.date - b.date);
+    if (!entries.length) return null;
+    const latest = entries[entries.length - 1];
+    const target = targetWeightAt(plan, latest.date);
+    const diff = latest.kg - target;
+
+    // 次の区切り(最新の記録より後の計画点)までに必要な週あたりのペース
+    let next = null;
+    const np = plan.find((p) => daysBetween(latest.date, p.date) > 0);
+    if (np) {
+      const weeks = daysBetween(latest.date, np.date) / 7;
+      next = { date: np.date, kg: np.kg, weeks, pacePerWeek: (np.kg - latest.kg) / weeks };
+    }
+
+    // 直近4週の実際のペース(最新から28日以内で最も古い記録と比較)
+    let recentPace = null;
+    const base = entries.find((e) => e !== latest && daysBetween(e.date, latest.date) <= 28 && daysBetween(e.date, latest.date) >= 7);
+    if (base) recentPace = (latest.kg - base.kg) / (daysBetween(base.date, latest.date) / 7);
+
+    // 前週からの変化
+    let lastChange = null;
+    const prev = entries.length > 1 ? entries[entries.length - 2] : null;
+    if (prev && daysBetween(prev.date, latest.date) === 7) lastChange = latest.kg - prev.kg;
+
+    const warnings = [];
+    if (lastChange !== null && -lastChange > prev.kg * 0.01) {
+      warnings.push({ code: 'fast-loss', text: `1週間で ${(-lastChange).toFixed(1)}kg 減りました（体重の1%超）。減らしすぎに注意してください。` });
+    }
+    if (menus) {
+      const info = getPhaseAndWeek(latest.date, menus);
+      if (info.status === 'in' && info.phase.id === 'specific' && recentPace !== null && recentPace < -0.3) {
+        warnings.push({ code: 'specific-deficit', text: `特異期に週 ${(-recentPace).toFixed(2)}kg のペースで減っています。この時期はエネルギー不足を作らないようにしてください。` });
+      }
+    }
+    if (diff >= 1) {
+      warnings.push({ code: 'behind', text: `計画より ${diff.toFixed(1)}kg 重くなっています。` });
+    }
+    return { latest, target, diff, next, recentPace, lastChange, warnings };
+  }
+
   // ---------- 期・週の判定 ----------
 
   /** "YYYY-MM-DD" → ローカル時刻の Date (00:00) */
@@ -412,6 +492,10 @@
     formatDuration,
     NORIKURA_COURSE,
     speedForPower,
+    mondayOf,
+    weightPlan,
+    targetWeightAt,
+    weightStats,
     altitudePowerFactor,
     predictClimb,
     formatClock,
