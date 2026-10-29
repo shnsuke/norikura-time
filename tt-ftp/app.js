@@ -21,6 +21,7 @@
     weightLog: [],
     sessionLog: {},
     adjustments: {},
+    oneRmLog: [],
     tab: 'menu',
     mode: 'A',
   });
@@ -39,6 +40,7 @@
         weightLog: Array.isArray(saved.weightLog) ? saved.weightLog : [],
         sessionLog: saved.sessionLog && typeof saved.sessionLog === 'object' ? saved.sessionLog : {},
         adjustments: saved.adjustments && typeof saved.adjustments === 'object' ? saved.adjustments : {},
+        oneRmLog: Array.isArray(saved.oneRmLog) ? saved.oneRmLog : [],
       };
     } catch (e) {
       return s;
@@ -110,7 +112,7 @@
     if (name === 'menu') renderMenu();
     if (name === 'weight') renderWeight();
     if (name === 'history') { renderHistory(); renderReviewSelect(); renderReview(); }
-    if (name === 'prefs') renderPrediction();
+    if (name === 'prefs') { renderPrediction(); renderOneRm(); }
   }
   for (const t of TABS) $(`tab-${t}`).addEventListener('click', () => showTab(t));
 
@@ -353,6 +355,124 @@
       ? `保存しました。設定で FTP を手入力（${overridden}W）しているため、メニューは手入力の値で計算されます。`
       : `保存しました。メニューを FTP ${fmt(rec.ftp)}W で計算します。`;
     toast.hidden = false;
+  });
+
+  // ---------- デッドリフト ----------
+
+  const ST = () => window.Strength;
+  const oneRm = (asOf, before) => ST().current1RM(state.oneRmLog, (menus && menus.strength && menus.strength.initial1RM) || null, asOf, before);
+  const kgFmt = (x) => String(Math.round(x * 100) / 100); // 112.5 / 1.25 / 118.3
+  const platesText = (w) => (w.plates.length ? `片側 ${w.plates.map(kgFmt).join(' + ')}kg${w.rest ? `（+${w.rest}kg 組めない端数）` : ''}` : 'バーのみ');
+
+  /** メニュー画面に出すその日のデッドリフト */
+  function liftHtml(date) {
+    if (!menus || !menus.strength) return '';
+    const plan = ST().planFor(date, menus);
+    if (!plan) return '';
+    // その日の時点の 1RM で計算する(テスト当日はテスト前の値)
+    const rm = oneRm(isoDate(date), !!plan.test);
+    if (!rm.kg) return '';
+    const r = ST().resolvePlan(plan, rm.kg, menus.strength);
+    const since = ST().daysSinceUpdate(state.oneRmLog, new Date());
+    const remindDays = menus.strength.reminderDays || 28;
+    const remind = !r.test && since !== null && since >= remindDays && C.daysBetween(new Date(), date) <= 0
+      ? `<p class="notice">1RM の更新から ${since} 日たちました。限界に近いセットの重さと回数を「設定」で入力して更新してください。</p>` : '';
+    const warm = r.warmup.map((w) => `<li><span><span class="kg">${kgFmt(w.kg)}</span>kg × ${w.reps}回</span><span class="meta">${w.bar ? '' : `${w.pct}%`}</span><span class="plates">${platesText(w)}</span></li>`).join('');
+    const head = `<div class="log-head"><b>${esc(menus.strength.name || 'デッドリフト')}</b><span class="chip">${esc(r.timing)}</span>
+      <span class="hint">1RM ${kgFmt(rm.kg)}kg${rm.date ? `（${rm.date.slice(5).replace('-', '/')} 更新）` : '（初期値）'}・${esc(r.focus || '')}</span></div>`;
+    if (r.test) {
+      const att = r.attempts.map((a) => `<li><span>${esc(a.label)}　<span class="kg">${kgFmt(a.kg)}</span>kg × 1回</span><span class="meta">${a.pct}%</span>
+        <span class="plates">${platesText(a)}${a.note ? `・${esc(a.note)}` : ''}</span></li>`).join('');
+      const done = state.oneRmLog.find((x) => x.date === isoDate(date));
+      return `<div class="lift">${head}
+        <p><b>1RM テスト</b>：ウォームアップのあと、試技は2回まで。いちばん重く挙がったセットを記録すると 1RM を更新します。</p>
+        <h3 class="hint">ウォームアップ</h3><ul class="lift-sets">${warm}</ul>
+        <h3 class="hint">試技</h3><ul class="lift-sets">${att}</ul>
+        ${done ? `<p class="toast">この日の結果 ${kgFmt(done.fromKg)}kg × ${done.fromReps}回 → 1RM ${kgFmt(done.kg)}kg を記録済みです。</p>` : ''}
+        ${C.daysBetween(new Date(), date) <= 0 ? `<div class="rm-form" data-rmform data-date="${isoDate(date)}">
+          <div class="grid3">
+            <label class="field">重さ (kg)<input type="number" class="rm-kg" inputmode="decimal" step="2.5" min="20" placeholder="${kgFmt(r.attempts[0].kg)}"></label>
+            <label class="field">回数<select class="rm-reps">${[1, 2, 3, 4, 5, 6].map((n) => `<option value="${n}">${n}回</option>`).join('')}</select></label>
+          </div>
+          <p class="rm-preview hint" aria-live="polite">挙がった重さと回数を入れると 1RM に換算します。</p>
+          <button type="button" class="primary rm-save" disabled>結果を記録して 1RM を更新</button>
+        </div>` : '<p class="hint">当日になると結果を記録できます。</p>'}
+      </div>`;
+    }
+    const work = r.work.map((w) => `<li><span>${w.label ? `${esc(w.label)}　` : ''}<span class="kg">${kgFmt(w.kg)}</span>kg × ${w.reps}回 × ${w.sets}セット</span>
+      <span class="meta">${w.pct}%</span><span class="plates">${platesText(w)}</span></li>`).join('');
+    return `<div class="lift">${head}${remind}<ul class="lift-sets">${work}</ul>
+      <details><summary>ウォームアップ（${r.warmup.length}段階）</summary><ul class="lift-sets">${warm}</ul></details></div>`;
+  }
+
+  /** 換算のプレビュー(フォームの中の値から) */
+  function rmPreview(form) {
+    const kg = num(form.querySelector('.rm-kg').value);
+    const reps = Number(form.querySelector('.rm-reps').value);
+    const out = form.querySelector('.rm-preview');
+    const btn = form.querySelector('.rm-save');
+    let v = null;
+    try { v = kg ? ST().brzycki(kg, reps) : null; } catch (e) { out.textContent = e.message; btn.disabled = true; return null; }
+    if (!v) { btn.disabled = true; return null; }
+    const cur = oneRm().kg;
+    const diff = cur ? v - cur : 0;
+    out.innerHTML = `換算 1RM <b>${v.toFixed(1)}kg</b>${cur ? `（今の ${kgFmt(cur)}kg より ${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)}kg）` : ''}${
+      diff < 0 ? '<br>今より低い値です。疲労の影響かもしれません。保存するかどうかは選べます。' : ''}`;
+    btn.disabled = false;
+    return { kg, reps, value: Math.round(v * 10) / 10 };
+  }
+
+  document.addEventListener('input', (e) => {
+    const form = e.target.closest && e.target.closest('[data-rmform]');
+    if (form) rmPreview(form);
+  });
+  document.addEventListener('change', (e) => {
+    const form = e.target.closest && e.target.closest('[data-rmform]');
+    if (form) rmPreview(form);
+  });
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest && e.target.closest('.rm-save');
+    if (!btn) return;
+    const form = btn.closest('[data-rmform]');
+    const r = rmPreview(form);
+    if (!r) return;
+    const dateInput = form.querySelector('.rm-date');
+    const date = form.dataset.date || (dateInput && dateInput.value) || isoDate(new Date());
+    state.oneRmLog.push({ date, kg: r.value, fromKg: r.kg, fromReps: r.reps, savedAt: Date.now() });
+    save();
+    form.querySelector('.rm-kg').value = '';
+    renderOneRm();
+    if (menus && state.tab === 'menu') renderDay();
+    const msg = form.querySelector('.rm-preview');
+    msg.textContent = `${date.slice(5).replace('-', '/')} の 1RM を ${kgFmt(r.value)}kg で保存しました。`;
+    btn.disabled = true;
+  });
+
+  function renderOneRm() {
+    if (!menus || !menus.strength) return;
+    if (!$('rmDate').value) $('rmDate').value = isoDate(new Date());
+    const rm = oneRm();
+    const since = ST().daysSinceUpdate(state.oneRmLog, new Date());
+    $('rmCurrent').innerHTML = `現在の 1RM <b>${kgFmt(rm.kg)}</b>kg　${rm.date ? `${rm.date.slice(5).replace('-', '/')} 更新・${since}日前` : '初期値'}`;
+    const rows = [...state.oneRmLog].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.savedAt - a.savedAt));
+    $('rmHistory').innerHTML = rows.map((x) => `<tr><td>${esc(x.date.slice(2).replace(/-/g, '/'))}</td>
+      <td>${kgFmt(x.fromKg)}kg × ${x.fromReps}回</td><td class="num">${kgFmt(x.kg)}</td>
+      <td><button type="button" class="del" data-rmsaved="${x.savedAt}">削除</button></td></tr>`).join('')
+      + `<tr><td>—</td><td class="hint">初期値</td><td class="num">${kgFmt(menus.strength.initial1RM)}</td><td></td></tr>`;
+  }
+
+  $('rmHistory').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-rmsaved]');
+    if (!btn) return;
+    if (!btn.classList.contains('confirm')) {
+      btn.classList.add('confirm');
+      btn.textContent = 'もう一度押して削除';
+      setTimeout(() => { if (btn.isConnected) { btn.classList.remove('confirm'); btn.textContent = '削除'; } }, 3000);
+      return;
+    }
+    state.oneRmLog = state.oneRmLog.filter((x) => String(x.savedAt) !== btn.dataset.rmsaved);
+    save();
+    renderOneRm();
   });
 
   // ---------- 体重 ----------
@@ -1132,6 +1252,7 @@
       <div class="profile" aria-hidden="true">${profile}</div>
       <ul class="segs">${segs}</ul>
       ${r.notes.length ? `<ul class="day-notes">${r.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+      ${liftHtml(date)}
       ${C.isKeySession(found.menu) ? sessionLogHtml(date, found.menu) : ''}
       <div class="zwo-row">
         <div class="btn-row">
@@ -1262,7 +1383,7 @@
       return `<button type="button" role="tab" aria-selected="${day === sel.day}" data-day="${day}">
         <span class="dname${isToday ? ' today-mark' : ''}">${C.DAY_LABELS[day]}</span>
         <span class="dbar" style="background:${bar}"></span>
-        <span class="dmeta">${meta}</span></button>`;
+        <span class="dmeta">${meta}</span>${window.Strength.planFor(date, menus) ? '<span class="dlift">DL</span>' : ''}</button>`;
     }).join('');
   }
 
@@ -1360,6 +1481,7 @@
       renderMenu();
       if (state.tab === 'weight') renderWeight();
       if (state.tab === 'history') { renderReviewSelect(); renderReview(); }
+      if (state.tab === 'prefs') renderOneRm();
     } catch (e) {
       const n = $('menuNotice');
       n.hidden = false;

@@ -269,6 +269,22 @@ button { font: inherit; cursor: pointer; }
 .proposal { display: grid; gap: 8px; }
 .proposal-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
 .proposal-row .why { grid-column: 1 / -1; font-size: 0.75rem; color: var(--muted); }
+.rm-box { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 16px; }
+.rm-box h2 { font-size: 1rem; }
+.rm-current { font-size: 0.9rem; color: var(--muted); }
+.rm-current b { font-family: var(--font-display); font-size: 1.6rem; color: var(--ink); }
+.rm-form { display: grid; gap: 8px; }
+.grid3 { display: grid; grid-template-columns: 1.3fr 1fr 0.8fr; gap: 8px; }
+.rm-preview b { font-family: var(--font-display); font-size: 1.05rem; color: var(--ink); }
+.lift { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.lift-sets { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.lift-sets li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; align-items: baseline; }
+.lift-sets .kg { font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; }
+.lift-sets .meta { font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lift-sets .plates { grid-column: 1 / -1; font-size: 0.75rem; color: var(--muted); }
+.lift details summary { cursor: pointer; font-size: 0.85rem; color: var(--muted); }
+.lift details[open] { display: grid; gap: 6px; }
+.week-strip .dlift { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.04em; }
 .link-box { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
 .link-box h2 { font-size: 1rem; }
 .steps { margin: 0; padding-left: 1.3em; font-size: 0.85rem; display: grid; gap: 4px; }

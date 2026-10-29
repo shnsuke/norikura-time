@@ -1,8 +1,7 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
   <name>ビルド期 負荷週1 火 VO2 5×5分</name>
-  <description>ビルド期（閾値＋VO2強化）
-夜：デッドリフト 2〜3回×3セット（VO2から6時間以上空ける）</description>
+  <description>ビルド期（閾値＋VO2強化）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
