@@ -183,6 +183,22 @@
           <label class="field">FTPを測った場所の標高 (m)<input type="number" id="pFtpAlt" inputmode="numeric" step="10" min="0" placeholder="0"></label>
         </div>
       </fieldset>
+      <div class="rm-box" id="rmBox">
+        <h2>デッドリフト 1RM</h2>
+        <div class="rm-current" id="rmCurrent"></div>
+        <div class="rm-form" data-rmform>
+          <div class="grid3">
+            <label class="field">日付<input type="date" class="rm-date" id="rmDate"></label>
+            <label class="field">重さ (kg)<input type="number" class="rm-kg" id="rmKg" inputmode="decimal" step="2.5" min="20" placeholder="120"></label>
+            <label class="field">回数<select class="rm-reps" id="rmReps"><option value="1">1回</option><option value="2">2回</option><option value="3">3回</option><option value="4">4回</option><option value="5">5回</option><option value="6">6回</option></select></label>
+          </div>
+          <p class="rm-preview hint" aria-live="polite">その日いちばん限界に近かったセットの重さと回数を入れると、1RM に換算します（Brzycki の式）。</p>
+          <button type="button" class="primary rm-save" disabled>この 1RM を保存</button>
+        </div>
+        <div class="table-scroll" id="rmHistoryWrap">
+          <table class="history"><thead><tr><th>日付</th><th>入力</th><th class="num">1RM</th><th></th></tr></thead><tbody id="rmHistory"></tbody></table>
+        </div>
+      </div>
       <details class="advanced">
         <summary>詳細設定</summary>
         <div class="grid2">
@@ -219,6 +235,7 @@
 <script src="zwo.js"></script>
 <script src="intervals.js"></script>
 <script src="review.js"></script>
+<script src="strength.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
