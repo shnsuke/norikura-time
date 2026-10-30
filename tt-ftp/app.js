@@ -22,6 +22,7 @@
     sessionLog: {},
     adjustments: {},
     oneRmLog: [],
+    backup: {},
     tab: 'menu',
     mode: 'A',
   });
@@ -112,7 +113,7 @@
     if (name === 'menu') renderMenu();
     if (name === 'weight') renderWeight();
     if (name === 'history') { renderHistory(); renderReviewSelect(); renderReview(); }
-    if (name === 'prefs') { renderPrediction(); renderOneRm(); }
+    if (name === 'prefs') { renderPrediction(); renderOneRm(); renderBackup(); }
   }
   for (const t of TABS) $(`tab-${t}`).addEventListener('click', () => showTab(t));
 
@@ -519,6 +520,7 @@
     if (!kg || kg < 20) { $('promptKg').focus(); return; }
     recordWeight(new Date(), kg);
     renderMenu();
+    backupIfDue('weight');
   });
 
   $('weighForm').addEventListener('submit', (e) => {
@@ -535,6 +537,7 @@
     toast.textContent = `${key.slice(5).replace('-', '/')} の週に ${fmt(kg, 1)}kg を記録しました。`;
     $('weighKg').value = '';
     renderWeight();
+    backupIfDue('weight');
   });
 
   $('planStartKg').addEventListener('input', (e) => {
@@ -1398,6 +1401,7 @@
 
   function renderMenu() {
     renderWeighPrompt();
+    renderBackupPrompt();
     if (!menus) return;
     const nowInfo = C.getPhaseAndWeek(new Date(), menus);
     $('reviewPrompt').hidden = !(nowInfo.status === 'in' && nowInfo.isRecovery && ['sat', 'sun'].includes(nowInfo.day));
@@ -1490,6 +1494,143 @@
         : `menus.json を読み込めませんでした（${e.message}）。JSONの書式（カンマや括弧の閉じ忘れ）を確認してください。`;
     }
   }
+
+  // ---------- バックアップ(Google ドライブ) ----------
+
+  const BK = () => window.Backup;
+  const GD = () => window.GDrive;
+  const clientId = () => (state.settings.googleClientId || '').trim();
+  let backupBusy = false;
+
+  function setBackupStatus(text) {
+    const el = $('backupStatus');
+    el.hidden = !text;
+    el.textContent = text || '';
+  }
+
+  /** ドライブに保存する。ボタンのタップの中から呼ぶ(Google の許可画面のため) */
+  async function backupNow(reason) {
+    if (backupBusy) return false;
+    if (!clientId()) {
+      setBackupStatus('「Google のクライアント ID」を入れてください。');
+      return false;
+    }
+    backupBusy = true;
+    setBackupStatus('Google ドライブに保存中…');
+    try {
+      const token = await GD().getToken(clientId());
+      const folderId = await GD().ensureFolder(token, BK().FOLDER_NAME, state.backup && state.backup.folderId);
+      const now = new Date();
+      const name = BK().fileName(now);
+      await GD().saveJson(token, folderId, name, BK().buildBackup(state, now));
+      state.backup = { ...(state.backup || {}), folderId, lastDate: isoDate(now), lastAt: Date.now(), lastFile: name };
+      save();
+      setBackupStatus(`${name} を保存しました${reason === 'weight' ? '（体重の記録と一緒に保存）' : ''}。`);
+      return true;
+    } catch (err) {
+      setBackupStatus(`バックアップできませんでした：${err.message}`);
+      return false;
+    } finally {
+      backupBusy = false;
+      renderBackup();
+      renderBackupPrompt();
+    }
+  }
+
+  /** 今週まだなら保存する(月曜の体重記録から呼ぶ) */
+  async function backupIfDue(reason) {
+    if (!clientId() || !BK().isDue(state.backup && state.backup.lastDate)) return;
+    const ok = await backupNow(reason);
+    if (!ok && state.tab !== 'prefs') {
+      // 失敗したときはメニュー画面のお知らせから再試行できる
+      renderBackupPrompt();
+    }
+  }
+
+  function renderBackupPrompt() {
+    const due = !!clientId() && BK().isDue(state.backup && state.backup.lastDate);
+    // 月曜で体重がまだなら、体重の記録と一緒に保存されるので出さない
+    const weighPending = !$('weighPrompt').hidden;
+    $('backupPrompt').hidden = !due || weighPending;
+  }
+
+  function renderBackup() {
+    $('pGoogleClientId').value = state.settings.googleClientId || '';
+    const b = state.backup || {};
+    $('backupLast').innerHTML = b.lastDate
+      ? `最後のバックアップ <b>${mdLabel(C.parseDate(b.lastDate))}</b>（${esc(b.lastFile || '')}）`
+      : 'まだバックアップしていません。';
+    $('backupNow').disabled = $('backupList').disabled = !clientId() || backupBusy;
+  }
+
+  $('pGoogleClientId').addEventListener('input', (e) => {
+    state.settings.googleClientId = e.target.value.trim();
+    save();
+    if (clientId()) GD().loadGis().catch(() => {});
+    renderBackup();
+  });
+  $('backupNow').addEventListener('click', () => backupNow('manual'));
+  $('backupPromptBtn').addEventListener('click', () => backupNow('prompt'));
+
+  // 復元: 一覧 → 選ぶ → 中身を確認 → 復元
+  let restoreTarget = null;
+  $('backupList').addEventListener('click', async () => {
+    const box = $('backupFiles');
+    restoreTarget = null;
+    setBackupStatus('バックアップの一覧を取得中…');
+    try {
+      const token = await GD().getToken(clientId());
+      const folderId = await GD().ensureFolder(token, BK().FOLDER_NAME, state.backup && state.backup.folderId);
+      state.backup = { ...(state.backup || {}), folderId };
+      save();
+      const files = await GD().listJson(token, folderId);
+      setBackupStatus(files.length ? `${files.length} 件のバックアップがあります。` : 'まだバックアップがありません。');
+      box.innerHTML = files.length ? `<div class="table-scroll"><table class="history"><thead><tr><th>ファイル</th><th></th></tr></thead><tbody>${
+        files.map((f) => `<tr><td>${esc(f.name)}</td><td><button type="button" class="del" data-restore="${esc(f.id)}" data-name="${esc(f.name)}">復元</button></td></tr>`).join('')
+      }</tbody></table></div>` : '';
+    } catch (err) {
+      setBackupStatus(`一覧を取得できませんでした：${err.message}`);
+    }
+  });
+
+  $('backupFiles').addEventListener('click', async (e) => {
+    const pick = e.target.closest('[data-restore]');
+    const go = e.target.closest('#restoreGo');
+    if (pick) {
+      setBackupStatus(`${pick.dataset.name} を読み込み中…`);
+      try {
+        const token = await GD().getToken(clientId());
+        const obj = await GD().readJson(token, pick.dataset.restore);
+        const err = BK().validate(obj);
+        if (err) { setBackupStatus(err); return; }
+        restoreTarget = obj;
+        const n = BK().summary(obj);
+        const old = $('restoreConfirm');
+        if (old) old.remove();
+        $('backupFiles').insertAdjacentHTML('beforeend', `<div class="notice" id="restoreConfirm">
+          <p><b>${esc(pick.dataset.name)}</b>（${esc(obj.date || '')}）の内容：TT ${n.tt}件・体重 ${n.weight}件・RPE の記録 ${n.sessions}件・1RM ${n.oneRm}件・調整 ${n.adjustments}件</p>
+          <p>復元すると、この端末の今のデータは置き換わります（intervals.icu の API キーと Google の設定は残ります）。</p>
+          <button type="button" class="primary" id="restoreGo">この内容で復元する</button></div>`);
+        setBackupStatus('内容を確認してください。');
+      } catch (err2) {
+        setBackupStatus(`読み込めませんでした：${err2.message}`);
+      }
+      return;
+    }
+    if (go && restoreTarget) {
+      try {
+        const next = BK().restore(state, restoreTarget);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch (err3) {
+        setBackupStatus(`復元できませんでした：${err3.message}`);
+        return;
+      }
+      location.reload();
+    }
+  });
+
+  // クライアント ID があれば Google のスクリプトを先に読み込んでおく(タップ時にポップアップが止められないように)
+  if (clientId()) GD().loadGis().catch(() => {});
 
   // ---------- 起動 ----------
 

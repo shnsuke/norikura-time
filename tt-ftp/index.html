@@ -42,6 +42,10 @@
   <!-- メニュー -->
   <section id="view-menu" role="tabpanel" aria-labelledby="tab-menu">
     <div class="notice" id="menuNotice" hidden></div>
+    <div class="review-prompt" id="backupPrompt" hidden>
+      <span>今週のバックアップがまだです。</span>
+      <button type="button" class="ghost" id="backupPromptBtn">Google ドライブに保存</button>
+    </div>
     <div class="weigh-prompt" id="weighPrompt" hidden>
       <label class="field">今週の体重を記録（月曜）
         <span class="inline-input"><input type="number" id="promptKg" inputmode="decimal" step="0.1" min="20" placeholder="62.5"><span class="unit">kg</span>
@@ -227,6 +231,19 @@
         <p class="hint">同じ日付を登録し直すと上書きされます。強度は%FTPで入るので、Zwift と intervals.icu の FTP をこのアプリの FTP に合わせてください。API キーはこの端末のブラウザにだけ保存されます。</p>
         <p class="toast" id="icuStatus" role="status" hidden></p>
       </div>
+
+      <div class="link-box" id="backupBox">
+        <h2>バックアップ（Google ドライブ）</h2>
+        <p class="hint">毎週月曜に体重を記録すると、Google ドライブの専用フォルダ「峠TTプランナー バックアップ」に、この端末のデータを JSON で保存します。月曜に記録しなかった週は、次に開いたときにメニュー画面でお知らせします。intervals.icu の API キーは含めません。</p>
+        <label class="field">Google のクライアント ID（初回だけ）<input type="text" id="pGoogleClientId" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx.apps.googleusercontent.com"></label>
+        <p class="rm-current" id="backupLast"></p>
+        <div class="btn-row">
+          <button type="button" class="primary" id="backupNow">今すぐバックアップ</button>
+          <button type="button" class="ghost" id="backupList">バックアップから復元</button>
+        </div>
+        <p class="toast" id="backupStatus" role="status" hidden></p>
+        <div id="backupFiles"></div>
+      </div>
     </form>
   </section>
 </main>
@@ -236,6 +253,8 @@
 <script src="intervals.js"></script>
 <script src="review.js"></script>
 <script src="strength.js"></script>
+<script src="backup.js"></script>
+<script src="gdrive.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
