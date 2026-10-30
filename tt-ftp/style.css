@@ -40,6 +40,8 @@
 }
 
 * { box-sizing: border-box; }
+/* display を指定した要素でも hidden 属性で確実に隠す */
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
