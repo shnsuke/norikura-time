@@ -33,6 +33,12 @@ jobs:
       - name: Test
         working-directory: tt-ftp
         run: node --test
+      - name: Stamp asset versions
+        # 画面(index.html)と JS/CSS が必ず同じ版で読み込まれるよう、公開のたびに ?v= をコミットのハッシュにする
+        working-directory: tt-ftp
+        run: |
+          sed -i "s/?v=dev/?v=${GITHUB_SHA::7}/g" index.html
+          grep -q "?v=${GITHUB_SHA::7}" index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
