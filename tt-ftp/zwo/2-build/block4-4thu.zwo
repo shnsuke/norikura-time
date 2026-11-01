@@ -5,7 +5,7 @@
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <Warmup Duration="900" PowerLow="0.55" PowerHigh="0.65"/>
+    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
     <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.075" OffPower="0.935"/>
     <SteadyState Duration="60" Power="1.075"/>
     <SteadyState Duration="300" Power="0.5"/>
@@ -14,7 +14,6 @@
     <SteadyState Duration="300" Power="0.5"/>
     <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.075" OffPower="0.935"/>
     <SteadyState Duration="60" Power="1.075"/>
-    <SteadyState Duration="900" Power="0.65"/>
-    <Cooldown Duration="600" PowerLow="0.55" PowerHigh="0.45"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>
