@@ -114,7 +114,7 @@ test('調整の適用: 本番区間の % だけを動かし、Z2 は時間を減
   assert.equal(thu.adjusted, '強度 +2%');
   assert.deepEqual(base.load.thu.segments.find((s) => s.label === 'SST').work.pct, [88, 94]); // 元は変更しない
   const sun = R.applyAdjustment(base.load.sun, { kinds: {}, z2Pct: -20 });
-  assert.equal(sun.segments[0].min, 144); // 180分 × 0.8
+  assert.equal(sun.segments[0].min, 180); // 225分 × 0.8
   assert.equal(sun.adjusted, '量 -20%');
   // 一定区間でも 85% 以上なら本番扱い(閾値ロング・レースシミュレーション)
   const race = R.applyAdjustment(menus.phases[2].templates.load.sat, { kinds: { race: 1 }, z2Pct: 0 });

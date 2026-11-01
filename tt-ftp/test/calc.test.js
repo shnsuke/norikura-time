@@ -388,3 +388,10 @@ test('menus.json: 火曜・木曜のメニューはすべて 1時間15分以内'
     }
   }
 });
+
+test('menus.json: 基礎期の負荷週の日曜は Z2 3時間45分(ほかの期は変えない)', () => {
+  const min = (phaseIdx, key) => Calc.resolveMenu(menus.phases[phaseIdx].templates[key].sun, 300, 60).totalSec / 60;
+  assert.equal(min(0, 'load'), 225);
+  assert.equal(min(0, 'recovery'), 150);
+  assert.equal(min(1, 'load'), 180);
+});
