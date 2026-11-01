@@ -29,7 +29,6 @@
     <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.12"/>
     <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.1"/>
     <SteadyState Duration="180" Power="0.5"/>
-    <SteadyState Duration="1800" Power="0.65"/>
-    <Cooldown Duration="600" PowerLow="0.55" PowerHigh="0.45"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

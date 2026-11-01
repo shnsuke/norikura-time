@@ -376,3 +376,15 @@ test('menus.json: すべてのメニューに kind があり、負荷週の火�
   const rec = menus.phases[0].templates.recovery;
   assert.deepEqual(Object.keys(rec).filter((day) => Calc.isKeySession(rec[day])), ['thu']);
 });
+
+test('menus.json: 火曜・木曜のメニューはすべて 1時間15分以内', () => {
+  for (const phase of menus.phases) {
+    for (const [key, days] of Object.entries(phase.templates)) {
+      for (const day of ['tue', 'thu']) {
+        if (!days[day]) continue;
+        const r = Calc.resolveMenu(days[day], 300, 60);
+        assert.ok(r.totalSec <= 75 * 60, `${phase.name} ${key} ${day} ${days[day].title}: ${Calc.formatDuration(r.totalSec)}`);
+      }
+    }
+  }
+});
