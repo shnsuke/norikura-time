@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>特異期 回復週 水 Z2（回復週）</name>
+  <description>特異期（ポラライズド寄り＋レース特異的）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="3600" Power="0.6"/>
+  </workout>
+</workout_file>

@@ -1,17 +1,13 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>基礎期 負荷週 土 実坂ロング 4.5h（SST×2＋終盤に5分×2）</name>
-  <description>基礎期（ピラミッド型 約70:20:10）
-補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）</description>
+  <name>基礎期 負荷週 土 実坂ロング 3.5〜4h（坂でSST〜テンポ×2）</name>
+  <description>基礎期（ピラミッド型 約70:20:10）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="4500" Power="0.65"/>
+    <SteadyState Duration="3600" Power="0.65"/>
     <IntervalsT Repeat="1" OnDuration="1200" OffDuration="900" OnPower="0.86" OffPower="0.55"/>
     <SteadyState Duration="1200" Power="0.86"/>
-    <SteadyState Duration="6300" Power="0.65"/>
-    <IntervalsT Repeat="1" OnDuration="300" OffDuration="300" OnPower="1.075" OffPower="0.55"/>
-    <SteadyState Duration="300" Power="1.075"/>
-    <SteadyState Duration="1200" Power="0.65"/>
+    <SteadyState Duration="7200" Power="0.65"/>
   </workout>
 </workout_file>

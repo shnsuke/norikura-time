@@ -42,9 +42,9 @@ test('現在の1RM: 最新の記録、無ければ初期値 122.5kg', () => {
   assert.equal(S.daysSinceUpdate([], d('2026-12-17')), null);
 });
 
-test('頻度: 基礎期・ビルド期・持久期は木・日、移行期は休み、特異期は日のみ、10/24 が最後', () => {
+test('頻度: 基礎期・ビルド期は木・日、特異期は日のみ、8/8 が最後', () => {
   const daysWithLift = [];
-  for (let t = d('2026-11-02'); t <= d('2027-11-14'); t.setDate(t.getDate() + 1)) {
+  for (let t = d('2026-11-02'); t <= d('2027-08-29'); t.setDate(t.getDate() + 1)) {
     if (S.planFor(t, menus)) daysWithLift.push(new Date(t));
   }
   const byPhase = (id) => daysWithLift.filter((x) => Calc.getPhaseAndWeek(x, menus).phase.id === id);
@@ -53,13 +53,10 @@ test('頻度: 基礎期・ビルド期・持久期は木・日、移行期は休
   assert.equal(byPhase('base').length, 24); // 12週 × 2
   assert.deepEqual(dows(byPhase('build')), [0, 4]);
   assert.equal(byPhase('build').length, 24);
-  assert.deepEqual(dows(byPhase('endurance')), [0, 4]);
-  assert.equal(byPhase('endurance').length, 24);
-  assert.equal(byPhase('transition').length, 0);
   assert.deepEqual(dows(byPhase('specific')), [0]);
-  assert.equal(byPhase('specific').length, 12);
-  assert.deepEqual(byPhase('peak').map((x) => `${x.getMonth() + 1}/${x.getDate()}`), ['10/24']);
-  assert.equal(S.planFor(d('2027-10-31'), menus), null); // レース2週前の日曜はやらない
+  assert.equal(byPhase('specific').length, 15);
+  assert.deepEqual(byPhase('peak').map((x) => `${x.getMonth() + 1}/${x.getDate()}`), ['8/8']);
+  assert.equal(S.planFor(d('2027-08-15'), menus), null);
   assert.equal(S.planFor(d('2026-11-03'), menus), null); // 火曜はやらない
 });
 
@@ -95,7 +92,7 @@ test('重さ(1RM 122.5kg): 1RMテストの日', () => {
   assert.deepEqual(t.attempts[0].plates, [20, 20, 10, 1.25]);
 });
 
-test('重さ(1RM 122.5kg): 基礎期ブロック3〜4・ビルド期・持久期・特異期・ピーク期', () => {
+test('重さ(1RM 122.5kg): 基礎期ブロック3〜4・ビルド期・特異期・ピーク期', () => {
   const w = (date) => kgOf(date).work.map((x) => [x.label, x.kg, x.reps, x.sets]);
   assert.deepEqual(w('2026-12-20'), [['', 107.5, 2, 5]]);       // 基礎B3 負荷週1 日
   assert.deepEqual(w('2026-12-17'), [['', 100, 2, 4]]);         // 基礎B3 負荷週1 木
@@ -103,11 +100,9 @@ test('重さ(1RM 122.5kg): 基礎期ブロック3〜4・ビルド期・持久期
   assert.deepEqual(w('2027-01-31'), [['', 112.5, 2, 2]]);       // ビルド 負荷週1 日
   assert.deepEqual(w('2027-02-07'), [['トップシングル', 120, 1, 1], ['', 112.5, 1, 2]]); // ビルド 負荷週2 日
   assert.deepEqual(w('2027-02-04'), [['', 110, 1, 3]]);         // ビルド 負荷週2 木
-  assert.deepEqual(w('2027-04-25'), [['', 112.5, 2, 2]]);       // 持久 負荷週1 日(ビルド期と同じ内容)
-  assert.deepEqual(w('2027-04-22'), [['', 107.5, 2, 2]]);       // 持久 負荷週1 木
-  assert.deepEqual(w('2027-08-01'), [['', 112.5, 1, 3]]);       // 特異 負荷週1 日
-  assert.deepEqual(w('2027-08-08'), [['', 117.5, 1, 2]]);       // 特異 負荷週2 日
-  assert.deepEqual(w('2027-10-24'), [['', 110, 1, 2]]);         // ピーク 最後
+  assert.deepEqual(w('2027-04-25'), [['', 112.5, 1, 3]]);       // 特異 負荷週1 日
+  assert.deepEqual(w('2027-05-02'), [['', 117.5, 1, 2]]);       // 特異 負荷週2 日
+  assert.deepEqual(w('2027-08-08'), [['', 110, 1, 2]]);         // ピーク 最後
 });
 
 test('1RMが変わると重さも変わる', () => {

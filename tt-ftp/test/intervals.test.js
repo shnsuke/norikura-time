@@ -46,15 +46,15 @@ test('menus.json の全メニュー: テキストの合計時間がアプリ表�
 });
 
 test('予定の作成: シーズン全体で休養日を除く日が登録され、日付で上書きできるIDを持つ', () => {
-  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-10-28'), Calc.parseDate('2027-11-30'));
-  // 54週 × 5日(月・金は休養)
-  assert.equal(events.length, 54 * 5);
+  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-10-28'), Calc.parseDate('2027-09-10'));
+  // 43週 × 5日(月・金は休養)
+  assert.equal(events.length, 43 * 5);
   assert.equal(events[0].start_date_local, '2026-11-03T00:00:00');
   assert.equal(events[0].external_id, 'ttftp-2026-11-03');
   assert.equal(events[0].category, 'WORKOUT');
   assert.match(events[0].description, /^基礎期 B1負荷週\n/);
   const last = events[events.length - 1];
-  assert.equal(last.start_date_local, '2027-11-14T00:00:00');
+  assert.equal(last.start_date_local, '2027-08-29T00:00:00');
   assert.equal(last.name, 'レース本番');
   // 回復週の土曜はFTPテスト
   const sat = events.find((e) => e.start_date_local.startsWith('2026-11-21'));
