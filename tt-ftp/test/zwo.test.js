@@ -43,5 +43,5 @@ test('menus.json の全メニュー: .zwo の合計時間がアプリ表示の�
       }
     }
   }
-  assert.equal(n, 59);
+  assert.equal(n, 80); // menus.json の全テンプレートの全日数
 });

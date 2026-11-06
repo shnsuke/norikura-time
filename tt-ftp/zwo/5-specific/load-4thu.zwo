@@ -1,0 +1,17 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>特異期 負荷週 木 羽地の再現（9分: 70秒 95% / 20秒 130%）×2＋スプリント</name>
+  <description>特異期（学校坂（5分）・羽地（9分）・スプリントの再現）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="6" OnDuration="70" OffDuration="20" OnPower="0.95" OffPower="1.3"/>
+    <SteadyState Duration="480" Power="0.55"/>
+    <IntervalsT Repeat="6" OnDuration="70" OffDuration="20" OnPower="0.95" OffPower="1.3"/>
+    <SteadyState Duration="300" Power="0.55"/>
+    <IntervalsT Repeat="2" OnDuration="10" OffDuration="180" OnPower="2" OffPower="0.5"/>
+    <SteadyState Duration="10" Power="2"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

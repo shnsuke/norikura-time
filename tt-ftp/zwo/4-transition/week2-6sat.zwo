@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>移行期 2週目 土 自由な実走 2〜3h</name>
+  <description>移行期（軽く維持して疲れを抜く（2週））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <FreeRide Duration="9000"/>
+  </workout>
+</workout_file>
