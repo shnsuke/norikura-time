@@ -1,0 +1,15 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>ピーク期 2週目 土 レースシミュレーション 4h</name>
+  <description>ピーク期（ピーキング（4週））
+補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="7200" Power="0.7"/>
+    <SteadyState Duration="540" Power="1.075"/>
+    <SteadyState Duration="3600" Power="0.65"/>
+    <SteadyState Duration="1200" Power="0.925"/>
+    <SteadyState Duration="1860" Power="0.65"/>
+  </workout>
+</workout_file>

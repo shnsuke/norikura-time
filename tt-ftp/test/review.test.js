@@ -86,9 +86,11 @@ test('ブロックの範囲と次のブロック', () => {
   assert.deepEqual([r.start.getMonth() + 1, r.start.getDate(), r.end.getMonth() + 1, r.end.getDate()], [11, 23, 12, 13]);
   assert.deepEqual(R.nextBlock(menus, 0, 2), { phaseIndex: 0, phase: 'base', block: 3 });
   assert.deepEqual(R.nextBlock(menus, 0, 4), { phaseIndex: 1, phase: 'build', block: 1 });
-  assert.deepEqual(R.nextBlock(menus, 2, 5), { phaseIndex: 3, phase: 'peak', block: null });
-  assert.equal(R.nextBlock(menus, 3, null), null);
-  const pk = R.blockRange(menus, 3, null);
+  assert.deepEqual(R.nextBlock(menus, 2, 4), { phaseIndex: 3, phase: 'transition', block: null }); // 持久期の最後 → 移行期
+  assert.deepEqual(R.nextBlock(menus, 3, null), { phaseIndex: 4, phase: 'specific', block: 1 });   // 移行期 → 特異期
+  assert.deepEqual(R.nextBlock(menus, 4, 4), { phaseIndex: 5, phase: 'peak', block: null });
+  assert.equal(R.nextBlock(menus, 5, null), null);
+  const pk = R.blockRange(menus, 5, null);
   assert.equal(Calc.daysBetween(pk.start, pk.end), 27);
 });
 
@@ -116,8 +118,8 @@ test('調整の適用: 本番区間の % だけを動かし、Z2 は時間を減
   const sun = R.applyAdjustment(base.load.sun, { kinds: {}, z2Pct: -20 });
   assert.equal(sun.segments[0].min, 180); // 225分 × 0.8
   assert.equal(sun.adjusted, '量 -20%');
-  // 一定区間でも 85% 以上なら本番扱い(閾値ロング・レースシミュレーション)
-  const race = R.applyAdjustment(menus.phases[2].templates.load.sat, { kinds: { race: 1 }, z2Pct: 0 });
-  assert.deepEqual(race.segments.map((s) => s.pct), [[60, 70], [96, 103], [60, 70]]);
+  // 一定区間でも 85% 以上なら本番扱い(レースシミュレーションの登り・最後の30分・スプリント)
+  const race = R.applyAdjustment(menus.phases[4].templates.load.sat, { kinds: { race: 1 }, z2Pct: 0 });
+  assert.deepEqual(race.segments.map((s) => s.pct), [[65, 75], [106, 111], [70, 80], [106, 111], [60, 70], [91, 96], 151]);
   assert.equal(R.applyAdjustment(base.load.wed, { kinds: { vo2: 3 }, z2Pct: 0 }), base.load.wed);
 });

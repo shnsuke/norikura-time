@@ -1,0 +1,19 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>持久期 負荷週1 火 繰り返し 40/20</name>
+  <description>持久期（長時間の持久力＋高強度を繰り返す力）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="9" OnDuration="40" OffDuration="20" OnPower="1.25" OffPower="0.5"/>
+    <SteadyState Duration="40" Power="1.25"/>
+    <SteadyState Duration="300" Power="0.5"/>
+    <IntervalsT Repeat="9" OnDuration="40" OffDuration="20" OnPower="1.25" OffPower="0.5"/>
+    <SteadyState Duration="40" Power="1.25"/>
+    <SteadyState Duration="300" Power="0.5"/>
+    <IntervalsT Repeat="9" OnDuration="40" OffDuration="20" OnPower="1.25" OffPower="0.5"/>
+    <SteadyState Duration="40" Power="1.25"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

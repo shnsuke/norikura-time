@@ -1,13 +1,15 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>ビルド期 負荷週 土 実坂 2×30分＋Z2（3〜3.5h）</name>
-  <description>ビルド期（閾値＋VO2強化）</description>
+  <name>ビルド期 負荷週 土 実坂 3×12分＋テンポ（4.5h）</name>
+  <description>ビルド期（閾値＋VO2強化）
+補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="2700" Power="0.65"/>
-    <IntervalsT Repeat="1" OnDuration="1800" OffDuration="900" OnPower="0.925" OffPower="0.55"/>
-    <SteadyState Duration="1800" Power="0.925"/>
-    <SteadyState Duration="4500" Power="0.65"/>
+    <SteadyState Duration="3600" Power="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="720" OffDuration="480" OnPower="1.025" OffPower="0.55"/>
+    <SteadyState Duration="720" Power="1.025"/>
+    <SteadyState Duration="1800" Power="0.805"/>
+    <SteadyState Duration="7680" Power="0.65"/>
   </workout>
 </workout_file>

@@ -1,0 +1,19 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>特異期 負荷週2 火 繰り返し 40/20</name>
+  <description>特異期（おきなわの展開を再現する）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="9" OnDuration="40" OffDuration="20" OnPower="1.25" OffPower="0.5"/>
+    <SteadyState Duration="40" Power="1.25"/>
+    <SteadyState Duration="300" Power="0.5"/>
+    <IntervalsT Repeat="9" OnDuration="40" OffDuration="20" OnPower="1.25" OffPower="0.5"/>
+    <SteadyState Duration="40" Power="1.25"/>
+    <SteadyState Duration="300" Power="0.5"/>
+    <IntervalsT Repeat="9" OnDuration="40" OffDuration="20" OnPower="1.25" OffPower="0.5"/>
+    <SteadyState Duration="40" Power="1.25"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

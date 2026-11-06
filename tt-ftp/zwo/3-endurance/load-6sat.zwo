@@ -1,0 +1,17 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>持久期 負荷週 土 ロング 5h（後半にレースペースとスプリント）</name>
+  <description>持久期（長時間の持久力＋高強度を繰り返す力）
+補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="9000" Power="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="600" OffDuration="300" OnPower="0.975" OffPower="0.6"/>
+    <SteadyState Duration="600" Power="0.975"/>
+    <SteadyState Duration="5400" Power="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="10" OffDuration="180" OnPower="2" OffPower="0.5"/>
+    <SteadyState Duration="10" Power="2"/>
+    <SteadyState Duration="810" Power="0.65"/>
+  </workout>
+</workout_file>
