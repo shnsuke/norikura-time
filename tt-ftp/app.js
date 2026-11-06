@@ -113,7 +113,7 @@
     if (name === 'menu') renderMenu();
     if (name === 'weight') renderWeight();
     if (name === 'history') { renderHistory(); renderReviewSelect(); renderReview(); }
-    if (name === 'prefs') { renderOneRm(); renderBackup(); }
+    if (name === 'prefs') { renderPrediction(); renderOneRm(); renderBackup(); }
   }
   for (const t of TABS) $(`tab-${t}`).addEventListener('click', () => showTab(t));
 
@@ -123,8 +123,18 @@
     pWeight: 'weight', pFtp: 'ftpOverride', pBike: 'bikeKg', pCda: 'cda', pCrr: 'crr', pLoss: 'lossPct', pK: 'k',
   };
 
+  function altSettings() {
+    const s = state.settings;
+    return { altitude: s.altOn !== false, acclimatized: s.acclimatized === true, ftpAltM: num(s.ftpAltM) || 0 };
+  }
+
   function fillPrefs() {
     $('pIcuKey').value = state.settings.icuKey || '';
+    const a = altSettings();
+    $('pAltOn').checked = a.altitude;
+    $('pAccl').value = a.acclimatized ? 'yes' : 'no';
+    $('pFtpAlt').value = num(state.settings.ftpAltM) === null ? '' : state.settings.ftpAltM;
+    $('pAccl').disabled = $('pFtpAlt').disabled = !a.altitude;
     for (const [id, key] of Object.entries(prefFields)) {
       const v = state.settings[key];
       $(id).value = v === null || v === undefined ? '' : v;
@@ -139,11 +149,28 @@
     save();
     renderHeader();
     computeTT();
+    renderPrediction();
     $('prefsToast').hidden = false;
     clearTimeout(prefsToastTimer);
     prefsToastTimer = setTimeout(() => ($('prefsToast').hidden = true), 1500);
   });
   $('prefsForm').addEventListener('submit', (e) => e.preventDefault());
+  $('pAltOn').addEventListener('change', (e) => {
+    state.settings.altOn = e.target.checked;
+    $('pAccl').disabled = $('pFtpAlt').disabled = !e.target.checked;
+    save();
+    renderPrediction();
+  });
+  $('pAccl').addEventListener('change', (e) => {
+    state.settings.acclimatized = e.target.value === 'yes';
+    save();
+    renderPrediction();
+  });
+  $('pFtpAlt').addEventListener('input', (e) => {
+    state.settings.ftpAltM = num(e.target.value);
+    save();
+    renderPrediction();
+  });
   $('pIcuKey').addEventListener('input', (e) => {
     state.settings.icuKey = e.target.value.trim();
     save();
@@ -155,6 +182,7 @@
     save();
     fillPrefs();
     computeTT();
+    renderPrediction();
   });
 
   function physicsSettings() {
@@ -162,6 +190,55 @@
     const d = defaultState().settings;
     const pick = (k) => (num(s[k]) === null ? d[k] : num(s[k]));
     return { bikeKg: pick('bikeKg'), cda: pick('cda'), crr: pick('crr'), drivetrainLoss: pick('lossPct') / 100, k: pick('k') };
+  }
+
+  // ---------- 乗鞍の予想タイム ----------
+
+  function renderPrediction() {
+    const el = $('climbPrediction');
+    const { ftp } = currentFtp();
+    const weight = currentWeight();
+    const head = '<div class="eyebrow">乗鞍ヒルクライム 予想タイム</div>';
+    if (!ftp || !weight) {
+      el.innerHTML = `${head}<p class="hint">体重と FTP（TT結果か手入力）が入ると、乗鞍エコーライン 20.5km・標高差1260m の予想タイムを表示します。</p>`;
+      return;
+    }
+    const ps = physicsSettings();
+    const alt = altSettings();
+    const opts = { ...ps, ...alt, ftp, riderKg: weight };
+    let r;
+    try {
+      r = C.predictClimb(opts);
+    } catch (e) {
+      el.innerHTML = `${head}<p class="warn">${esc(e.message)}</p>`;
+      return;
+    }
+    const rows = r.segments.map((s) => `<tr>
+      <td>${esc(s.name)}<br><span class="hint">${fmt(s.distanceKm, 1)}km・${fmt(s.gradePct, 1)}%</span></td>
+      <td class="num">${fmt(s.powerW)}</td><td class="num">${fmt(s.speedKmh, 1)}</td><td class="num">${C.formatClock(s.sec)}</td></tr>`).join('');
+    const flat = alt.altitude ? C.predictClimb({ ...opts, altitude: false }) : null;
+    const altLine = flat
+      ? `<p class="sub">高地で平均 <b>−${fmt(r.altitudeLossPct, 1)}</b>%（${fmt(r.basePowerW)}W → ${fmt(r.powerW)}W）。
+         高地の影響が無ければ <b>${C.formatClock(flat.totalSec)}</b>（${C.formatClock(r.totalSec - flat.totalSec)} 速い）</p>`
+      : '<p class="sub">高地によるパワー低下は考慮していません。</p>';
+    // 期分けの減量目標(60kg・58kg)で試算
+    const whatIf = [60, 58].filter((w) => w < weight - 0.05).map((w) => {
+      const x = C.predictClimb({ ...opts, riderKg: w });
+      return `<tr><td>体重 ${w}kg</td><td class="num">${fmt(ftp / w, 2)} W/kg</td><td class="num">${C.formatClock(x.totalSec)}</td>
+        <td class="num">${C.formatClock(r.totalSec - x.totalSec)} 短縮</td></tr>`;
+    }).join('');
+    el.innerHTML = `${head}
+      <div class="predict-time">${C.formatClock(r.totalSec)}</div>
+      <div class="predict-meta">
+        <span>平均 <b>${fmt(r.powerW)}</b> W</span><span><b>${fmt(r.wkg, 2)}</b> W/kg</span>
+        <span>FTPの <b>${fmt(r.pctFtp)}</b>%</span><span>平均 <b>${fmt(r.speedKmh, 1)}</b> km/h</span>
+      </div>
+      ${altLine}
+      <div class="scroll"><table>
+        <thead><tr><th>区間</th><th class="num">W</th><th class="num">km/h</th><th class="num">タイム</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+      ${whatIf ? `<div class="scroll"><table><thead><tr><th>FTP ${fmt(ftp)}W のまま</th><th class="num"></th><th class="num">予想</th><th class="num">差</th></tr></thead><tbody>${whatIf}</tbody></table></div>` : ''}
+      <p class="hint">FTP ${fmt(ftp)}W・体重 ${fmt(weight, 1)}kg・詳細設定の値で計算。所要時間に見合うパワー（FTP × (60/分)^k）を基準に、${alt.altitude ? `標高に応じて下がるパワー（Bassett ら 1999 の式・高地順応${alt.acclimatized ? 'あり' : 'なし'}、FTP計測地 ${fmt(alt.ftpAltM)}m 基準）で` : '一定ペースで'}登る想定です。区間の勾配は大会要項からの概算で、風・集団走行・路面状況は考慮していません。</p>`;
   }
 
   // ---------- TT入力 ----------
@@ -603,8 +680,7 @@
     // 計画
     if (plan) {
       g += `<polyline class="plan-line" points="${planPts.map((p) => `${X(p.date)},${Y(p.kg)}`).join(' ')}"></polyline>`;
-      // 目標が変わる点にだけ印を付ける
-      plan.filter((p, i) => i > 0 && p.kg !== plan[i - 1].kg && inView(p.date)).forEach((p) => {
+      plan.slice(1, 3).filter((p) => inView(p.date)).forEach((p) => {
         g += `<circle class="plan-goal" cx="${X(p.date)}" cy="${Y(p.kg)}" r="4"></circle>
           <text class="label muted" x="${X(p.date)}" y="${Y(p.kg) - 8}" text-anchor="middle">${fmt(p.kg, 0)}kg</text>`;
       });
@@ -1030,8 +1106,7 @@
   }
 
   function weekChip(info) {
-    // ブロック制でない期(移行期・ピーク期)は期の名前をそのまま出す。週数は隣のチップに出る
-    if (info.phase.blocks === false) return `<span class="chip peak">${esc(info.phase.name)}</span>`;
+    if (info.phase.blocks === false) return `<span class="chip peak">ピーキング ${info.week}/${info.totalWeeks}週</span>`;
     return info.isRecovery
       ? `<span class="chip recovery">回復週</span>`
       : `<span class="chip load">負荷週 ${info.weekInBlock}/${(menus.blockWeeks || 3) - 1}</span>`;
@@ -1162,11 +1237,11 @@
           ${s.note ? `<span class="sub">${esc(s.note)}</span>` : ''}</li>`;
       }
       const one = s.restFirst
-        ? `(${C.formatDuration(s.rest.sec)}${esc(s.restLabel)} → ${C.formatDuration(s.work.sec)})`
+        ? `(${C.formatDuration(s.rest.sec)}つなぎ → ${C.formatDuration(s.work.sec)})`
         : C.formatDuration(s.work.sec);
       const reps = `${s.sets > 1 ? `${s.sets}セット × ` : ''}${s.reps} × ${one}`;
       const lines = [];
-      if (s.rest) lines.push(`${esc(s.restLabel)} ${inlinePower(s.rest, s.rest.sec, hasFtp)}`);
+      if (s.rest) lines.push(`つなぎ ${inlinePower(s.rest, s.rest.sec, hasFtp)}`);
       if (s.setRest) lines.push(`セット間 ${inlinePower(s.setRest, s.setRest.sec, hasFtp)}`);
       if (s.note) lines.push(esc(s.note));
       return `<li class="seg"><span class="zone" style="background:var(--${zoneOf(s.work.pct)})"></span>
