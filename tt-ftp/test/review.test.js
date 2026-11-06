@@ -118,8 +118,9 @@ test('調整の適用: 本番区間の % だけを動かし、Z2 は時間を減
   const sun = R.applyAdjustment(base.load.sun, { kinds: {}, z2Pct: -20 });
   assert.equal(sun.segments[0].min, 180); // 225分 × 0.8
   assert.equal(sun.adjusted, '量 -20%');
-  // 一定区間でも 85% 以上なら本番扱い(レースシミュレーションの登り・最後の30分・スプリント)
+  // 一定区間でも 85% 以上なら本番扱い(普久川・学校坂・高江・羽地・スプリント)。Z2・下り・東海岸は変えない
   const race = R.applyAdjustment(menus.phases[4].templates.load.sat, { kinds: { race: 1 }, z2Pct: 0 });
-  assert.deepEqual(race.segments.map((s) => s.pct), [[65, 75], [106, 111], [70, 80], [106, 111], [60, 70], [91, 96], 151]);
+  assert.deepEqual(race.segments.map((s) => s.pct),
+    [[65, 75], [89, 94], [65, 75], [91, 96], [50, 60], [116, 123], [81, 101], [70, 80], [101, 106], [65, 75], 151]);
   assert.equal(R.applyAdjustment(base.load.wed, { kinds: { vo2: 3 }, z2Pct: 0 }), base.load.wed);
 });

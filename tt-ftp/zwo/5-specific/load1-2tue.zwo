@@ -1,13 +1,16 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>特異期 負荷週1 火 加速の再現（5分 110% → 10分 90%）×3</name>
-  <description>特異期（おきなわの展開を再現する）</description>
+  <name>特異期 負荷週1 火 学校坂の再現（20分テンポ → 5分 120% ×3）</name>
+  <description>特異期（学校坂（5分）・羽地（9分）・スプリントの再現）
+学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
     <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
-    <IntervalsT Repeat="2" OnDuration="300" OffDuration="600" OnPower="1.1" OffPower="0.9"/>
-    <SteadyState Duration="300" Power="1.1"/>
+    <SteadyState Duration="1200" Power="0.9"/>
+    <SteadyState Duration="180" Power="0.55"/>
+    <IntervalsT Repeat="2" OnDuration="300" OffDuration="300" OnPower="1.21" OffPower="0.5"/>
+    <SteadyState Duration="300" Power="1.21"/>
     <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

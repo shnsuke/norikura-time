@@ -312,7 +312,7 @@
   /**
    * 区間を表示用に解決する。区間の書式:
    *   単一: { label, pct, min | sec }
-   *   反復: { label, reps, work: {pct, min|sec}, rest?: {pct, min|sec}, restFirst?, sets?, setRest?: {pct, min|sec} }
+   *   反復: { label, reps, work: {pct, min|sec}, rest?: {pct, min|sec}, restFirst?, restLabel?, sets?, setRest?: {pct, min|sec} }
    *   メモ: { label, note }  (パワー無し)
    */
   function resolveSegment(seg, ftp, weightKg) {
@@ -328,7 +328,8 @@
       const restFirst = !!(seg.restFirst && rest);
       const perSet = work.sec * reps + (rest ? rest.sec * (restFirst ? reps : reps - 1) : 0);
       const totalSec = perSet * sets + (setRest ? setRest.sec * (sets - 1) : 0);
-      return { type: 'interval', label: seg.label, note: seg.note, reps, sets, restFirst, work, rest, setRest, totalSec };
+      // restLabel: つなぎが休みでない反復(アタック→登り など)で「つなぎ」の代わりに表示する名前
+      return { type: 'interval', label: seg.label, note: seg.note, reps, sets, restFirst, restLabel: seg.restLabel || 'つなぎ', work, rest, setRest, totalSec };
     }
     if (seg.pct === undefined) {
       return { type: 'note', label: seg.label, note: seg.note, totalSec: durationSec(seg) };

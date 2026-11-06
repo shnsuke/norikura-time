@@ -1,16 +1,14 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>持久期 負荷週2 火 1分×5本 ×2セット</name>
-  <description>持久期（長時間の持久力＋高強度を繰り返す力）</description>
+  <name>持久期 負荷週2 火 5分×4（学校坂の強度）</name>
+  <description>持久期（長時間の持久力。レースの順番どおりに走って、3.5時間後の5分を出し切る）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
     <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
-    <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.3" OffPower="0.5"/>
-    <SteadyState Duration="60" Power="1.3"/>
-    <SteadyState Duration="360" Power="0.5"/>
-    <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.3" OffPower="0.5"/>
-    <SteadyState Duration="60" Power="1.3"/>
+    <IntervalsT Repeat="3" OnDuration="300" OffDuration="240" OnPower="1.15" OffPower="0.5"/>
+    <SteadyState Duration="300" Power="1.15"/>
+    <SteadyState Duration="780" Power="0.65"/>
     <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

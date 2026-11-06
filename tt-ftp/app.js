@@ -1162,11 +1162,11 @@
           ${s.note ? `<span class="sub">${esc(s.note)}</span>` : ''}</li>`;
       }
       const one = s.restFirst
-        ? `(${C.formatDuration(s.rest.sec)}つなぎ → ${C.formatDuration(s.work.sec)})`
+        ? `(${C.formatDuration(s.rest.sec)}${esc(s.restLabel)} → ${C.formatDuration(s.work.sec)})`
         : C.formatDuration(s.work.sec);
       const reps = `${s.sets > 1 ? `${s.sets}セット × ` : ''}${s.reps} × ${one}`;
       const lines = [];
-      if (s.rest) lines.push(`つなぎ ${inlinePower(s.rest, s.rest.sec, hasFtp)}`);
+      if (s.rest) lines.push(`${esc(s.restLabel)} ${inlinePower(s.rest, s.rest.sec, hasFtp)}`);
       if (s.setRest) lines.push(`セット間 ${inlinePower(s.setRest, s.setRest.sec, hasFtp)}`);
       if (s.note) lines.push(esc(s.note));
       return `<li class="seg"><span class="zone" style="background:var(--${zoneOf(s.work.pct)})"></span>

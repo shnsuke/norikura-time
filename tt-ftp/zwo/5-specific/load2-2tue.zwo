@@ -1,19 +1,16 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>特異期 負荷週2 火 繰り返し 40/20</name>
-  <description>特異期（おきなわの展開を再現する）</description>
+  <name>特異期 負荷週2 火 学校坂前の攻防（30秒全開 → 5分 115%）×3</name>
+  <description>特異期（学校坂（5分）・羽地（9分）・スプリントの再現）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
     <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
-    <IntervalsT Repeat="9" OnDuration="40" OffDuration="20" OnPower="1.25" OffPower="0.5"/>
-    <SteadyState Duration="40" Power="1.25"/>
-    <SteadyState Duration="300" Power="0.5"/>
-    <IntervalsT Repeat="9" OnDuration="40" OffDuration="20" OnPower="1.25" OffPower="0.5"/>
-    <SteadyState Duration="40" Power="1.25"/>
-    <SteadyState Duration="300" Power="0.5"/>
-    <IntervalsT Repeat="9" OnDuration="40" OffDuration="20" OnPower="1.25" OffPower="0.5"/>
-    <SteadyState Duration="40" Power="1.25"/>
+    <IntervalsT Repeat="1" OnDuration="30" OffDuration="300" OnPower="1.5" OffPower="1.15"/>
+    <SteadyState Duration="360" Power="0.5"/>
+    <IntervalsT Repeat="1" OnDuration="30" OffDuration="300" OnPower="1.5" OffPower="1.15"/>
+    <SteadyState Duration="360" Power="0.5"/>
+    <IntervalsT Repeat="1" OnDuration="30" OffDuration="300" OnPower="1.5" OffPower="1.15"/>
     <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

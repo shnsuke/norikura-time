@@ -1,13 +1,13 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>ピーク期 2週目 火 VO2 4×4分</name>
+  <name>ピーク期 2週目 火 学校坂 5分×3</name>
   <description>ピーク期（ピーキング（4週））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
     <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
-    <IntervalsT Repeat="3" OnDuration="240" OffDuration="240" OnPower="1.105" OffPower="0.5"/>
-    <SteadyState Duration="240" Power="1.105"/>
+    <IntervalsT Repeat="2" OnDuration="300" OffDuration="300" OnPower="1.175" OffPower="0.5"/>
+    <SteadyState Duration="300" Power="1.175"/>
     <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

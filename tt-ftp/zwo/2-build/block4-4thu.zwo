@@ -1,19 +1,18 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>ビルド期 B4負荷週 木 オーバーアンダー</name>
-  <description>ビルド期（閾値＋VO2強化）</description>
+  <name>ビルド期 B4負荷週 木 普久川17分 → 学校坂5分 ×2（強め）</name>
+  <description>ビルド期（閾値・VO2。普久川（17分）のあとに学校坂（5分）を出す力）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
     <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
-    <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.075" OffPower="0.935"/>
-    <SteadyState Duration="60" Power="1.075"/>
-    <SteadyState Duration="300" Power="0.5"/>
-    <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.075" OffPower="0.935"/>
-    <SteadyState Duration="60" Power="1.075"/>
-    <SteadyState Duration="300" Power="0.5"/>
-    <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.075" OffPower="0.935"/>
-    <SteadyState Duration="60" Power="1.075"/>
+    <SteadyState Duration="1020" Power="0.975"/>
+    <SteadyState Duration="180" Power="0.55"/>
+    <SteadyState Duration="300" Power="1.14"/>
+    <SteadyState Duration="480" Power="0.55"/>
+    <SteadyState Duration="1020" Power="0.975"/>
+    <SteadyState Duration="180" Power="0.55"/>
+    <SteadyState Duration="300" Power="1.14"/>
     <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

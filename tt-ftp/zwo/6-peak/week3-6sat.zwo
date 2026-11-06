@@ -1,13 +1,15 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>ピーク期 3週目 土 実走 2.5h（登り 2×8分）</name>
+  <name>ピーク期 3週目 土 実走 2.5h（5分×2・羽地×1）</name>
   <description>ピーク期（ピーキング（4週））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
     <SteadyState Duration="3600" Power="0.65"/>
-    <IntervalsT Repeat="1" OnDuration="480" OffDuration="360" OnPower="1.025" OffPower="0.55"/>
-    <SteadyState Duration="480" Power="1.025"/>
-    <SteadyState Duration="4080" Power="0.65"/>
+    <IntervalsT Repeat="1" OnDuration="300" OffDuration="360" OnPower="1.15" OffPower="0.55"/>
+    <SteadyState Duration="300" Power="1.15"/>
+    <SteadyState Duration="1200" Power="0.65"/>
+    <SteadyState Duration="540" Power="1.025"/>
+    <SteadyState Duration="2700" Power="0.65"/>
   </workout>
 </workout_file>

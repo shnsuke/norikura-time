@@ -166,12 +166,12 @@ test('メニュー検索: block{B} → load{W} → load、回復週は recovery'
   // 月曜は定義なし → null (休養)
   assert.equal(Calc.findDayMenu(base, info, 'mon'), null);
 
-  // 持久期: 火曜は週ごとに 40/20 と 1分×5本を交互、木曜はブロック3から10本
+  // 持久期: 火曜は週ごとに 40/20 と 5分×4 を交互、木曜はブロック3から10本
   const end = menus.phases[2];
   const i1 = Calc.getPhaseAndWeek(d('2027-04-20'), menus);
   const i2 = Calc.getPhaseAndWeek(d('2027-04-27'), menus);
   assert.equal(Calc.findDayMenu(end, i1, 'tue').menu.title, '繰り返し 40/20');
-  assert.equal(Calc.findDayMenu(end, i2, 'tue').menu.title, '1分×5本 ×2セット');
+  assert.equal(Calc.findDayMenu(end, i2, 'tue').menu.title, '5分×4（学校坂の強度）');
   assert.match(Calc.findDayMenu(end, Calc.getPhaseAndWeek(d('2027-04-22'), menus), 'thu').menu.title, /×8$/);
   assert.match(Calc.findDayMenu(end, Calc.getPhaseAndWeek(d('2027-06-03'), menus), 'thu').menu.title, /×10$/);
 });
@@ -351,4 +351,27 @@ test('menus.json: 基礎期の負荷週の日曜は Z2 3時間45分(ほかの期
   assert.equal(min(0, 'load'), 225);
   assert.equal(min(0, 'recovery'), 150);
   assert.equal(min(1, 'load'), 180);
+});
+
+test('menus.json: 特異期のレースシミュレーションはレースの順番どおり(普久川×2 → 学校坂 → 高江 → 羽地 → スプリント)', () => {
+  const sat = menus.phases.find((p) => p.id === 'specific').templates.load.sat;
+  const labels = sat.segments.map((s) => s.label);
+  const order = ['普久川ダム1回目', '普久川ダム2回目', '学校坂', '高江のアップダウン', '羽地の登り', 'ゴールスプリント'];
+  const idx = order.map((l) => labels.indexOf(l));
+  assert.ok(idx.every((i) => i >= 0), JSON.stringify(labels));
+  assert.deepEqual([...idx].sort((a, b) => a - b), idx);
+  // 学校坂は約5分、レース後半(3時間以上走ったあと)
+  const gakko = sat.segments[labels.indexOf('学校坂')];
+  assert.equal(gakko.min, 5);
+  const before = sat.segments.slice(0, labels.indexOf('学校坂')).reduce((a, s) => a + (s.min || 0) + (s.sec || 0) / 60, 0);
+  assert.ok(before >= 180, `${before}分`);
+  assert.ok(Calc.resolveMenu(sat, 300, 60).totalSec >= 5 * 3600 - 60);
+});
+
+test('反復の「つなぎ」の名前は restLabel で変えられる(既定は「つなぎ」)', () => {
+  const plain = Calc.resolveSegment({ label: 'SST', reps: 2, work: { pct: 90, min: 10 }, rest: { pct: 55, min: 5 } }, 300, 60);
+  assert.equal(plain.restLabel, 'つなぎ');
+  const attack = Calc.resolveSegment({ label: 'x', reps: 1, restFirst: true, restLabel: 'アタック', work: { pct: 115, min: 5 }, rest: { pct: 150, sec: 30 } }, 300, 60);
+  assert.equal(attack.restLabel, 'アタック');
+  assert.equal(attack.totalSec, 330);
 });
