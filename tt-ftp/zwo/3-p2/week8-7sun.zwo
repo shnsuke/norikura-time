@@ -1,0 +1,14 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P2 ビルド 8週目 日 疲労テスト（Z2 3,000kJ → 20分全力）</name>
+  <description>P2 ビルド（閾値・VO2、登り、疲労後の強度）
+4月末の疲労テスト。合格ライン 疲労後20分 280W
+補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="12600" Power="0.65"/>
+    <FreeRide Duration="1200"/>
+    <Cooldown Duration="900" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

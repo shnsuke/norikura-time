@@ -1,0 +1,11 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P4 夏季ボリューム 回復週 土 Z2 2.5h（軽めの週）</name>
+  <description>P4 夏季ボリューム（量のピーク、暑熱順化）
+レースを入れてもよい</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="9000" Power="0.6"/>
+  </workout>
+</workout_file>

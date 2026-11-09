@@ -3,11 +3,47 @@
   "raceDate": "2027-11-14",
   "blockWeeks": 3,
   "commonNotes": [
-    "各ブロックの3週目は回復週：量を−30〜40%、キーセッションは1本だけ。週末にFTPテスト（峠TT）を行い、次のブロックの強度を更新する",
-    "デッドリフトは木曜の夜（自転車から6時間以上空ける）と日曜のZ2の後。重さはメニュー画面に1RMから表示",
-    "キーセッション（火・木・土）は崩さない。平日は1時間15分以内。忙しい週は水・日のZ2を削る",
-    "月・金は休養日（メニュー無し）"
+    "各フェーズは「2週負荷＋1週軽め」の3週ブロック。軽めの週は量を約40%減らし、強度メニューは1本だけ",
+    "平日（火・水・木）はローラー。目的は VO2max で、スプリントは入れない。火・木は75分以内",
+    "高強度の質を優先し、練習時間は必要以上に延ばさない。夜の Z2 は任意（睡眠7時間を切る日、朝のメニューをこなせなかった日はやらない）",
+    "月・金は完全休養",
+    "出場するレースは、メニュー画面のその日から「レースにする」で入れる（優先度 B：3日前からテーパー、C：テーパーなし）"
   ],
+  "races": {
+    "priorities": {
+      "B": { "label": "B（3日前からテーパー）", "taperDays": 3 },
+      "C": { "label": "C（テーパーなし）", "taperDays": 0 }
+    },
+    "taper": {
+      "3": {
+        "title": "テーパー：短い VO2 刺激",
+        "kind": "opener",
+        "segments": [
+          { "label": "WU", "pct": [55, 65], "min": 10 },
+          { "label": "VO2", "reps": 3, "work": { "pct": [106, 112], "min": 3 }, "rest": { "pct": 50, "min": 3 } },
+          { "label": "Z2", "pct": [60, 70], "min": 10 },
+          { "label": "CD", "pct": [45, 55], "min": 5 }
+        ]
+      },
+      "2": {
+        "title": "テーパー：Z2 45分",
+        "kind": "opener",
+        "segments": [
+          { "label": "Z2", "pct": [55, 65], "min": 45 }
+        ]
+      },
+      "1": {
+        "title": "テーパー：前日の刺激入れ",
+        "kind": "opener",
+        "segments": [
+          { "label": "Z2", "pct": [55, 65], "min": 30 },
+          { "label": "刺激", "reps": 3, "work": { "pct": 105, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+          { "label": "CD", "pct": [45, 55], "min": 5 }
+        ]
+      }
+    },
+    "strengthTaperPct": 70
+  },
   "strength": {
     "name": "デッドリフト",
     "initial1RM": 122.5,
@@ -16,8 +52,8 @@
     "plates": [20, 10, 5, 2.5, 1.25],
     "reminderDays": 28,
     "timing": {
-      "thu": "夜（自転車から6時間以上空ける）",
-      "sun": "Z2の後"
+      "thu": "夜（朝の練習から6時間以上空ける）",
+      "sun": "ライドの後"
     },
     "warmup": [
       { "bar": true, "reps": 8 },
@@ -41,7 +77,52 @@
       ]
     },
     "phases": {
-      "base": {
+      "p0": {
+        "groups": [
+          {
+            "focus": "軽めに継続",
+            "weeks": {
+              "1": {
+                "thu": {
+                  "sets": [
+                    { "pct": 80, "reps": 3, "sets": 3 }
+                  ]
+                },
+                "sun": {
+                  "sets": [
+                    { "pct": 85, "reps": 3, "sets": 3 }
+                  ]
+                }
+              },
+              "2": {
+                "thu": {
+                  "sets": [
+                    { "pct": 80, "reps": 3, "sets": 3 }
+                  ]
+                },
+                "sun": {
+                  "sets": [
+                    { "pct": 85, "reps": 3, "sets": 3 }
+                  ]
+                }
+              },
+              "3": {
+                "thu": {
+                  "sets": [
+                    { "pct": 80, "reps": 3, "sets": 3 }
+                  ]
+                },
+                "sun": {
+                  "sets": [
+                    { "pct": 85, "reps": 3, "sets": 3 }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "p1": {
         "groups": [
           {
             "blocks": [1, 2],
@@ -82,7 +163,7 @@
             }
           },
           {
-            "blocks": [3, 4],
+            "blocks": [3, 4, 5],
             "focus": "重さを上げて上限を引き出す",
             "weeks": {
               "1": {
@@ -121,46 +202,31 @@
           }
         ]
       },
-      "build": {
+      "p2": {
         "groups": [
           {
-            "blocks": [1, 2, 3, 4],
-            "focus": "重さは上げ、量を減らす",
+            "blocks": [1, 2, 3],
+            "focus": "高重量・低回数で上限を保つ（木曜のみ）",
             "weeks": {
               "1": {
-                "sun": {
-                  "sets": [
-                    { "pct": 92.5, "reps": 2, "sets": 2 }
-                  ]
-                },
                 "thu": {
                   "sets": [
-                    { "pct": 87.5, "reps": 2, "sets": 2 }
+                    { "pct": 92.5, "reps": 2, "sets": 2 }
                   ]
                 }
               },
               "2": {
-                "sun": {
+                "thu": {
                   "sets": [
                     { "label": "トップシングル", "pct": 97.5, "reps": 1, "sets": 1 },
                     { "pct": 92.5, "reps": 1, "sets": 2 }
                   ]
-                },
-                "thu": {
-                  "sets": [
-                    { "pct": 90, "reps": 1, "sets": 3 }
-                  ]
                 }
               },
               "3": {
-                "sun": {
-                  "sets": [
-                    { "pct": 90, "reps": 1, "sets": 2 }
-                  ]
-                },
                 "thu": {
                   "sets": [
-                    { "pct": 85, "reps": 1, "sets": 2 }
+                    { "pct": 90, "reps": 1, "sets": 2 }
                   ]
                 }
               }
@@ -168,93 +234,108 @@
           }
         ]
       },
-      "specific": {
+      "p3": {
         "groups": [
           {
             "blocks": [1, 2, 3, 4],
-            "focus": "上限を保つ（週1回）",
+            "focus": "上限を保つ（木曜のみ）",
             "weeks": {
               "1": {
-                "sun": {
+                "thu": {
                   "sets": [
                     { "pct": 92.5, "reps": 1, "sets": 3 }
                   ]
                 }
               },
               "2": {
-                "sun": {
+                "thu": {
                   "sets": [
                     { "pct": 95, "reps": 1, "sets": 2 }
                   ]
                 }
               },
               "3": {
-                "sun": {
-                  "sets": [
-                    { "pct": 90, "reps": 1, "sets": 2 }
-                  ]
-                }
-              }
-            }
-          }
-        ]
-      },
-      "peak": {
-        "groups": [
-          {
-            "focus": "10/24 が最後",
-            "weeks": {
-              "1": {
-                "sun": {
-                  "sets": [
-                    { "pct": 90, "reps": 1, "sets": 2 }
-                  ]
-                }
-              }
-            }
-          }
-        ]
-      },
-      "endurance": {
-        "groups": [
-          {
-            "blocks": [1, 2, 3, 4],
-            "focus": "高重量・低回数で上限を保つ（週2回）",
-            "weeks": {
-              "1": {
-                "sun": {
-                  "sets": [
-                    { "pct": 92.5, "reps": 2, "sets": 2 }
-                  ]
-                },
                 "thu": {
                   "sets": [
-                    { "pct": 87.5, "reps": 2, "sets": 2 }
+                    { "pct": 90, "reps": 1, "sets": 2 }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "p4": {
+        "groups": [
+          {
+            "blocks": [1, 2, 3],
+            "focus": "上限を保つ（木曜のみ）",
+            "weeks": {
+              "1": {
+                "thu": {
+                  "sets": [
+                    { "pct": 92.5, "reps": 1, "sets": 3 }
                   ]
                 }
               },
               "2": {
-                "sun": {
-                  "sets": [
-                    { "label": "トップシングル", "pct": 97.5, "reps": 1, "sets": 1 },
-                    { "pct": 92.5, "reps": 1, "sets": 2 }
-                  ]
-                },
                 "thu": {
                   "sets": [
-                    { "pct": 90, "reps": 1, "sets": 3 }
+                    { "pct": 95, "reps": 1, "sets": 2 }
                   ]
                 }
               },
               "3": {
-                "sun": {
+                "thu": {
                   "sets": [
                     { "pct": 90, "reps": 1, "sets": 2 }
                   ]
-                },
+                }
+              }
+            }
+          }
+        ]
+      },
+      "p5": {
+        "groups": [
+          {
+            "blocks": [1, 2, 3],
+            "focus": "上限を保つ（木曜のみ）",
+            "weeks": {
+              "1": {
                 "thu": {
                   "sets": [
-                    { "pct": 85, "reps": 1, "sets": 2 }
+                    { "pct": 92.5, "reps": 1, "sets": 3 }
+                  ]
+                }
+              },
+              "2": {
+                "thu": {
+                  "sets": [
+                    { "pct": 95, "reps": 1, "sets": 2 }
+                  ]
+                }
+              },
+              "3": {
+                "thu": {
+                  "sets": [
+                    { "pct": 90, "reps": 1, "sets": 2 }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "p6": {
+        "groups": [
+          {
+            "focus": "10/28 が最後",
+            "weeks": {
+              "1": {
+                "thu": {
+                  "sets": [
+                    { "pct": 90, "reps": 1, "sets": 2 }
                   ]
                 }
               }
@@ -266,17 +347,190 @@
   },
   "phases": [
     {
-      "id": "base",
-      "name": "基礎期",
-      "start": "2026-11-02",
-      "end": "2027-01-24",
-      "focus": "ピラミッド型 約70:20:10",
-      "volume": "12〜15h/週（量を最も積む時期）",
-      "weightTarget": "4月に60kgへ向けて進める（エネルギー不足に一番耐えられる時期）",
-      "notes": ["デッドリフト：週2回（木・日）。1RMを伸ばす期間で、回復週の木曜に1RMテスト", "土曜の長い実走で補給の練習を始める"],
+      "id": "p0",
+      "name": "P0 回復・移行",
+      "start": "2026-11-09",
+      "end": "2026-11-29",
+      "blocks": false,
+      "focus": "疲労を抜き、月末にFTPテスト",
+      "volume": "7〜9h/週",
+      "weightTarget": "61〜62kgを維持（減量しない）",
+      "weightGoalKg": 62,
+      "notes": ["デッドリフト：木・日で継続（軽め）"],
+      "templates": {
+        "week1": {
+          "tue": {
+            "title": "Z2 60分＋VO2 刺激 3×1分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 45 },
+              { "label": "VO2 刺激", "reps": 3, "work": { "pct": [105, 110], "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "CD", "pct": [45, 55], "min": 8 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "wed": {
+            "title": "Z2 60分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 60 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "thu": {
+            "title": "VO2 軽め 4×3分",
+            "kind": "vo2",
+            "segments": [
+              { "label": "WU", "pct": [55, 65], "min": 10 },
+              { "label": "VO2", "reps": 4, "work": { "pct": [106, 110], "min": 3 }, "rest": { "pct": 50, "min": 3 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "sat": {
+            "title": "Z2 2.5h",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
+            ]
+          },
+          "sun": {
+            "title": "Z2 2.5h",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
+            ]
+          }
+        },
+        "week2": {
+          "tue": {
+            "title": "Z2 60分＋VO2 刺激 3×1分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 45 },
+              { "label": "VO2 刺激", "reps": 3, "work": { "pct": [105, 110], "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "CD", "pct": [45, 55], "min": 8 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "wed": {
+            "title": "Z2 60分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 60 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "thu": {
+            "title": "VO2 軽め 4×3分",
+            "kind": "vo2",
+            "segments": [
+              { "label": "WU", "pct": [55, 65], "min": 10 },
+              { "label": "VO2", "reps": 4, "work": { "pct": [106, 110], "min": 3 }, "rest": { "pct": 50, "min": 3 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "sat": {
+            "title": "Z2 2.5h",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
+            ]
+          },
+          "sun": {
+            "title": "Z2 2.5h",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
+            ]
+          }
+        },
+        "week3": {
+          "tue": {
+            "title": "Z2 60分＋VO2 刺激 3×1分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 45 },
+              { "label": "VO2 刺激", "reps": 3, "work": { "pct": [105, 110], "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "CD", "pct": [45, 55], "min": 8 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "wed": {
+            "title": "Z2 60分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 60 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "thu": {
+            "title": "VO2 軽め 4×3分",
+            "kind": "vo2",
+            "segments": [
+              { "label": "WU", "pct": [55, 65], "min": 10 },
+              { "label": "VO2", "reps": 4, "work": { "pct": [106, 110], "min": 3 }, "rest": { "pct": 50, "min": 3 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "sat": {
+            "title": "20分テスト（ローラー）",
+            "kind": "test",
+            "segments": [
+              { "label": "WU", "pct": [55, 65], "min": 20 },
+              { "label": "オープナー", "reps": 3, "work": { "pct": 100, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "20分全力", "note": "結果をこのアプリの「TT入力」で記録してFTPを更新（20分×0.95 とほぼ同じ）", "min": 20 },
+              { "label": "CD", "pct": [45, 55], "min": 15 }
+            ],
+            "notes": ["11月末のテスト。基準値を取る"]
+          },
+          "sun": {
+            "title": "Z2 2.5h",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "p1",
+      "name": "P1 冬季ベース",
+      "start": "2026-11-30",
+      "end": "2027-02-28",
+      "focus": "有酸素の土台と VO2max、筋力（山なし）",
+      "volume": "9.5h/週（夜の Z2 を足すと最大11.5h）",
+      "weightTarget": "61〜62kgを維持（減量しない）",
+      "weightGoalKg": 62,
+      "notes": ["デッドリフト：週2回（木・日）。1RMを伸ばす期間で、軽めの週の木曜に1RMテスト", "平日はローラー、週末は平地（山なし）"],
       "templates": {
         "load": {
           "tue": {
+            "title": "V2 VO2 4×4分",
+            "kind": "vo2",
+            "segments": [
+              { "label": "WU", "pct": [55, 65], "min": 10 },
+              { "label": "VO2", "reps": 4, "work": { "pct": [108, 114], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "wed": {
+            "title": "Z2 75分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 75 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "thu": {
             "title": "VO2維持（Rattlesnake×2）",
             "kind": "vo2",
             "segments": [
@@ -305,146 +559,156 @@
               { "label": "セット2：回復", "pct": 50, "min": 3 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
             ],
-            "notes": ["追い込みすぎない"]
-          },
-          "wed": {
-            "title": "Z2",
-            "kind": "z2",
-            "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 120 }
-            ]
-          },
-          "thu": {
-            "title": "SST 3×15分",
-            "kind": "sst",
-            "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "SST", "reps": 3, "work": { "pct": [88, 94], "min": 15 }, "rest": { "pct": 55, "min": 5 } },
-              { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "実坂ロング 4.5h（SST×2＋終盤に5分×2）",
+            "title": "平地ロング 4h（テンポ 2×20分）",
             "kind": "sst",
             "segments": [
-              { "label": "Z2（坂まで）", "pct": [60, 70], "min": 75 },
-              { "label": "坂 SST〜テンポ", "reps": 2, "work": { "pct": [80, 92], "min": 20 }, "rest": { "pct": 55, "min": 15 }, "note": "1本の長さは坂に合わせて15〜30分で調整" },
-              { "label": "Z2", "pct": [60, 70], "min": 105 },
-              { "label": "終盤の5分（学校坂の準備）", "reps": 2, "work": { "pct": [105, 110], "min": 5 }, "rest": { "pct": 55, "min": 5 }, "note": "3.5時間走ったあとに。基礎期は抑えめで" },
-              { "label": "Z2", "pct": [60, 70], "min": 20 }
+              { "label": "Z2", "pct": [60, 70], "min": 80 },
+              { "label": "テンポ", "reps": 2, "work": { "pct": [76, 85], "min": 20 }, "rest": { "pct": 60, "min": 10 } },
+              { "label": "Z2", "pct": [60, 70], "min": 110 }
             ],
-            "notes": ["補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）"]
+            "notes": ["冬は山に行かない。凍結や雨の日はローラー 2.5h に切り替える", "補給の練習：1時間あたり炭水化物 60g から始める"]
           },
           "sun": {
-            "title": "Z2ロング",
+            "title": "Z2 2.5h",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 225 }
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
             ],
-            "notes": ["基礎期は量を積む時期なので3時間45分。疲れている日は3時間で切り上げてよい"]
+            "notes": ["平坦なグループライドがあれば参加して集団走行の練習"]
           }
         },
-        "block2": {
+        "week10": {
           "thu": {
-            "title": "SST 3×20分",
-            "kind": "sst",
-            "segments": [
-              { "label": "WU", "pct": [55, 75], "min": 7 },
-              { "label": "SST", "reps": 3, "work": { "pct": [88, 94], "min": 20 }, "rest": { "pct": 55, "min": 3 } },
-              { "label": "CD", "pct": [45, 55], "min": 2 }
-            ]
-          }
-        },
-        "block3": {
-          "thu": {
-            "title": "SST 2×25分",
-            "kind": "sst",
+            "title": "A1 30/30 ×10 ×2セット",
+            "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "SST", "reps": 2, "work": { "pct": [88, 94], "min": 25 }, "rest": { "pct": 55, "min": 8 } },
+              { "label": "30/30", "sets": 2, "reps": 10, "work": { "pct": [145, 150], "sec": 30 }, "rest": { "pct": 50, "sec": 30 }, "setRest": { "pct": 50, "min": 8 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           }
         },
-        "block4": {
+        "week13": {
           "thu": {
-            "title": "SST 2×30分",
-            "kind": "sst",
+            "title": "A1 30/30 ×10 ×2セット",
+            "kind": "vo2",
             "segments": [
-              { "label": "WU", "pct": [55, 75], "min": 7 },
-              { "label": "SST", "reps": 2, "work": { "pct": [88, 94], "min": 30 }, "rest": { "pct": 55, "min": 5 } },
-              { "label": "CD", "pct": [45, 55], "min": 3 }
-            ]
+              { "label": "WU", "pct": [55, 65], "min": 10 },
+              { "label": "30/30", "sets": 2, "reps": 10, "work": { "pct": [145, 150], "sec": 30 }, "rest": { "pct": 50, "sec": 30 }, "setRest": { "pct": 50, "min": 8 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "sat": {
+            "title": "20分テスト＋5秒・1分の最大（ローラー）",
+            "kind": "test",
+            "segments": [
+              { "label": "WU", "pct": [55, 65], "min": 20 },
+              { "label": "5秒全力", "reps": 2, "work": { "note": "全力", "pct": 200, "sec": 5 }, "rest": { "pct": 50, "min": 3 } },
+              { "label": "1分全力", "pct": 150, "min": 1, "note": "全力" },
+              { "label": "つなぎ", "pct": [50, 60], "min": 10 },
+              { "label": "オープナー", "reps": 3, "work": { "pct": 100, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "20分全力", "note": "結果をこのアプリの「TT入力」で記録してFTPを更新（20分×0.95 とほぼ同じ）", "min": 20 },
+              { "label": "CD", "pct": [45, 55], "min": 15 }
+            ],
+            "notes": ["2月末のテスト。合格ライン FTP 325W・1分 580W"]
           }
         },
         "recovery": {
           "tue": {
-            "title": "Z2（回復週）",
+            "title": "Z2（軽めの週）",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 60 }
             ]
           },
           "wed": {
-            "title": "Z2（回復週）",
+            "title": "Z2（軽めの週）",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [55, 65], "min": 75 }
+              { "label": "Z2", "pct": [55, 65], "min": 45 }
             ]
           },
           "thu": {
-            "title": "キーセッション：SST 2×15分",
-            "kind": "sst",
+            "title": "キーセッション：Rattlesnake×1",
+            "kind": "vo2",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "SST", "reps": 2, "work": { "pct": [88, 94], "min": 15 }, "rest": { "pct": 55, "min": 5 } },
-              { "label": "CD", "pct": [45, 55], "min": 10 }
-            ]
+              { "label": "Warm-Up", "pct": [40, 60], "min": 3, "note": "元ワークアウトは%指定なし。軽めに" },
+              { "label": "Active", "pct": 65, "min": 3 },
+              { "label": "Active", "pct": 80, "min": 3 },
+              { "label": "Active", "pct": 120, "sec": 20 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 30 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 40 },
+              { "label": "Active", "pct": 50, "min": 2, "sec": 45 },
+              { "label": "セット1：入り", "pct": 140, "min": 1 },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：回復", "pct": 50, "min": 3 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "FTPテスト（峠TT）",
-            "kind": "test",
-            "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 20 },
-              { "label": "オープナー", "reps": 3, "work": { "pct": 100, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
-              { "label": "峠TT（全力）", "note": "結果をこのアプリの「TT入力」で記録してFTPを更新", "min": 30 },
-              { "label": "CD", "pct": [50, 60], "min": 30 }
-            ]
-          },
-          "sun": {
-            "title": "Z2（回復週）",
+            "title": "Z2 2.5h（軽めの週）",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 150 }
+            ],
+            "notes": ["レースを入れてもよい"]
+          },
+          "sun": {
+            "title": "Z2 2h（軽めの週）",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 120 }
             ]
           }
         }
       }
     },
     {
-      "id": "build",
-      "name": "ビルド期",
-      "start": "2027-01-25",
-      "end": "2027-04-18",
-      "focus": "閾値・VO2。普久川（17分）のあとに学校坂（5分）を出す力",
-      "volume": "11〜14h/週",
-      "weightTarget": "期末（4月）までに60kg",
-      "weightGoalKg": 60,
-      "notes": ["デッドリフト：週2回（木・日）。高重量・低回数で上限を保つ", "学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負"],
+      "id": "p2",
+      "name": "P2 ビルド",
+      "start": "2027-03-01",
+      "end": "2027-04-25",
+      "focus": "閾値・VO2、登り、疲労後の強度",
+      "volume": "10.5h/週",
+      "weightTarget": "61〜62kgを維持（減量しない）",
+      "weightGoalKg": 62,
+      "notes": ["デッドリフト：週1回（木曜の夜・維持）。週末をレースに空けておく"],
       "templates": {
-        "load1": {
+        "load": {
           "tue": {
-            "title": "VO2 5×5分",
+            "title": "V2 VO2 5×4分",
             "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "VO2（学校坂の強度）", "reps": 5, "work": { "pct": [110, 120], "min": 5 }, "rest": { "pct": 50, "min": 5 } },
+              { "label": "VO2", "reps": 5, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
-          }
-        },
-        "load2": {
-          "tue": {
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "wed": {
+            "title": "Z2 60分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 60 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "thu": {
             "title": "VO2 Rattlesnake×3セット",
             "kind": "vo2",
             "segments": [
@@ -479,123 +743,101 @@
               { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
               { "label": "セット3：回復", "pct": 50, "min": 3 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
-          }
-        },
-        "load": {
-          "wed": {
-            "title": "Z2",
-            "kind": "z2",
-            "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 120 }
-            ]
-          },
-          "thu": {
-            "title": "普久川17分 → 学校坂5分 ×2",
-            "kind": "threshold",
-            "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "普久川ダム想定", "pct": [92, 97], "min": 17 },
-              { "label": "下り", "pct": 55, "min": 3 },
-              { "label": "学校坂想定", "pct": [108, 112], "min": 5 },
-              { "label": "つなぎ", "pct": 55, "min": 8 },
-              { "label": "普久川ダム想定", "pct": [92, 97], "min": 17 },
-              { "label": "下り", "pct": 55, "min": 3 },
-              { "label": "学校坂想定", "pct": [108, 112], "min": 5 },
-              { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "実坂 4.5h（普久川×2 → 学校坂）",
+            "title": "D1 ロング＋後半閾値 4.5h",
             "kind": "threshold",
             "segments": [
-              { "label": "Z2（坂まで）", "pct": [60, 70], "min": 60 },
-              { "label": "普久川ダム想定", "reps": 2, "work": { "pct": [90, 95], "min": 17 }, "rest": { "pct": 60, "min": 15 } },
-              { "label": "テンポ寄りの Z2", "pct": [65, 75], "min": 60 },
-              { "label": "学校坂想定", "pct": [110, 115], "min": 5, "note": "3時間走ったあとに全力に近く" },
-              { "label": "高江のアップダウン", "pct": [80, 95], "min": 10 },
-              { "label": "Z2", "pct": [60, 70], "min": 86 }
+              { "label": "Z2（2,500kJ以上）", "pct": [60, 70], "min": 180 },
+              { "label": "後半の閾値", "reps": 3, "work": { "pct": [95, 100], "min": 10 }, "rest": { "pct": 55, "min": 5 } },
+              { "label": "1分", "reps": 5, "work": { "pct": [155, 165], "min": 1 }, "rest": { "pct": 50, "min": 2 }, "note": "外なので全力に近く" },
+              { "label": "Z2", "pct": [60, 70], "min": 37 }
             ],
-            "notes": ["補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）"]
+            "notes": ["補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）", "峠を4〜5本入れたルートで（山解禁）"]
           },
           "sun": {
-            "title": "Z2ロング",
+            "title": "Z2 3h",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [60, 70], "min": 180 }
-            ]
+            ],
+            "notes": ["春のクリテリウムがあればレースに切り替え"]
           }
         },
-        "block3": {
+        "load2": {
           "thu": {
-            "title": "普久川17分 → 学校坂5分 ×2（強め）",
-            "kind": "threshold",
+            "title": "A1 30/30 ×10 ×2セット",
+            "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "普久川ダム想定", "pct": [95, 100], "min": 17 },
-              { "label": "下り", "pct": 55, "min": 3 },
-              { "label": "学校坂想定", "pct": [112, 116], "min": 5 },
-              { "label": "つなぎ", "pct": 55, "min": 8 },
-              { "label": "普久川ダム想定", "pct": [95, 100], "min": 17 },
-              { "label": "下り", "pct": 55, "min": 3 },
-              { "label": "学校坂想定", "pct": [112, 116], "min": 5 },
+              { "label": "30/30", "sets": 2, "reps": 10, "work": { "pct": [145, 150], "sec": 30 }, "rest": { "pct": 50, "sec": 30 }, "setRest": { "pct": 50, "min": 8 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           }
         },
-        "block4": {
-          "thu": {
-            "title": "普久川17分 → 学校坂5分 ×2（強め）",
-            "kind": "threshold",
+        "week8": {
+          "sat": {
+            "title": "山で20分TT",
+            "kind": "test",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "普久川ダム想定", "pct": [95, 100], "min": 17 },
-              { "label": "下り", "pct": 55, "min": 3 },
-              { "label": "学校坂想定", "pct": [112, 116], "min": 5 },
-              { "label": "つなぎ", "pct": 55, "min": 8 },
-              { "label": "普久川ダム想定", "pct": [95, 100], "min": 17 },
-              { "label": "下り", "pct": 55, "min": 3 },
-              { "label": "学校坂想定", "pct": [112, 116], "min": 5 },
-              { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+              { "label": "WU", "pct": [55, 65], "min": 20 },
+              { "label": "オープナー", "reps": 3, "work": { "pct": 100, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "20分全力", "note": "結果をこのアプリの「TT入力」で記録してFTPを更新（20分×0.95 とほぼ同じ）", "min": 20 },
+              { "label": "CD", "pct": [45, 55], "min": 15 }
+            ],
+            "notes": ["4月末のテスト。合格ライン FTP 330W"]
+          },
+          "sun": {
+            "title": "疲労テスト（Z2 3,000kJ → 20分全力）",
+            "kind": "test",
+            "segments": [
+              { "label": "Z2（3,000kJ 使うまで）", "pct": [60, 70], "min": 210 },
+              { "label": "20分全力", "note": "新鮮な時の20分と比べて、落ち幅10%以内なら合格", "min": 20 },
+              { "label": "CD", "pct": [45, 55], "min": 15 }
+            ],
+            "notes": ["4月末の疲労テスト。合格ライン 疲労後20分 280W", "補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）"]
           }
         },
         "recovery": {
           "tue": {
-            "title": "Z2（回復週）",
+            "title": "Z2（軽めの週）",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 60 }
             ]
           },
           "wed": {
-            "title": "Z2（回復週）",
+            "title": "Z2（軽めの週）",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [55, 65], "min": 60 }
+              { "label": "Z2", "pct": [55, 65], "min": 45 }
             ]
           },
           "thu": {
-            "title": "キーセッション：閾値 2×12分",
-            "kind": "threshold",
+            "title": "V2 VO2 3×4分（短縮）",
+            "kind": "vo2",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "閾値", "reps": 2, "work": { "pct": [95, 100], "min": 12 }, "rest": { "pct": 55, "min": 6 } },
-              { "label": "CD", "pct": [45, 55], "min": 10 }
-            ]
+              { "label": "WU", "pct": [55, 65], "min": 10 },
+              { "label": "VO2", "reps": 3, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "FTPテスト（峠TT）",
-            "kind": "test",
+            "title": "Z2 2.5h（軽めの週）",
+            "kind": "z2",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 20 },
-              { "label": "オープナー", "reps": 3, "work": { "pct": 100, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
-              { "label": "峠TT（全力）", "note": "結果をこのアプリの「TT入力」で記録してFTPを更新", "min": 30 },
-              { "label": "CD", "pct": [50, 60], "min": 30 }
-            ]
+              { "label": "Z2", "pct": [55, 65], "min": 150 }
+            ],
+            "notes": ["レースを入れてもよい"]
           },
           "sun": {
-            "title": "Z2（回復週）",
+            "title": "Z2 2h（軽めの週）",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 120 }
@@ -605,141 +847,170 @@
       }
     },
     {
-      "id": "endurance",
-      "name": "持久期",
-      "start": "2027-04-19",
-      "end": "2027-07-11",
-      "focus": "長時間の持久力。レースの順番どおりに走って、3.5時間後の5分を出し切る",
-      "volume": "11〜12h/週（増えるのは土曜の5時間）",
-      "weightTarget": "60kgを維持",
-      "weightGoalKg": 60,
-      "notes": ["デッドリフト：週2回（木・日）。高重量・低回数で上限を保つ", "土曜は5時間。補給と暑さに慣れる", "学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負"],
+      "id": "p3",
+      "name": "P3 レース期1",
+      "start": "2027-04-26",
+      "end": "2027-07-04",
+      "focus": "外のロードレース4〜5本、アタック反復",
+      "volume": "10.5h/週",
+      "weightTarget": "61〜62kgを維持（減量しない）",
+      "weightGoalKg": 62,
+      "notes": ["デッドリフト：週1回（木曜の夜・維持）", "外のロードレースを2〜3週に1本。出る日はメニュー画面からレースに切り替える", "結果より「逃げに乗る・潰す」を毎回1回は試す"],
       "templates": {
-        "load1": {
+        "load": {
           "tue": {
-            "title": "繰り返し 40/20",
+            "title": "V2 VO2 5×4分",
             "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "40/20", "sets": 3, "reps": 10, "work": { "pct": [120, 130], "sec": 40 }, "rest": { "pct": 50, "sec": 20 }, "setRest": { "pct": 50, "min": 5 } },
+              { "label": "VO2", "reps": 5, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "wed": {
+            "title": "Z2 60分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 60 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "thu": {
+            "title": "VO2 Rattlesnake×3セット",
+            "kind": "vo2",
+            "segments": [
+              { "label": "Warm-Up", "pct": [40, 60], "min": 3, "note": "元ワークアウトは%指定なし。軽めに" },
+              { "label": "Active", "pct": 65, "min": 3 },
+              { "label": "Active", "pct": 80, "min": 3 },
+              { "label": "Active", "pct": 120, "sec": 20 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 30 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 40 },
+              { "label": "Active", "pct": 50, "min": 2, "sec": 45 },
+              { "label": "セット1：入り", "pct": 140, "min": 1 },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：回復", "pct": 50, "min": 3 },
+              { "label": "セット2：入り", "pct": 140, "min": 1 },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：回復", "pct": 50, "min": 3 },
+              { "label": "セット3：入り", "pct": 140, "min": 1 },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：回復", "pct": 50, "min": 3 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "sat": {
+            "title": "D2 レース形式 5h",
+            "kind": "race",
+            "segments": [
+              { "label": "集団走", "pct": [65, 75], "min": 40 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "登り1", "pct": [100, 108], "min": 10 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "集団走", "pct": [65, 75], "min": 29.5 },
+              { "label": "登り2", "pct": [100, 108], "min": 10 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "登り3", "pct": [100, 108], "min": 10 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "登り4", "pct": [100, 108], "min": 10 },
+              { "label": "集団走", "pct": [65, 75], "min": 29.5 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "最後の40分：閾値", "pct": [95, 100], "min": 20 },
+              { "label": "1分アタック", "reps": 3, "work": { "pct": [150, 160], "min": 1 }, "rest": { "pct": 55, "min": 2 } },
+              { "label": "ゴールまで", "pct": [60, 70], "min": 12 },
+              { "label": "スプリント", "pct": 200, "sec": 15 }
+            ],
+            "notes": ["補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）", "30分ごとの仕掛けと登りは、レースのつもりで"]
+          },
+          "sun": {
+            "title": "Z2 2.5h",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
             ]
           }
         },
         "load2": {
           "tue": {
-            "title": "5分×4（学校坂の強度）",
+            "title": "VO2 4×5分",
             "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "5分", "reps": 4, "work": { "pct": [112, 118], "min": 5 }, "rest": { "pct": 50, "min": 4 } },
-              { "label": "Z2", "pct": [60, 70], "min": 13 },
+              { "label": "VO2", "reps": 4, "work": { "pct": [108, 115], "min": 5 }, "rest": { "pct": 50, "min": 5 } },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
-          }
-        },
-        "load": {
-          "wed": {
-            "title": "Z2",
-            "kind": "z2",
-            "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 90 }
-            ]
-          },
-          "thu": {
-            "title": "テンポ＋加速（5分ごとに10秒）×8",
-            "kind": "sst",
-            "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "テンポ→加速", "reps": 8, "restFirst": true, "work": { "pct": 150, "sec": 10 }, "rest": { "pct": [83, 87], "min": 5 }, "note": "テンポで5分走り、最後の10秒だけ集団のペースアップを想定して加速" },
-              { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
-          },
-          "sat": {
-            "title": "ロング 5h（レースの順番どおり）",
-            "kind": "race",
-            "segments": [
-              { "label": "Z2〜テンポ（集団走）", "pct": [65, 75], "min": 113 },
-              { "label": "普久川ダム1回目", "pct": [88, 93], "min": 17 },
-              { "label": "奥の周回", "pct": [65, 75], "min": 40 },
-              { "label": "普久川ダム2回目", "pct": [90, 95], "min": 17 },
-              { "label": "下り", "pct": [50, 60], "min": 15 },
-              { "label": "学校坂", "pct": [108, 113], "min": 5, "note": "約3.5時間後。ここで出し切れるかが目標" },
-              { "label": "高江のアップダウン", "pct": [80, 100], "min": 10 },
-              { "label": "東海岸（有銘・嘉陽の短い坂は集団で）", "pct": [70, 80], "min": 60 },
-              { "label": "羽地の登り", "pct": [95, 100], "min": 9 },
-              { "label": "ゴールまで", "pct": [65, 75], "min": 14 },
-              { "label": "ゴールスプリント", "pct": 150, "sec": 20 }
             ],
-            "notes": ["補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）", "学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負"]
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
-          "sun": {
-            "title": "Z2ロング＋スプリント",
-            "kind": "z2",
-            "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 170 },
-              { "label": "スプリント", "reps": 3, "work": { "pct": 200, "sec": 10 }, "rest": { "pct": 50, "min": 3 } }
-            ]
-          }
-        },
-        "block3": {
           "thu": {
-            "title": "テンポ＋加速（5分ごとに10秒）×10",
-            "kind": "sst",
+            "title": "VO2 30/15 ×13 ×3セット",
+            "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "テンポ→加速", "reps": 10, "restFirst": true, "work": { "pct": 150, "sec": 10 }, "rest": { "pct": [83, 87], "min": 5 }, "note": "テンポで5分走り、最後の10秒だけ集団のペースアップを想定して加速" },
+              { "label": "30/15", "sets": 3, "reps": 13, "work": { "pct": [115, 125], "sec": 30 }, "rest": { "pct": 50, "sec": 15 }, "setRest": { "pct": 50, "min": 5 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
-          }
-        },
-        "block4": {
-          "thu": {
-            "title": "テンポ＋加速（5分ごとに10秒）×10",
-            "kind": "sst",
-            "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "テンポ→加速", "reps": 10, "restFirst": true, "work": { "pct": 150, "sec": 10 }, "rest": { "pct": [83, 87], "min": 5 }, "note": "テンポで5分走り、最後の10秒だけ集団のペースアップを想定して加速" },
-              { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           }
         },
         "recovery": {
           "tue": {
-            "title": "Z2（回復週）",
+            "title": "Z2（軽めの週）",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 60 }
             ]
           },
           "wed": {
-            "title": "Z2（回復週）",
+            "title": "Z2（軽めの週）",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [55, 65], "min": 60 }
+              { "label": "Z2", "pct": [55, 65], "min": 45 }
             ]
           },
           "thu": {
-            "title": "キーセッション：テンポ＋加速 ×4",
-            "kind": "sst",
+            "title": "V2 VO2 3×4分（短縮）",
+            "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "テンポ→加速", "reps": 4, "restFirst": true, "work": { "pct": 150, "sec": 10 }, "rest": { "pct": [83, 87], "min": 5 } },
+              { "label": "VO2", "reps": 3, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "FTPテスト（峠TT）",
-            "kind": "test",
+            "title": "Z2 2.5h（軽めの週）",
+            "kind": "z2",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 20 },
-              { "label": "オープナー", "reps": 3, "work": { "pct": 100, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
-              { "label": "峠TT（全力）", "note": "結果をこのアプリの「TT入力」で記録してFTPを更新", "min": 30 },
-              { "label": "CD", "pct": [50, 60], "min": 30 }
-            ]
+              { "label": "Z2", "pct": [55, 65], "min": 150 }
+            ],
+            "notes": ["レースを入れてもよい"]
           },
           "sun": {
-            "title": "Z2（回復週）",
+            "title": "Z2 2h（軽めの週）",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 120 }
@@ -749,222 +1020,390 @@
       }
     },
     {
-      "id": "transition",
-      "name": "移行期",
-      "start": "2027-07-12",
-      "end": "2027-07-25",
-      "blocks": false,
-      "focus": "軽く維持して疲れを抜く（2週）",
-      "volume": "6〜7h/週",
-      "weightTarget": "60kgを維持",
-      "weightGoalKg": 60,
-      "notes": ["デッドリフト：休み", "暑い時期なので、無理をしない"],
+      "id": "p4",
+      "name": "P4 夏季ボリューム",
+      "start": "2027-07-05",
+      "end": "2027-08-29",
+      "focus": "量のピーク、暑熱順化",
+      "volume": "12h/週（夜の Z2 を足すと最大14h）",
+      "weightTarget": "61〜62kgを維持（減量しない）",
+      "weightGoalKg": 62,
+      "notes": ["デッドリフト：週1回（木曜の夜・維持）", "平日の強度は火・木の2本だけ。水曜は Z2", "エントリー受付は例年8月。参加資格と申込日を要項で確認する"],
       "templates": {
-        "week1": {
+        "load": {
           "tue": {
-            "title": "VO2 短め 3×3分（維持）",
+            "title": "V2 VO2 5×4分",
             "kind": "vo2",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "VO2", "reps": 3, "work": { "pct": [106, 115], "min": 3 }, "rest": { "pct": 50, "min": 3 } },
+              { "label": "WU", "pct": [55, 65], "min": 10 },
+              { "label": "VO2", "reps": 5, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
               { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "wed": {
-            "title": "Z2（軽め）",
+            "title": "Z2 75分",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [55, 65], "min": 60 }
-            ]
+              { "label": "Z2", "pct": [60, 70], "min": 75 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "thu": {
-            "title": "SST 2×10分（維持）",
-            "kind": "sst",
+            "title": "VO2 Rattlesnake×3セット",
+            "kind": "vo2",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "SST", "reps": 2, "work": { "pct": [88, 94], "min": 10 }, "rest": { "pct": 55, "min": 5 } },
-              { "label": "Z2", "pct": [60, 70], "min": 10 },
+              { "label": "Warm-Up", "pct": [40, 60], "min": 3, "note": "元ワークアウトは%指定なし。軽めに" },
+              { "label": "Active", "pct": 65, "min": 3 },
+              { "label": "Active", "pct": 80, "min": 3 },
+              { "label": "Active", "pct": 120, "sec": 20 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 30 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 40 },
+              { "label": "Active", "pct": 50, "min": 2, "sec": 45 },
+              { "label": "セット1：入り", "pct": 140, "min": 1 },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：回復", "pct": 50, "min": 3 },
+              { "label": "セット2：入り", "pct": 140, "min": 1 },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：回復", "pct": 50, "min": 3 },
+              { "label": "セット3：入り", "pct": 140, "min": 1 },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：回復", "pct": 50, "min": 3 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "自由な実走 2〜3h",
-            "kind": "z2",
+            "title": "ロング 5.5h（終盤に閾値）",
+            "kind": "threshold",
             "segments": [
-              { "label": "自由走行", "note": "強度は気分しだい。楽しく走る", "min": 150 }
-            ]
+              { "label": "Z2（2,500kJ以上）", "pct": [60, 70], "min": 210 },
+              { "label": "後半の閾値", "reps": 3, "work": { "pct": [95, 100], "min": 10 }, "rest": { "pct": 55, "min": 5 } },
+              { "label": "1分", "reps": 5, "work": { "pct": [155, 165], "min": 1 }, "rest": { "pct": 50, "min": 2 }, "note": "外なので全力に近く" },
+              { "label": "Z2", "pct": [60, 70], "min": 67 }
+            ],
+            "notes": ["補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）"]
           },
           "sun": {
-            "title": "Z2（休みでもよい）",
+            "title": "Z2 3h",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [55, 65], "min": 90 }
-            ]
+              { "label": "Z2", "pct": [60, 70], "min": 180 }
+            ],
+            "notes": ["土曜の疲れが残った状態で走る（疲労の継続）"]
           }
         },
-        "week2": {
-          "tue": {
-            "title": "VO2 短め 3×3分（維持）",
-            "kind": "vo2",
+        "week4": {
+          "sat": {
+            "title": "山で20分TT",
+            "kind": "test",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "VO2", "reps": 3, "work": { "pct": [106, 115], "min": 3 }, "rest": { "pct": 50, "min": 3 } },
-              { "label": "Z2", "pct": [60, 70], "min": 10 },
-              { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+              { "label": "WU", "pct": [55, 65], "min": 20 },
+              { "label": "オープナー", "reps": 3, "work": { "pct": 100, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "20分全力", "note": "結果をこのアプリの「TT入力」で記録してFTPを更新（20分×0.95 とほぼ同じ）", "min": 20 },
+              { "label": "CD", "pct": [45, 55], "min": 15 }
+            ],
+            "notes": ["7月末のテスト。合格ライン FTP 335W"]
           },
-          "wed": {
-            "title": "Z2（軽め）",
+          "sun": {
+            "title": "疲労テスト（Z2 3,000kJ → 20分全力）",
+            "kind": "test",
+            "segments": [
+              { "label": "Z2（3,000kJ 使うまで）", "pct": [60, 70], "min": 210 },
+              { "label": "20分全力", "note": "新鮮な時の20分と比べて、落ち幅10%以内なら合格", "min": 20 },
+              { "label": "CD", "pct": [45, 55], "min": 15 }
+            ],
+            "notes": ["7月末の疲労テスト。合格ライン 疲労後20分 290W", "補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）"]
+          }
+        },
+        "week7": {
+          "sat": {
+            "title": "R1 200kmシミュレーション（第1回）",
+            "kind": "race",
+            "segments": [
+              { "label": "集団走（NP 230〜250W）", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 15 },
+              { "label": "最後の30分：5分", "reps": 2, "work": { "pct": [110, 115], "min": 5 }, "rest": { "pct": 55, "min": 5 } },
+              { "label": "クールダウン", "pct": [55, 65], "min": 15 }
+            ],
+            "notes": ["補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）", "本番と同じバイク・ホイール・ジャージ・補給で。可能なら速いグループで"]
+          }
+        },
+        "recovery": {
+          "tue": {
+            "title": "Z2（軽めの週）",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 60 }
             ]
           },
+          "wed": {
+            "title": "Z2（軽めの週）",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [55, 65], "min": 45 }
+            ]
+          },
           "thu": {
-            "title": "SST 2×10分（維持）",
-            "kind": "sst",
+            "title": "V2 VO2 3×4分（短縮）",
+            "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "SST", "reps": 2, "work": { "pct": [88, 94], "min": 10 }, "rest": { "pct": 55, "min": 5 } },
+              { "label": "VO2", "reps": 3, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
               { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "自由な実走 2〜3h",
+            "title": "Z2 2.5h（軽めの週）",
             "kind": "z2",
             "segments": [
-              { "label": "自由走行", "note": "強度は気分しだい。楽しく走る", "min": 150 }
-            ]
+              { "label": "Z2", "pct": [55, 65], "min": 150 }
+            ],
+            "notes": ["レースを入れてもよい"]
           },
           "sun": {
-            "title": "Z2（休みでもよい）",
+            "title": "Z2 2h（軽めの週）",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [55, 65], "min": 90 }
+              { "label": "Z2", "pct": [55, 65], "min": 120 }
             ]
           }
         }
       }
     },
     {
-      "id": "specific",
-      "name": "特異期",
-      "start": "2027-07-26",
-      "end": "2027-10-17",
-      "focus": "学校坂（5分）・羽地（9分）・スプリントの再現",
-      "volume": "10〜11h/週（土曜のレースシミュレーションが中心）",
-      "weightTarget": "60kgを維持",
-      "weightGoalKg": 60,
-      "notes": ["デッドリフト：週1回（日曜）", "土曜はレースシミュレーション。補給・機材を本番と同じに", "学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負"],
+      "id": "p5",
+      "name": "P5 特異期",
+      "start": "2027-08-30",
+      "end": "2027-10-24",
+      "focus": "200kmシミュレーション3回、秋のレース",
+      "volume": "10.5h/週",
+      "weightTarget": "61〜62kgを維持（減量しない）",
+      "weightGoalKg": 62,
+      "notes": ["デッドリフト：週1回（木曜の夜・維持）", "ローラーは週1〜2回、扇風機を弱めて暑さに慣らす", "9月末に合格ラインを2つ以上外したら、目標をトップ10に切り替える"],
       "templates": {
-        "load1": {
+        "load": {
           "tue": {
-            "title": "学校坂の再現（20分テンポ → 5分 120% ×3）",
+            "title": "V2 VO2 5×4分",
             "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "事前疲労（普久川の代わり）", "pct": [88, 92], "min": 20 },
-              { "label": "つなぎ", "pct": 55, "min": 3 },
-              { "label": "学校坂", "reps": 3, "work": { "pct": [118, 124], "min": 5 }, "rest": { "pct": 50, "min": 5 }, "note": "疲れた状態で5分を出し切る。2本目以降が本番" },
+              { "label": "VO2", "reps": 5, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
             ],
-            "notes": ["学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負"]
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "wed": {
+            "title": "Z2 60分",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 60 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "thu": {
+            "title": "VO2 Rattlesnake×3セット",
+            "kind": "vo2",
+            "segments": [
+              { "label": "Warm-Up", "pct": [40, 60], "min": 3, "note": "元ワークアウトは%指定なし。軽めに" },
+              { "label": "Active", "pct": 65, "min": 3 },
+              { "label": "Active", "pct": 80, "min": 3 },
+              { "label": "Active", "pct": 120, "sec": 20 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 30 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 40 },
+              { "label": "Active", "pct": 50, "min": 2, "sec": 45 },
+              { "label": "セット1：入り", "pct": 140, "min": 1 },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：回復", "pct": 50, "min": 3 },
+              { "label": "セット2：入り", "pct": 140, "min": 1 },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：回復", "pct": 50, "min": 3 },
+              { "label": "セット3：入り", "pct": 140, "min": 1 },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット3：回復", "pct": 50, "min": 3 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "sat": {
+            "title": "D2 レース形式 5h",
+            "kind": "race",
+            "segments": [
+              { "label": "集団走", "pct": [65, 75], "min": 40 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "登り1", "pct": [100, 108], "min": 10 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "集団走", "pct": [65, 75], "min": 29.5 },
+              { "label": "登り2", "pct": [100, 108], "min": 10 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "登り3", "pct": [100, 108], "min": 10 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "集団走", "pct": [65, 75], "min": 19.5 },
+              { "label": "登り4", "pct": [100, 108], "min": 10 },
+              { "label": "集団走", "pct": [65, 75], "min": 29.5 },
+              { "label": "仕掛け（30秒）", "pct": 160, "sec": 30 },
+              { "label": "最後の40分：閾値", "pct": [95, 100], "min": 20 },
+              { "label": "1分アタック", "reps": 3, "work": { "pct": [150, 160], "min": 1 }, "rest": { "pct": 55, "min": 2 } },
+              { "label": "ゴールまで", "pct": [60, 70], "min": 12 },
+              { "label": "スプリント", "pct": 200, "sec": 15 }
+            ],
+            "notes": ["補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）", "30分ごとの仕掛けと登りは、レースのつもりで"]
+          },
+          "sun": {
+            "title": "Z2 2.5h",
+            "kind": "z2",
+            "segments": [
+              { "label": "Z2", "pct": [60, 70], "min": 150 }
+            ]
           }
         },
         "load2": {
           "tue": {
-            "title": "学校坂前の攻防（30秒全開 → 5分 115%）×3",
+            "title": "VO2 4×5分",
             "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "アタック→学校坂", "sets": 3, "reps": 1, "restFirst": true, "work": { "pct": [112, 118], "min": 5 }, "rest": { "pct": 150, "sec": 30 }, "restLabel": "アタック", "setRest": { "pct": 50, "min": 6 }, "note": "学校坂の前のアタック（30秒全開）に反応してから5分登る想定" },
+              { "label": "VO2", "reps": 4, "work": { "pct": [108, 115], "min": 5 }, "rest": { "pct": 50, "min": 5 } },
               { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          },
+          "thu": {
+            "title": "VO2 30/15 ×13 ×3セット",
+            "kind": "vo2",
+            "segments": [
+              { "label": "WU", "pct": [55, 65], "min": 10 },
+              { "label": "30/15", "sets": 3, "reps": 13, "work": { "pct": [115, 125], "sec": 30 }, "rest": { "pct": 50, "sec": 15 }, "setRest": { "pct": 50, "min": 5 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
+          }
+        },
+        "week4": {
+          "sat": {
+            "title": "R1 200kmシミュレーション（第2回・9月末チェック）",
+            "kind": "race",
+            "segments": [
+              { "label": "集団走（NP 230〜250W）", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 15 },
+              { "label": "最後の30分：5分", "reps": 2, "work": { "pct": [110, 115], "min": 5 }, "rest": { "pct": 55, "min": 5 } },
+              { "label": "クールダウン", "pct": [55, 65], "min": 15 }
+            ],
+            "notes": [
+              "補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）",
+              "本番と同じバイク・ホイール・ジャージ・補給で。可能なら速いグループで",
+              "9月末チェック：合格ライン FTP 340W、疲労後20分 300W、1分 620W"
             ]
           }
         },
-        "load": {
-          "wed": {
-            "title": "Z2",
-            "kind": "z2",
-            "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 90 }
-            ]
-          },
-          "thu": {
-            "title": "羽地の再現（9分: 70秒 95% / 20秒 130%）×2＋スプリント",
-            "kind": "threshold",
-            "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "羽地の登り", "sets": 2, "reps": 6, "restFirst": true, "work": { "pct": 130, "sec": 20 }, "rest": { "pct": [93, 97], "sec": 70 }, "restLabel": "踏み続ける", "setRest": { "pct": 55, "min": 8 }, "note": "トンネル区間からのアタックを想定。20秒で反応、70秒で踏み続ける" },
-              { "label": "つなぎ", "pct": 55, "min": 5 },
-              { "label": "スプリント", "reps": 3, "work": { "pct": 200, "sec": 10 }, "rest": { "pct": 50, "min": 3 }, "note": "5〜7人のゴールスプリントを想定" },
-              { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
-          },
+        "week7": {
           "sat": {
-            "title": "レースシミュレーション 5h（レースの順番どおり）",
+            "title": "R1 200kmシミュレーション（第3回）",
             "kind": "race",
             "segments": [
-              { "label": "Z2〜テンポ（集団走）", "pct": [65, 75], "min": 113 },
-              { "label": "普久川ダム1回目", "pct": [88, 93], "min": 17 },
-              { "label": "奥の周回", "pct": [65, 75], "min": 40 },
-              { "label": "普久川ダム2回目", "pct": [90, 95], "min": 17 },
-              { "label": "下り", "pct": [50, 60], "min": 15 },
-              { "label": "学校坂", "pct": [115, 122], "min": 5, "note": "約3.5時間後。ここで出し切れるかが目標" },
-              { "label": "高江のアップダウン", "pct": [80, 100], "min": 10 },
-              { "label": "東海岸（有銘・嘉陽の短い坂は集団で）", "pct": [70, 80], "min": 60 },
-              { "label": "羽地の登り", "pct": [100, 105], "min": 9 },
-              { "label": "ゴールまで", "pct": [65, 75], "min": 14 },
-              { "label": "ゴールスプリント", "pct": 150, "sec": 20 }
+              { "label": "集団走（NP 230〜250W）", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 60 },
+              { "label": "登り", "pct": [100, 105], "min": 10 },
+              { "label": "集団走", "pct": [70, 80], "min": 15 },
+              { "label": "最後の30分：5分", "reps": 2, "work": { "pct": [110, 115], "min": 5 }, "rest": { "pct": 55, "min": 5 } },
+              { "label": "クールダウン", "pct": [55, 65], "min": 15 }
             ],
-            "notes": ["補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）", "学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負", "本番の機材・補給食・ギアで"]
-          },
-          "sun": {
-            "title": "回復 Z2",
-            "kind": "z2",
-            "segments": [
-              { "label": "Z2", "pct": [55, 65], "min": 120 }
-            ]
+            "notes": ["補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）", "本番と同じバイク・ホイール・ジャージ・補給で。可能なら速いグループで"]
           }
         },
         "recovery": {
           "tue": {
-            "title": "Z2（回復週）",
+            "title": "Z2（軽めの週）",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 60 }
             ]
           },
           "wed": {
-            "title": "Z2（回復週）",
+            "title": "Z2（軽めの週）",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [55, 65], "min": 60 }
+              { "label": "Z2", "pct": [55, 65], "min": 45 }
             ]
           },
           "thu": {
-            "title": "キーセッション：学校坂 5分×2",
+            "title": "V2 VO2 3×4分（短縮）",
             "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "学校坂", "reps": 2, "work": { "pct": [115, 120], "min": 5 }, "rest": { "pct": 50, "min": 5 } },
+              { "label": "VO2", "reps": 3, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "FTPテスト（峠TT）",
-            "kind": "test",
+            "title": "Z2 2.5h（軽めの週）",
+            "kind": "z2",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 20 },
-              { "label": "オープナー", "reps": 3, "work": { "pct": 100, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
-              { "label": "峠TT（全力）", "note": "結果をこのアプリの「TT入力」で記録してFTPを更新", "min": 30 },
-              { "label": "CD", "pct": [50, 60], "min": 30 }
-            ]
+              { "label": "Z2", "pct": [55, 65], "min": 150 }
+            ],
+            "notes": ["レースを入れてもよい"]
           },
           "sun": {
-            "title": "Z2（回復週）",
+            "title": "Z2 2h（軽めの週）",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 120 }
@@ -974,68 +1413,80 @@
       }
     },
     {
-      "id": "peak",
-      "name": "ピーク期",
-      "start": "2027-10-18",
+      "id": "p6",
+      "name": "P6 テーパー",
+      "start": "2027-10-25",
       "end": "2027-11-14",
       "blocks": false,
-      "focus": "ピーキング（4週）",
-      "volume": "1週目 特異期と同じ → 2週目 −20% → 3週目 −35% → 4週目 レース週",
-      "weightTarget": "60kgを維持",
-      "weightGoalKg": 60,
-      "notes": ["デッドリフト：10/24（日）が最後"],
+      "focus": "強度を残して量を落とす",
+      "volume": "9 → 7 → 3h/週",
+      "weightTarget": "61〜62kgを維持（減量しない）",
+      "weightGoalKg": 62,
+      "notes": ["デッドリフト：10/28（木）が最後（レース2週前で終了）"],
       "templates": {
         "week1": {
           "tue": {
-            "title": "学校坂の再現（最後の高負荷週）",
+            "title": "V2 VO2 5×4分",
             "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "事前疲労（普久川の代わり）", "pct": [88, 92], "min": 20 },
-              { "label": "つなぎ", "pct": 55, "min": 3 },
-              { "label": "学校坂", "reps": 3, "work": { "pct": [118, 124], "min": 5 }, "rest": { "pct": 50, "min": 5 }, "note": "疲れた状態で5分を出し切る。2本目以降が本番" },
+              { "label": "VO2", "reps": 5, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
             ],
-            "notes": ["学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負"]
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "wed": {
-            "title": "Z2",
+            "title": "Z2 60分",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 90 }
-            ]
+              { "label": "Z2", "pct": [60, 70], "min": 60 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "thu": {
-            "title": "羽地の再現（9分: 70秒 95% / 20秒 130%）×2＋スプリント",
-            "kind": "threshold",
+            "title": "VO2維持（Rattlesnake×2）",
+            "kind": "vo2",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "羽地の登り", "sets": 2, "reps": 6, "restFirst": true, "work": { "pct": 130, "sec": 20 }, "rest": { "pct": [93, 97], "sec": 70 }, "restLabel": "踏み続ける", "setRest": { "pct": 55, "min": 8 }, "note": "トンネル区間からのアタックを想定。20秒で反応、70秒で踏み続ける" },
-              { "label": "つなぎ", "pct": 55, "min": 5 },
-              { "label": "スプリント", "reps": 3, "work": { "pct": 200, "sec": 10 }, "rest": { "pct": 50, "min": 3 }, "note": "5〜7人のゴールスプリントを想定" },
+              { "label": "Warm-Up", "pct": [40, 60], "min": 3, "note": "元ワークアウトは%指定なし。軽めに" },
+              { "label": "Active", "pct": 65, "min": 3 },
+              { "label": "Active", "pct": 80, "min": 3 },
+              { "label": "Active", "pct": 120, "sec": 20 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 30 },
+              { "label": "Active", "pct": 40, "sec": 30 },
+              { "label": "Active", "pct": 120, "sec": 40 },
+              { "label": "Active", "pct": 50, "min": 2, "sec": 45 },
+              { "label": "セット1：入り", "pct": 140, "min": 1 },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット1：回復", "pct": 50, "min": 3 },
+              { "label": "セット2：入り", "pct": 140, "min": 1 },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 120, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 117, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 114, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 112, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：30/15", "reps": 3, "restFirst": true, "work": { "pct": 110, "sec": 30 }, "rest": { "pct": 40, "sec": 15 } },
+              { "label": "セット2：回復", "pct": 50, "min": 3 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "最後のレースシミュレーション 5h",
-            "kind": "race",
+            "title": "最後の4hロング",
+            "kind": "threshold",
             "segments": [
-              { "label": "Z2〜テンポ（集団走）", "pct": [65, 75], "min": 113 },
-              { "label": "普久川ダム1回目", "pct": [88, 93], "min": 17 },
-              { "label": "奥の周回", "pct": [65, 75], "min": 40 },
-              { "label": "普久川ダム2回目", "pct": [90, 95], "min": 17 },
-              { "label": "下り", "pct": [50, 60], "min": 15 },
-              { "label": "学校坂", "pct": [115, 122], "min": 5, "note": "約3.5時間後。ここで出し切れるかが目標" },
-              { "label": "高江のアップダウン", "pct": [80, 100], "min": 10 },
-              { "label": "東海岸（有銘・嘉陽の短い坂は集団で）", "pct": [70, 80], "min": 60 },
-              { "label": "羽地の登り", "pct": [100, 105], "min": 9 },
-              { "label": "ゴールまで", "pct": [65, 75], "min": 14 },
-              { "label": "ゴールスプリント", "pct": 150, "sec": 20 }
+              { "label": "Z2", "pct": [60, 70], "min": 150 },
+              { "label": "閾値", "reps": 3, "work": { "pct": [95, 100], "min": 10 }, "rest": { "pct": 55, "min": 5 } },
+              { "label": "Z2", "pct": [60, 70], "min": 50 }
             ],
-            "notes": ["補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）", "学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負", "本番の機材・補給食・ギアで"]
+            "notes": ["補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）"]
           },
           "sun": {
-            "title": "Z2",
+            "title": "Z2 2.5h",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [60, 70], "min": 150 }
@@ -1044,45 +1495,45 @@
         },
         "week2": {
           "tue": {
-            "title": "学校坂 5分×3",
+            "title": "V2 VO2 3×4分（短縮）",
             "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 10 },
-              { "label": "学校坂", "reps": 3, "work": { "pct": [115, 120], "min": 5 }, "rest": { "pct": 50, "min": 5 } },
+              { "label": "VO2", "reps": 3, "work": { "pct": [112, 118], "min": 4 }, "rest": { "pct": 50, "min": 4 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
               { "label": "CD", "pct": [45, 55], "min": 5 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "wed": {
-            "title": "Z2",
+            "title": "Z2 45分",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 75 }
-            ]
+              { "label": "Z2", "pct": [60, 70], "min": 45 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "thu": {
-            "title": "Z2（軽め）",
+            "title": "Z2 45分＋VO2 刺激 3×1分",
             "kind": "z2",
             "segments": [
-              { "label": "Z2", "pct": [55, 65], "min": 60 }
-            ]
+              { "label": "Z2", "pct": [60, 70], "min": 40 },
+              { "label": "VO2 刺激", "reps": 3, "work": { "pct": 105, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "CD", "pct": [45, 55], "min": 3 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "レースシミュレーション 4h（後半だけ）",
-            "kind": "race",
+            "title": "3h（閾値 2×10分）",
+            "kind": "threshold",
             "segments": [
-              { "label": "Z2〜テンポ（集団走）", "pct": [65, 75], "min": 120 },
-              { "label": "普久川ダム想定", "pct": [90, 95], "min": 17 },
-              { "label": "下り", "pct": [50, 60], "min": 10 },
-              { "label": "学校坂", "pct": [115, 120], "min": 5 },
-              { "label": "高江のアップダウン", "pct": [80, 100], "min": 10 },
-              { "label": "東海岸", "pct": [65, 75], "min": 40 },
-              { "label": "羽地の登り", "pct": [100, 105], "min": 9 },
-              { "label": "クールダウン", "pct": [55, 65], "min": 29 }
-            ],
-            "notes": ["補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）"]
+              { "label": "Z2", "pct": [60, 70], "min": 120 },
+              { "label": "閾値", "reps": 2, "work": { "pct": [95, 100], "min": 10 }, "rest": { "pct": 55, "min": 5 } },
+              { "label": "Z2", "pct": [60, 70], "min": 35 }
+            ]
           },
           "sun": {
-            "title": "Z2",
+            "title": "Z2 2h",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [60, 70], "min": 120 }
@@ -1091,91 +1542,51 @@
         },
         "week3": {
           "tue": {
-            "title": "学校坂 5分×2（刺激）",
+            "title": "VO2 3×3分",
             "kind": "vo2",
             "segments": [
               { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "学校坂", "reps": 2, "work": { "pct": [115, 120], "min": 5 }, "rest": { "pct": 50, "min": 5 } },
-              { "label": "Z2", "pct": [60, 70], "min": 5 },
-              { "label": "CD", "pct": [45, 55], "min": 10 }
-            ]
+              { "label": "VO2", "reps": 3, "work": { "pct": [110, 115], "min": 3 }, "rest": { "pct": 50, "min": 3 } },
+              { "label": "Z2", "pct": [60, 70], "min": 10 },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "wed": {
-            "title": "Z2",
-            "kind": "z2",
-            "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 60 }
-            ]
-          },
-          "thu": {
-            "title": "閾値 短め 2×10分",
-            "kind": "threshold",
-            "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "閾値", "reps": 2, "work": { "pct": [95, 100], "min": 10 }, "rest": { "pct": 55, "min": 5 } },
-              { "label": "CD", "pct": [45, 55], "min": 10 }
-            ]
-          },
-          "sat": {
-            "title": "実走 2.5h（5分×2・羽地×1）",
-            "kind": "race",
-            "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 60 },
-              { "label": "学校坂", "reps": 2, "work": { "pct": [112, 118], "min": 5 }, "rest": { "pct": 55, "min": 6 } },
-              { "label": "Z2", "pct": [60, 70], "min": 20 },
-              { "label": "羽地の登り", "pct": [100, 105], "min": 9 },
-              { "label": "Z2", "pct": [60, 70], "min": 45 }
-            ]
-          },
-          "sun": {
-            "title": "Z2",
-            "kind": "z2",
-            "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 90 }
-            ]
-          }
-        },
-        "week4": {
-          "tue": {
-            "title": "Z2＋短い刺激",
-            "kind": "opener",
-            "segments": [
-              { "label": "Z2", "pct": [60, 70], "min": 50 },
-              { "label": "刺激", "reps": 2, "work": { "pct": [100, 105], "min": 2 }, "rest": { "pct": 50, "min": 3 } },
-              { "label": "CD", "pct": [45, 55], "min": 10 }
-            ]
-          },
-          "wed": {
-            "title": "Z2（軽め）",
+            "title": "Z2 45分",
             "kind": "z2",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 45 }
-            ]
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "thu": {
-            "title": "刺激入れ（レース3日前）",
+            "title": "Z2 45分＋VO2 刺激 3×1分",
             "kind": "opener",
             "segments": [
-              { "label": "WU", "pct": [55, 65], "min": 15 },
-              { "label": "刺激", "reps": 3, "work": { "pct": 105, "min": 3 }, "rest": { "pct": 50, "min": 3 } },
-              { "label": "短いスプリント", "reps": 3, "work": { "pct": 150, "sec": 10 }, "rest": { "pct": 50, "min": 2 }, "note": "全力ではなく高ケイデンスで鋭く" },
-              { "label": "CD", "pct": [45, 55], "min": 10 }
-            ]
+              { "label": "Z2", "pct": [60, 70], "min": 40 },
+              { "label": "VO2 刺激", "reps": 3, "work": { "pct": 105, "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "CD", "pct": [45, 55], "min": 3 }
+            ],
+            "notes": ["ローラー。スプリントは入れない（目的は VO2max）"]
           },
           "sat": {
-            "title": "前日調整",
+            "title": "前日：短い刺激（沖縄で）",
             "kind": "opener",
             "segments": [
               { "label": "Z2", "pct": [55, 65], "min": 30 },
-              { "label": "オープナー", "reps": 2, "work": { "pct": [100, 105], "min": 1 }, "rest": { "pct": 50, "min": 2 } }
+              { "label": "刺激", "reps": 3, "work": { "pct": [100, 105], "min": 1 }, "rest": { "pct": 50, "min": 2 } },
+              { "label": "スプリント", "reps": 2, "work": { "pct": 200, "sec": 10 }, "rest": { "pct": 50, "min": 3 } },
+              { "label": "CD", "pct": [45, 55], "min": 5 }
             ]
           },
           "sun": {
-            "title": "レース本番",
+            "title": "ツール・ド・おきなわ 市民200km",
             "kind": "event",
             "segments": [
-              { "label": "ツール・ド・おきなわ 市民200km", "note": "補給は1時間あたり炭水化物 60〜90g。普久川ダムの登りに備えて前半は集団の中で脚を貯める" }
-            ]
+              { "label": "ツール・ド・おきなわ 市民200km", "note": "補給は1時間あたり炭水化物 80〜100g。最後の30分でアタックできる脚を残す" }
+            ],
+            "racePriority": "A"
           }
         }
       }

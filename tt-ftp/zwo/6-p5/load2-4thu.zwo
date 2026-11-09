@@ -1,0 +1,21 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P5 特異期 負荷週2 木 VO2 30/15 ×13 ×3セット</name>
+  <description>P5 特異期（200kmシミュレーション3回、秋のレース）
+ローラー。スプリントは入れない（目的は VO2max）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="12" OnDuration="30" OffDuration="15" OnPower="1.2" OffPower="0.5"/>
+    <SteadyState Duration="30" Power="1.2"/>
+    <SteadyState Duration="300" Power="0.5"/>
+    <IntervalsT Repeat="12" OnDuration="30" OffDuration="15" OnPower="1.2" OffPower="0.5"/>
+    <SteadyState Duration="30" Power="1.2"/>
+    <SteadyState Duration="300" Power="0.5"/>
+    <IntervalsT Repeat="12" OnDuration="30" OffDuration="15" OnPower="1.2" OffPower="0.5"/>
+    <SteadyState Duration="30" Power="1.2"/>
+    <SteadyState Duration="600" Power="0.65"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

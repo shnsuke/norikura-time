@@ -1,0 +1,18 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P1 冬季ベース 13週目 木 A1 30/30 ×10 ×2セット</name>
+  <description>P1 冬季ベース（有酸素の土台と VO2max、筋力（山なし））
+ローラー。スプリントは入れない（目的は VO2max）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="9" OnDuration="30" OffDuration="30" OnPower="1.475" OffPower="0.5"/>
+    <SteadyState Duration="30" Power="1.475"/>
+    <SteadyState Duration="480" Power="0.5"/>
+    <IntervalsT Repeat="9" OnDuration="30" OffDuration="30" OnPower="1.475" OffPower="0.5"/>
+    <SteadyState Duration="30" Power="1.475"/>
+    <SteadyState Duration="600" Power="0.65"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

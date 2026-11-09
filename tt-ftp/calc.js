@@ -262,14 +262,15 @@
 
   /**
    * 期・週・曜日からその日のメニューを探す。曜日単位で次の順に最初に見つかったものを使う。
-   *   ブロック制・負荷週  : block{B} → load{W} → load
-   *   ブロック制・回復週  : block{B}Recovery → recovery
-   *   ピーク期(blocks:false): week{N}
+   *   ブロック制・負荷週  : week{N} → block{B} → load{W} → load
+   *   ブロック制・回復週  : week{N} → block{B}Recovery → recovery
+   *   ブロック制でない期(blocks:false): week{N}
+   * week{N} は期の第N週だけの上書き(テストの週、シミュレーションの週末など)
    */
   function templateChain(phase, info) {
     if (phase.blocks === false) return [`week${info.week}`];
-    if (info.isRecovery) return [`block${info.block}Recovery`, 'recovery'];
-    return [`block${info.block}`, `load${info.weekInBlock}`, 'load'];
+    if (info.isRecovery) return [`week${info.week}`, `block${info.block}Recovery`, 'recovery'];
+    return [`week${info.week}`, `block${info.block}`, `load${info.weekInBlock}`, 'load'];
   }
 
   function findDayMenu(phase, info, day) {

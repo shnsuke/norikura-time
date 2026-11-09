@@ -219,6 +219,12 @@
         <p class="toast" id="icuStatus" role="status" hidden></p>
       </div>
 
+      <div class="link-box" id="raceBox">
+        <h2>出場レース</h2>
+        <p class="hint">メニュー画面でその日を開き「この日をレースにする」から入れます。優先度 B は3日前からテーパー（休養日はそのまま）、C はテーパーなし。レースの日はデッドリフトなし、B のテーパー中は重量70%。</p>
+        <div id="raceList"></div>
+      </div>
+
       <div class="link-box" id="backupBox">
         <h2>バックアップ（Google ドライブ）</h2>
         <p class="hint">毎週月曜に体重を記録すると、Google ドライブの専用フォルダ「峠TTプランナー バックアップ」に、この端末のデータを JSON で保存します。月曜に記録しなかった週は、次に開いたときにメニュー画面でお知らせします。intervals.icu の API キーは含めません。</p>
@@ -239,6 +245,7 @@
 <script src="zwo.js?v=dev"></script>
 <script src="intervals.js?v=dev"></script>
 <script src="review.js?v=dev"></script>
+<script src="races.js?v=dev"></script>
 <script src="strength.js?v=dev"></script>
 <script src="backup.js?v=dev"></script>
 <script src="gdrive.js?v=dev"></script>

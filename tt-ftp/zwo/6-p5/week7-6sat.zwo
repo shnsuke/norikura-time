@@ -1,0 +1,23 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P5 特異期 7週目 土 R1 200kmシミュレーション（第3回）</name>
+  <description>P5 特異期（200kmシミュレーション3回、秋のレース）
+補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）
+本番と同じバイク・ホイール・ジャージ・補給で。可能なら速いグループで</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="3600" Power="0.75"/>
+    <SteadyState Duration="600" Power="1.025"/>
+    <SteadyState Duration="3600" Power="0.75"/>
+    <SteadyState Duration="600" Power="1.025"/>
+    <SteadyState Duration="3600" Power="0.75"/>
+    <SteadyState Duration="600" Power="1.025"/>
+    <SteadyState Duration="3600" Power="0.75"/>
+    <SteadyState Duration="600" Power="1.025"/>
+    <SteadyState Duration="900" Power="0.75"/>
+    <IntervalsT Repeat="1" OnDuration="300" OffDuration="300" OnPower="1.125" OffPower="0.55"/>
+    <SteadyState Duration="300" Power="1.125"/>
+    <SteadyState Duration="900" Power="0.6"/>
+  </workout>
+</workout_file>

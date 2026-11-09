@@ -192,6 +192,9 @@ button { font: inherit; cursor: pointer; }
 .rpe-grid button:disabled { opacity: 0.35; }
 .result-toggle { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
 .result-toggle button { font-family: var(--font-body); font-weight: 500; font-size: 0.75rem; padding: 8px 4px; line-height: 1.3; }
+.race-box { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
+.race-box summary { cursor: pointer; font-weight: 500; }
+.race-box[open] { display: grid; gap: 10px; }
 .zwo-row { display: grid; gap: 6px; justify-items: start; border-top: 1px solid var(--line); padding-top: 12px; }
 .predict-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .predict-meta b { font-family: var(--font-display); font-size: 1.05rem; color: var(--ink); font-weight: 700; }

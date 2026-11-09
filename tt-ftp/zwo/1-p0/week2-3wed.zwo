@@ -1,0 +1,11 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P0 回復・移行 2週目 水 Z2 60分</name>
+  <description>P0 回復・移行（疲労を抜き、月末にFTPテスト）
+ローラー。スプリントは入れない（目的は VO2max）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="3600" Power="0.65"/>
+  </workout>
+</workout_file>

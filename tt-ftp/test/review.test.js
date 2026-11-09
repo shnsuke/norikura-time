@@ -82,45 +82,49 @@ test('調整案: FTP の上昇と合わせて W の上昇は +5% まで', () => 
 });
 
 test('ブロックの範囲と次のブロック', () => {
-  const r = R.blockRange(menus, 0, 2);
-  assert.deepEqual([r.start.getMonth() + 1, r.start.getDate(), r.end.getMonth() + 1, r.end.getDate()], [11, 23, 12, 13]);
-  assert.deepEqual(R.nextBlock(menus, 0, 2), { phaseIndex: 0, phase: 'base', block: 3 });
-  assert.deepEqual(R.nextBlock(menus, 0, 4), { phaseIndex: 1, phase: 'build', block: 1 });
-  assert.deepEqual(R.nextBlock(menus, 2, 4), { phaseIndex: 3, phase: 'transition', block: null }); // 持久期の最後 → 移行期
-  assert.deepEqual(R.nextBlock(menus, 3, null), { phaseIndex: 4, phase: 'specific', block: 1 });   // 移行期 → 特異期
-  assert.deepEqual(R.nextBlock(menus, 4, 4), { phaseIndex: 5, phase: 'peak', block: null });
-  assert.equal(R.nextBlock(menus, 5, null), null);
-  const pk = R.blockRange(menus, 5, null);
-  assert.equal(Calc.daysBetween(pk.start, pk.end), 27);
+  const r = R.blockRange(menus, 1, 2); // P1 のブロック2
+  assert.deepEqual([r.start.getMonth() + 1, r.start.getDate(), r.end.getMonth() + 1, r.end.getDate()], [12, 21, 1, 10]);
+  assert.deepEqual(R.nextBlock(menus, 0, null), { phaseIndex: 1, phase: 'p1', block: 1 }); // P0 → P1
+  assert.deepEqual(R.nextBlock(menus, 1, 2), { phaseIndex: 1, phase: 'p1', block: 3 });
+  assert.deepEqual(R.nextBlock(menus, 1, 5), { phaseIndex: 2, phase: 'p2', block: 1 });   // P1 は13週 = 5ブロック目まで
+  assert.deepEqual(R.nextBlock(menus, 5, 3), { phaseIndex: 6, phase: 'p6', block: null });
+  assert.equal(R.nextBlock(menus, 6, null), null);
+  const p6 = R.blockRange(menus, 6, null);
+  assert.equal(Calc.daysBetween(p6.start, p6.end), 20);
 });
 
 test('調整の適用: 同じ期では強度を累積、Z2 はそのブロックだけ', () => {
   const adjustments = {
-    'base:2': { kinds: { vo2: 1, sst: 2 }, z2Pct: -20 },
-    'base:3': { kinds: { vo2: 1 }, z2Pct: 0 },
-    'build:1': { kinds: { vo2: -2 }, z2Pct: 0 },
+    'p1:2': { kinds: { vo2: 1, sst: 2 }, z2Pct: -20 },
+    'p1:3': { kinds: { vo2: 1 }, z2Pct: 0 },
+    'p2:1': { kinds: { vo2: -2 }, z2Pct: 0 },
   };
-  assert.deepEqual(R.adjustmentFor(d('2026-11-10'), menus, adjustments), { kinds: {}, z2Pct: 0 }); // ブロック1
-  assert.deepEqual(R.adjustmentFor(d('2026-11-24'), menus, adjustments), { kinds: { vo2: 1, sst: 2 }, z2Pct: -20 });
-  assert.deepEqual(R.adjustmentFor(d('2026-12-15'), menus, adjustments), { kinds: { vo2: 2, sst: 2 }, z2Pct: 0 });
-  assert.deepEqual(R.adjustmentFor(d('2027-01-26'), menus, adjustments), { kinds: { vo2: -2 }, z2Pct: 0 }); // 期が変わるとリセット
+  assert.deepEqual(R.adjustmentFor(d('2026-12-01'), menus, adjustments), { kinds: {}, z2Pct: 0 }); // ブロック1
+  assert.deepEqual(R.adjustmentFor(d('2026-12-22'), menus, adjustments), { kinds: { vo2: 1, sst: 2 }, z2Pct: -20 });
+  assert.deepEqual(R.adjustmentFor(d('2027-01-12'), menus, adjustments), { kinds: { vo2: 2, sst: 2 }, z2Pct: 0 });
+  assert.deepEqual(R.adjustmentFor(d('2027-03-02'), menus, adjustments), { kinds: { vo2: -2 }, z2Pct: 0 }); // 期が変わるとリセット
 });
 
 test('調整の適用: 本番区間の % だけを動かし、Z2 は時間を減らす', () => {
-  const base = menus.phases[0].templates;
-  const thu = R.applyAdjustment(base.load.thu, { kinds: { sst: 2 }, z2Pct: 0 });
-  const sst = thu.segments.find((s) => s.label === 'SST');
-  assert.deepEqual(sst.work.pct, [90, 96]);
-  assert.deepEqual(sst.rest.pct, 55); // つなぎは変えない
-  assert.deepEqual(thu.segments.find((s) => s.label === 'WU').pct, [55, 65]);
-  assert.equal(thu.adjusted, '強度 +2%');
-  assert.deepEqual(base.load.thu.segments.find((s) => s.label === 'SST').work.pct, [88, 94]); // 元は変更しない
-  const sun = R.applyAdjustment(base.load.sun, { kinds: {}, z2Pct: -20 });
-  assert.equal(sun.segments[0].min, 180); // 225分 × 0.8
+  const p1 = menus.phases[1].templates;
+  const sat = R.applyAdjustment(p1.load.sat, { kinds: { sst: 2 }, z2Pct: 0 });
+  const tempo = sat.segments.find((s) => s.label === 'テンポ');
+  assert.deepEqual(tempo.work.pct, [78, 87]);
+  assert.deepEqual(tempo.rest.pct, 60); // つなぎは変えない
+  assert.deepEqual(sat.segments[0].pct, [60, 70]); // Z2 も変えない
+  assert.equal(sat.adjusted, '強度 +2%');
+  assert.deepEqual(p1.load.sat.segments.find((s) => s.label === 'テンポ').work.pct, [76, 85]); // 元は変更しない
+  const sun = R.applyAdjustment(p1.load.sun, { kinds: {}, z2Pct: -20 });
+  assert.equal(sun.segments[0].min, 120); // 150分 × 0.8
   assert.equal(sun.adjusted, '量 -20%');
-  // 一定区間でも 85% 以上なら本番扱い(普久川・学校坂・高江・羽地・スプリント)。Z2・下り・東海岸は変えない
-  const race = R.applyAdjustment(menus.phases[4].templates.load.sat, { kinds: { race: 1 }, z2Pct: 0 });
-  assert.deepEqual(race.segments.map((s) => s.pct),
-    [[65, 75], [89, 94], [65, 75], [91, 96], [50, 60], [116, 123], [81, 101], [70, 80], [101, 106], [65, 75], 151]);
-  assert.equal(R.applyAdjustment(base.load.wed, { kinds: { vo2: 3 }, z2Pct: 0 }), base.load.wed);
+  // 一定区間でも 85% 以上なら本番扱い(登り・仕掛け・最後の閾値・スプリント)。集団走・ゴールまでは変えない
+  const d2 = R.applyAdjustment(menus.phases[3].templates.load.sat, { kinds: { race: 1 }, z2Pct: 0 });
+  const byLabel = (l) => d2.segments.filter((s) => s.label === l);
+  assert.deepEqual(byLabel('登り1')[0].pct, [101, 109]);
+  assert.ok(byLabel('仕掛け（30秒）').every((s) => s.pct === 161));
+  assert.ok(byLabel('集団走').every((s) => s.pct[0] === 65 && s.pct[1] === 75));
+  assert.deepEqual(byLabel('最後の40分：閾値')[0].pct, [96, 101]);
+  assert.deepEqual(byLabel('1分アタック')[0].work.pct, [151, 161]);
+  assert.equal(byLabel('スプリント')[0].pct, 201);
+  assert.equal(R.applyAdjustment(p1.load.wed, { kinds: { vo2: 3 }, z2Pct: 0 }), p1.load.wed);
 });
