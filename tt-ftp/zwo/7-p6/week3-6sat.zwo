@@ -1,0 +1,15 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P6 テーパー 3週目 土 前日：短い刺激（沖縄で）</name>
+  <description>P6 テーパー（強度を残して量を落とす）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="1800" Power="0.6"/>
+    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1.025" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1.025"/>
+    <IntervalsT Repeat="1" OnDuration="10" OffDuration="180" OnPower="2" OffPower="0.5"/>
+    <SteadyState Duration="10" Power="2"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

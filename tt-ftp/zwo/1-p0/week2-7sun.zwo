@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P0 回復・移行 2週目 日 Z2 2.5h</name>
+  <description>P0 回復・移行（疲労を抜き、月末にFTPテスト）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="9000" Power="0.65"/>
+  </workout>
+</workout_file>

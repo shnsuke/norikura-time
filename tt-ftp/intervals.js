@@ -97,7 +97,8 @@
 
   /**
    * from〜to(両端含む)の各日について、メニューがある日を intervals.icu のイベントにする。
-   * transform(menu, date) を渡すと、ブロック振り返りの調整を反映したメニューで作る。
+   * transform(menu, date) を渡すと、レースや振り返りの調整を反映したメニューで作る(休養の日は menu = null で呼ぶ)。
+   * 平日はローラー(VirtualRide。Zwift に送られる)、土日は外(Ride)。レースの日は RACE_A/B/C。
    */
   function buildEvents(menus, from, to, transform) {
     const events = [];
@@ -105,22 +106,27 @@
       const info = Calc.getPhaseAndWeek(d, menus);
       if (info.status !== 'in') continue;
       const found = Calc.findDayMenu(info.phase, info, info.day);
-      if (!found) continue;
-      const menu = transform ? transform(found.menu, new Date(d)) : found.menu;
+      const menu = transform ? transform(found ? found.menu : null, new Date(d)) : found && found.menu;
+      if (!menu) continue;
       const week = info.phase.blocks === false
         ? `${info.week}週目`
         : `B${info.block}${info.isRecovery ? '回復週' : '負荷週'}`;
+      const outdoor = info.day === 'sat' || info.day === 'sun';
+      const race = menu.kind === 'event' && menu.racePriority;
+      const text = menuToText(menu);
       events.push({
-        category: 'WORKOUT',
+        category: race ? `RACE_${menu.racePriority}` : 'WORKOUT',
         start_date_local: `${iso(d)}T00:00:00`,
-        type: 'VirtualRide',
+        type: outdoor || race ? 'Ride' : 'VirtualRide',
         name: `${menu.title}`,
-        description: `${info.phase.name} ${week}${menu.adjusted ? `（調整 ${menu.adjusted}）` : ''}\n${menuToText(menu)}`,
-        external_id: `ttftp-${iso(d)}`,
+        description: `${info.phase.name} ${week}${menu.adjusted ? `（調整 ${menu.adjusted}）` : ''}${text ? `\n${text}` : ''}`,
+        external_id: externalId(d),
       });
     }
     return events;
   }
+
+  const externalId = (d) => `ttftp-${iso(d)}`;
 
   const auth = (apiKey) => `Basic ${btoa(`API_KEY:${apiKey}`)}`;
 
@@ -139,6 +145,12 @@
   /** 予定表に登録(同じ日付は上書き)。fetchImpl はテスト用 */
   function uploadEvents(apiKey, events, fetchImpl = fetch) {
     return request(apiKey, '/athlete/0/events/bulk?upsert=true', { method: 'POST', body: JSON.stringify(events) }, fetchImpl);
+  }
+
+  /** 予定表から外部ID(ttftp-YYYY-MM-DD)で削除する。存在しないものは無視される */
+  function deleteEvents(apiKey, dates, fetchImpl = fetch) {
+    const body = dates.map((d) => ({ external_id: externalId(d) }));
+    return request(apiKey, '/athlete/0/events/bulk-delete', { method: 'PUT', body: JSON.stringify(body) }, fetchImpl);
   }
 
   /** 期間内の実施済みアクティビティ(新しい順)。oldest / newest は "YYYY-MM-DD" */
@@ -163,5 +175,5 @@
       || rides.sort((a, b) => (b.moving_time || 0) - (a.moving_time || 0))[0];
   }
 
-  return { menuToText, textDuration, buildEvents, uploadEvents, fetchActivities, fetchIntervals, pickActivity, dur, API_BASE };
+  return { menuToText, textDuration, buildEvents, uploadEvents, deleteEvents, externalId, fetchActivities, fetchIntervals, pickActivity, dur, API_BASE };
 });

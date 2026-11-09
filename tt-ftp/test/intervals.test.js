@@ -46,20 +46,22 @@ test('menus.json の全メニュー: テキストの合計時間がアプリ表�
 });
 
 test('予定の作成: シーズン全体で休養日を除く日が登録され、日付で上書きできるIDを持つ', () => {
-  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-10-28'), Calc.parseDate('2027-09-10'));
-  // 43週 × 5日(月・金は休養)
-  assert.equal(events.length, 43 * 5);
-  assert.equal(events[0].start_date_local, '2026-11-03T00:00:00');
-  assert.equal(events[0].external_id, 'ttftp-2026-11-03');
+  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-11-01'), Calc.parseDate('2027-11-30'));
+  // 53週 × 5日(月・金は休養)
+  assert.equal(events.length, 53 * 5);
+  assert.equal(events[0].start_date_local, '2026-11-10T00:00:00');
+  assert.equal(events[0].external_id, 'ttftp-2026-11-10');
   assert.equal(events[0].category, 'WORKOUT');
-  assert.match(events[0].description, /^基礎期 B1負荷週\n/);
+  assert.equal(events[0].type, 'VirtualRide'); // 平日はローラー
+  assert.match(events[0].description, /^P0 回復・移行 1週目\n/);
+  const sat = events.find((e) => e.start_date_local.startsWith('2026-11-14'));
+  assert.equal(sat.type, 'Ride'); // 週末は外
   const last = events[events.length - 1];
-  assert.equal(last.start_date_local, '2027-08-29T00:00:00');
-  assert.equal(last.name, 'レース本番');
-  // 回復週の土曜はFTPテスト
-  const sat = events.find((e) => e.start_date_local.startsWith('2026-11-21'));
-  assert.equal(sat.name, 'FTPテスト（峠TT）');
-  assert.match(sat.description, /B1回復週/);
+  assert.equal(last.start_date_local, '2027-11-14T00:00:00');
+  assert.equal(last.category, 'RACE_A');
+  assert.equal(last.name, 'ツール・ド・おきなわ 市民200km');
+  // P0 の3週目の土曜は 20分テスト
+  assert.equal(events.find((e) => e.start_date_local.startsWith('2026-11-28')).name, '20分テスト（ローラー）');
 });
 
 test('登録: API キーで Basic 認証し、upsert で送る', async () => {
@@ -68,7 +70,7 @@ test('登録: API キーで Basic 認証し、upsert で送る', async () => {
     call = { url, opts };
     return { ok: true, json: async () => [{ id: 1 }] };
   };
-  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-11-02'), Calc.parseDate('2026-11-08'));
+  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-11-09'), Calc.parseDate('2026-11-15'));
   await Intervals.uploadEvents('abc', events, fakeFetch);
   assert.equal(call.url, 'https://intervals.icu/api/v1/athlete/0/events/bulk?upsert=true');
   assert.equal(call.opts.headers.Authorization, `Basic ${Buffer.from('API_KEY:abc').toString('base64')}`);
@@ -106,9 +108,18 @@ test('その日のライドを選ぶ: 予定と対応づいたものを優先、
 
 test('予定の作成: 調整を反映したメニューで作れる', () => {
   const R = require('../review.js');
-  const adj = { 'base:1': { kinds: { sst: 2 }, z2Pct: 0 } };
-  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-11-05'), Calc.parseDate('2026-11-05'),
-    (menu, date) => R.applyAdjustment(menu, R.adjustmentFor(date, menus, adj)));
+  const adj = { 'p1:1': { kinds: { vo2: 2 }, z2Pct: 0 } };
+  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-12-01'), Calc.parseDate('2026-12-01'),
+    (menu, date) => menu && R.applyAdjustment(menu, R.adjustmentFor(date, menus, adj)));
   assert.match(events[0].description, /調整 強度 \+2%/);
-  assert.match(events[0].description, /- 15m 90-96%/);
+  assert.match(events[0].description, /- 4m 110-116%/); // V2 4×4分 108〜114% に +2
+});
+
+test('予定の削除: 外部ID(ttftp-日付)で bulk-delete する', async () => {
+  let call;
+  const fake = async (url, opts) => { call = { url, opts }; return { ok: true, json: async () => ({}) }; };
+  await Intervals.deleteEvents('k', [Calc.parseDate('2027-05-15'), Calc.parseDate('2027-05-16')], fake);
+  assert.equal(call.url, 'https://intervals.icu/api/v1/athlete/0/events/bulk-delete');
+  assert.equal(call.opts.method, 'PUT');
+  assert.deepEqual(JSON.parse(call.opts.body), [{ external_id: 'ttftp-2027-05-15' }, { external_id: 'ttftp-2027-05-16' }]);
 });

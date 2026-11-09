@@ -1,0 +1,17 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P2 ビルド 負荷週 土 D1 ロング＋後半閾値 4.5h</name>
+  <description>P2 ビルド（閾値・VO2、登り、疲労後の強度）
+補給の練習：1時間あたり炭水化物 90g を目標に（本番は80〜100g/h）
+峠を4〜5本入れたルートで（山解禁）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="10800" Power="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="600" OffDuration="300" OnPower="0.975" OffPower="0.55"/>
+    <SteadyState Duration="600" Power="0.975"/>
+    <IntervalsT Repeat="4" OnDuration="60" OffDuration="120" OnPower="1.6" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1.6"/>
+    <SteadyState Duration="2220" Power="0.65"/>
+  </workout>
+</workout_file>

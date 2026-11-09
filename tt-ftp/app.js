@@ -22,6 +22,7 @@
     sessionLog: {},
     adjustments: {},
     oneRmLog: [],
+    races: [],
     backup: {},
     tab: 'menu',
     mode: 'A',
@@ -42,6 +43,7 @@
         sessionLog: saved.sessionLog && typeof saved.sessionLog === 'object' ? saved.sessionLog : {},
         adjustments: saved.adjustments && typeof saved.adjustments === 'object' ? saved.adjustments : {},
         oneRmLog: Array.isArray(saved.oneRmLog) ? saved.oneRmLog : [],
+        races: Array.isArray(saved.races) ? saved.races : [],
       };
     } catch (e) {
       return s;
@@ -113,7 +115,7 @@
     if (name === 'menu') renderMenu();
     if (name === 'weight') renderWeight();
     if (name === 'history') { renderHistory(); renderReviewSelect(); renderReview(); }
-    if (name === 'prefs') { renderPrediction(); renderOneRm(); renderBackup(); }
+    if (name === 'prefs') { renderOneRm(); renderBackup(); renderRaceList(); }
   }
   for (const t of TABS) $(`tab-${t}`).addEventListener('click', () => showTab(t));
 
@@ -123,18 +125,8 @@
     pWeight: 'weight', pFtp: 'ftpOverride', pBike: 'bikeKg', pCda: 'cda', pCrr: 'crr', pLoss: 'lossPct', pK: 'k',
   };
 
-  function altSettings() {
-    const s = state.settings;
-    return { altitude: s.altOn !== false, acclimatized: s.acclimatized === true, ftpAltM: num(s.ftpAltM) || 0 };
-  }
-
   function fillPrefs() {
     $('pIcuKey').value = state.settings.icuKey || '';
-    const a = altSettings();
-    $('pAltOn').checked = a.altitude;
-    $('pAccl').value = a.acclimatized ? 'yes' : 'no';
-    $('pFtpAlt').value = num(state.settings.ftpAltM) === null ? '' : state.settings.ftpAltM;
-    $('pAccl').disabled = $('pFtpAlt').disabled = !a.altitude;
     for (const [id, key] of Object.entries(prefFields)) {
       const v = state.settings[key];
       $(id).value = v === null || v === undefined ? '' : v;
@@ -149,28 +141,11 @@
     save();
     renderHeader();
     computeTT();
-    renderPrediction();
     $('prefsToast').hidden = false;
     clearTimeout(prefsToastTimer);
     prefsToastTimer = setTimeout(() => ($('prefsToast').hidden = true), 1500);
   });
   $('prefsForm').addEventListener('submit', (e) => e.preventDefault());
-  $('pAltOn').addEventListener('change', (e) => {
-    state.settings.altOn = e.target.checked;
-    $('pAccl').disabled = $('pFtpAlt').disabled = !e.target.checked;
-    save();
-    renderPrediction();
-  });
-  $('pAccl').addEventListener('change', (e) => {
-    state.settings.acclimatized = e.target.value === 'yes';
-    save();
-    renderPrediction();
-  });
-  $('pFtpAlt').addEventListener('input', (e) => {
-    state.settings.ftpAltM = num(e.target.value);
-    save();
-    renderPrediction();
-  });
   $('pIcuKey').addEventListener('input', (e) => {
     state.settings.icuKey = e.target.value.trim();
     save();
@@ -182,7 +157,6 @@
     save();
     fillPrefs();
     computeTT();
-    renderPrediction();
   });
 
   function physicsSettings() {
@@ -190,55 +164,6 @@
     const d = defaultState().settings;
     const pick = (k) => (num(s[k]) === null ? d[k] : num(s[k]));
     return { bikeKg: pick('bikeKg'), cda: pick('cda'), crr: pick('crr'), drivetrainLoss: pick('lossPct') / 100, k: pick('k') };
-  }
-
-  // ---------- 乗鞍の予想タイム ----------
-
-  function renderPrediction() {
-    const el = $('climbPrediction');
-    const { ftp } = currentFtp();
-    const weight = currentWeight();
-    const head = '<div class="eyebrow">乗鞍ヒルクライム 予想タイム</div>';
-    if (!ftp || !weight) {
-      el.innerHTML = `${head}<p class="hint">体重と FTP（TT結果か手入力）が入ると、乗鞍エコーライン 20.5km・標高差1260m の予想タイムを表示します。</p>`;
-      return;
-    }
-    const ps = physicsSettings();
-    const alt = altSettings();
-    const opts = { ...ps, ...alt, ftp, riderKg: weight };
-    let r;
-    try {
-      r = C.predictClimb(opts);
-    } catch (e) {
-      el.innerHTML = `${head}<p class="warn">${esc(e.message)}</p>`;
-      return;
-    }
-    const rows = r.segments.map((s) => `<tr>
-      <td>${esc(s.name)}<br><span class="hint">${fmt(s.distanceKm, 1)}km・${fmt(s.gradePct, 1)}%</span></td>
-      <td class="num">${fmt(s.powerW)}</td><td class="num">${fmt(s.speedKmh, 1)}</td><td class="num">${C.formatClock(s.sec)}</td></tr>`).join('');
-    const flat = alt.altitude ? C.predictClimb({ ...opts, altitude: false }) : null;
-    const altLine = flat
-      ? `<p class="sub">高地で平均 <b>−${fmt(r.altitudeLossPct, 1)}</b>%（${fmt(r.basePowerW)}W → ${fmt(r.powerW)}W）。
-         高地の影響が無ければ <b>${C.formatClock(flat.totalSec)}</b>（${C.formatClock(r.totalSec - flat.totalSec)} 速い）</p>`
-      : '<p class="sub">高地によるパワー低下は考慮していません。</p>';
-    // 期分けの減量目標(60kg・58kg)で試算
-    const whatIf = [60, 58].filter((w) => w < weight - 0.05).map((w) => {
-      const x = C.predictClimb({ ...opts, riderKg: w });
-      return `<tr><td>体重 ${w}kg</td><td class="num">${fmt(ftp / w, 2)} W/kg</td><td class="num">${C.formatClock(x.totalSec)}</td>
-        <td class="num">${C.formatClock(r.totalSec - x.totalSec)} 短縮</td></tr>`;
-    }).join('');
-    el.innerHTML = `${head}
-      <div class="predict-time">${C.formatClock(r.totalSec)}</div>
-      <div class="predict-meta">
-        <span>平均 <b>${fmt(r.powerW)}</b> W</span><span><b>${fmt(r.wkg, 2)}</b> W/kg</span>
-        <span>FTPの <b>${fmt(r.pctFtp)}</b>%</span><span>平均 <b>${fmt(r.speedKmh, 1)}</b> km/h</span>
-      </div>
-      ${altLine}
-      <div class="scroll"><table>
-        <thead><tr><th>区間</th><th class="num">W</th><th class="num">km/h</th><th class="num">タイム</th></tr></thead>
-        <tbody>${rows}</tbody></table></div>
-      ${whatIf ? `<div class="scroll"><table><thead><tr><th>FTP ${fmt(ftp)}W のまま</th><th class="num"></th><th class="num">予想</th><th class="num">差</th></tr></thead><tbody>${whatIf}</tbody></table></div>` : ''}
-      <p class="hint">FTP ${fmt(ftp)}W・体重 ${fmt(weight, 1)}kg・詳細設定の値で計算。所要時間に見合うパワー（FTP × (60/分)^k）を基準に、${alt.altitude ? `標高に応じて下がるパワー（Bassett ら 1999 の式・高地順応${alt.acclimatized ? 'あり' : 'なし'}、FTP計測地 ${fmt(alt.ftpAltM)}m 基準）で` : '一定ペースで'}登る想定です。区間の勾配は大会要項からの概算で、風・集団走行・路面状況は考慮していません。</p>`;
   }
 
   // ---------- TT入力 ----------
@@ -365,10 +290,13 @@
   const kgFmt = (x) => String(Math.round(x * 100) / 100); // 112.5 / 1.25 / 118.3
   const platesText = (w) => (w.plates.length ? `片側 ${w.plates.map(kgFmt).join(' + ')}kg${w.rest ? `（+${w.rest}kg 組めない端数）` : ''}` : 'バーのみ');
 
+  /** その日のデッドリフトの予定(レースの日は無し、B のテーパー中は軽く) */
+  const liftPlan = (date) => window.Races.adjustStrength(ST().planFor(date, menus), date, state.races, menus);
+
   /** メニュー画面に出すその日のデッドリフト */
   function liftHtml(date) {
     if (!menus || !menus.strength) return '';
-    const plan = ST().planFor(date, menus);
+    const plan = liftPlan(date);
     if (!plan) return '';
     // その日の時点の 1RM で計算する(テスト当日はテスト前の値)
     const rm = oneRm(isoDate(date), !!plan.test);
@@ -380,7 +308,7 @@
       ? `<p class="notice">1RM の更新から ${since} 日たちました。限界に近いセットの重さと回数を「設定」で入力して更新してください。</p>` : '';
     const warm = r.warmup.map((w) => `<li><span><span class="kg">${kgFmt(w.kg)}</span>kg × ${w.reps}回</span><span class="meta">${w.bar ? '' : `${w.pct}%`}</span><span class="plates">${platesText(w)}</span></li>`).join('');
     const head = `<div class="log-head"><b>${esc(menus.strength.name || 'デッドリフト')}</b><span class="chip">${esc(r.timing)}</span>
-      <span class="hint">1RM ${kgFmt(rm.kg)}kg${rm.date ? `（${rm.date.slice(5).replace('-', '/')} 更新）` : '（初期値）'}・${esc(r.focus || '')}</span></div>`;
+      <span class="hint">1RM ${kgFmt(rm.kg)}kg${rm.date ? `（${rm.date.slice(5).replace('-', '/')} 更新）` : '（初期値）'}・${esc(r.focus || '')}</span></div>${plan.taperNote ? `<p class="notice">${esc(plan.taperNote)}</p>` : ''}`;
     if (r.test) {
       const att = r.attempts.map((a) => `<li><span>${esc(a.label)}　<span class="kg">${kgFmt(a.kg)}</span>kg × 1回</span><span class="meta">${a.pct}%</span>
         <span class="plates">${platesText(a)}${a.note ? `・${esc(a.note)}` : ''}</span></li>`).join('');
@@ -680,7 +608,8 @@
     // 計画
     if (plan) {
       g += `<polyline class="plan-line" points="${planPts.map((p) => `${X(p.date)},${Y(p.kg)}`).join(' ')}"></polyline>`;
-      plan.slice(1, 3).filter((p) => inView(p.date)).forEach((p) => {
+      // 目標が変わる点にだけ印を付ける
+      plan.filter((p, i) => i > 0 && p.kg !== plan[i - 1].kg && inView(p.date)).forEach((p) => {
         g += `<circle class="plan-goal" cx="${X(p.date)}" cy="${Y(p.kg)}" r="4"></circle>
           <text class="label muted" x="${X(p.date)}" y="${Y(p.kg) - 8}" text-anchor="middle">${fmt(p.kg, 0)}kg</text>`;
       });
@@ -1061,14 +990,98 @@
 
   // ---------- ブロック振り返りの調整を反映したメニュー ----------
 
+  /** レース(その日のレース・Bのテーパー)を反映し、通常のメニューにはブロック振り返りの調整も反映する */
   function adjustMenu(menu, date) {
-    return window.Review.applyAdjustment(menu, window.Review.adjustmentFor(date, menus, state.adjustments));
+    const raced = window.Races.applyRaces(menu, date, state.races, menus);
+    if (!raced || raced.kind === 'event' || raced.taper) return raced;
+    return window.Review.applyAdjustment(raced, window.Review.adjustmentFor(date, menus, state.adjustments));
   }
 
+  /** 休養の日でもレースを入れればメニューになる */
   function findAdjusted(phase, info, day, date) {
     const f = C.findDayMenu(phase, info, day);
-    return f ? { ...f, menu: adjustMenu(f.menu, date) } : null;
+    const menu = adjustMenu(f ? f.menu : null, date);
+    return menu ? { key: f ? f.key : 'race', menu } : null;
   }
+
+  // ---------- 出場レース ----------
+
+  const RC = () => window.Races;
+  const racesSorted = () => [...state.races].sort((a, b) => (a.date < b.date ? -1 : 1));
+
+  function raceBoxHtml(date) {
+    const race = RC().raceOn(date, state.races);
+    const pr = (menus.races && menus.races.priorities) || {};
+    if (race) {
+      return `<div class="race-box"><div class="log-head"><b>レース</b><span class="chip load">${esc(race.name)}・優先度 ${esc(race.priority)}</span></div>
+        <p class="hint">${esc((pr[race.priority] || {}).label || '')}</p>
+        <button type="button" class="ghost" data-race-del="${esc(race.date)}">レースを外して元のメニューに戻す</button>
+        <p class="toast" id="raceStatus" role="status" hidden></p></div>`;
+    }
+    const t = RC().taperFor(date, state.races, menus);
+    return `<details class="race-box"><summary>この日をレースにする</summary>
+      <div class="grid2">
+        <label class="field">レース名<input type="text" id="raceName" placeholder="例：みやざき国際" autocomplete="off"></label>
+        <label class="field">優先度<select id="racePriority">${Object.entries(pr).map(([k, v]) => `<option value="${esc(k)}">${esc(v.label)}</option>`).join('')}</select></label>
+      </div>
+      <button type="button" class="primary" data-race-add="${isoDate(date)}">レースにする</button>
+      ${t ? `<p class="hint">この日は ${esc(t.race.name)} の${t.daysBefore === 1 ? '前日' : `${t.daysBefore}日前`}なのでテーパー中です。</p>` : ''}
+      <p class="toast" id="raceStatus" role="status" hidden></p></details>`;
+  }
+
+  function renderRaceList() {
+    const el = $('raceList');
+    if (!el) return;
+    const rows = racesSorted();
+    el.innerHTML = rows.length
+      ? `<div class="table-scroll"><table class="history"><thead><tr><th>日付</th><th>レース</th><th>優先度</th><th></th></tr></thead><tbody>${
+        rows.map((r) => `<tr><td>${esc(r.date.slice(2).replace(/-/g, '/'))}</td><td>${esc(r.name)}</td><td>${esc(r.priority)}</td>
+          <td><button type="button" class="del" data-race-del="${esc(r.date)}">外す</button></td></tr>`).join('')}</tbody></table></div>`
+      : '<p class="hint">まだありません。メニュー画面でその日を開き「この日をレースにする」から入れます。</p>';
+  }
+
+  /** レースの日とテーパーの日の予定を intervals.icu に登録し直す(メニューが無くなった日は削除) */
+  async function syncRaceDates(race) {
+    const key = (state.settings.icuKey || '').trim();
+    if (!key) return '（intervals.icu の API キーが無いため、予定表は変えていません）';
+    const dates = RC().affectedDates(race, menus);
+    const events = window.Intervals.buildEvents(menus, dates[0], dates[dates.length - 1], adjustMenu);
+    const withEvent = new Set(events.map((e) => e.external_id));
+    const gone = dates.filter((d) => !withEvent.has(window.Intervals.externalId(d)));
+    try {
+      if (events.length) await window.Intervals.uploadEvents(key, events);
+      if (gone.length) await window.Intervals.deleteEvents(key, gone);
+      return '（intervals.icu の予定表も直しました）';
+    } catch (err) {
+      return `（intervals.icu への登録に失敗しました：${err.message}）`;
+    }
+  }
+
+  async function setRace(dateIso, race) {
+    const prev = state.races.find((r) => r.date === dateIso);
+    state.races = state.races.filter((r) => r.date !== dateIso);
+    if (race) state.races.push(race);
+    save();
+    if (menus) renderMenu();
+    renderRaceList();
+    const msg = race ? `${dateIso.slice(5).replace('-', '/')} を「${race.name}」（優先度 ${race.priority}）にしました。` : 'レースを外しました。';
+    const show = (t) => { const s = $('raceStatus'); if (s) { s.hidden = false; s.textContent = t; } };
+    show(msg);
+    const note = await syncRaceDates(race || prev);
+    show(`${msg}${note}`);
+  }
+
+  document.addEventListener('click', (e) => {
+    const add = e.target.closest && e.target.closest('[data-race-add]');
+    const del = e.target.closest && e.target.closest('[data-race-del]');
+    if (add) {
+      const name = $('raceName').value.trim();
+      if (!name) { $('raceName').focus(); return; }
+      setRace(add.dataset.raceAdd, { date: add.dataset.raceAdd, name, priority: $('racePriority').value });
+    } else if (del) {
+      setRace(del.dataset.raceDel, null);
+    }
+  });
 
   // ---------- メニュー ----------
 
@@ -1106,7 +1119,8 @@
   }
 
   function weekChip(info) {
-    if (info.phase.blocks === false) return `<span class="chip peak">ピーキング ${info.week}/${info.totalWeeks}週</span>`;
+    // ブロック制でない期(移行期・ピーク期)は期の名前をそのまま出す。週数は隣のチップに出る
+    if (info.phase.blocks === false) return `<span class="chip peak">${esc(info.phase.name)}</span>`;
     return info.isRecovery
       ? `<span class="chip recovery">回復週</span>`
       : `<span class="chip load">負荷週 ${info.weekInBlock}/${(menus.blockWeeks || 3) - 1}</span>`;
@@ -1214,7 +1228,7 @@
     if (!found) {
       zwoTarget = null;
       logTarget = null;
-      el.innerHTML = `<div class="day-head"><h2>${dayHead} 休養</h2></div><p class="rest-day">この日のメニューはありません。</p>`;
+      el.innerHTML = `<div class="day-head"><h2>${dayHead} 休養</h2></div><p class="rest-day">この日のメニューはありません。</p>${raceBoxHtml(date)}`;
       return;
     }
     const r = C.resolveMenu(found.menu, ftp || 100, weight);
@@ -1237,11 +1251,11 @@
           ${s.note ? `<span class="sub">${esc(s.note)}</span>` : ''}</li>`;
       }
       const one = s.restFirst
-        ? `(${C.formatDuration(s.rest.sec)}つなぎ → ${C.formatDuration(s.work.sec)})`
+        ? `(${C.formatDuration(s.rest.sec)}${esc(s.restLabel)} → ${C.formatDuration(s.work.sec)})`
         : C.formatDuration(s.work.sec);
       const reps = `${s.sets > 1 ? `${s.sets}セット × ` : ''}${s.reps} × ${one}`;
       const lines = [];
-      if (s.rest) lines.push(`つなぎ ${inlinePower(s.rest, s.rest.sec, hasFtp)}`);
+      if (s.rest) lines.push(`${esc(s.restLabel)} ${inlinePower(s.rest, s.rest.sec, hasFtp)}`);
       if (s.setRest) lines.push(`セット間 ${inlinePower(s.setRest, s.setRest.sec, hasFtp)}`);
       if (s.note) lines.push(esc(s.note));
       return `<li class="seg"><span class="zone" style="background:var(--${zoneOf(s.work.pct)})"></span>
@@ -1251,12 +1265,13 @@
     }).join('');
 
     el.innerHTML = `
-      <div class="day-head"><h2>${dayHead} ${esc(r.title)}${found.menu.adjusted ? ` <span class="chip peak">調整 ${esc(found.menu.adjusted)}</span>` : ''}</h2><span class="day-total">${C.formatDuration(r.totalSec)}</span></div>
+      <div class="day-head"><h2>${dayHead} ${esc(r.title)}${found.menu.adjusted ? ` <span class="chip peak">調整 ${esc(found.menu.adjusted)}</span>` : ''}</h2><span class="day-total">${r.totalSec ? C.formatDuration(r.totalSec) : ''}</span></div>
       <div class="profile" aria-hidden="true">${profile}</div>
       <ul class="segs">${segs}</ul>
       ${r.notes.length ? `<ul class="day-notes">${r.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
       ${liftHtml(date)}
       ${C.isKeySession(found.menu) ? sessionLogHtml(date, found.menu) : ''}
+      ${found.menu.kind === 'event' && !found.menu.racePriority ? '' : raceBoxHtml(date)}
       <div class="zwo-row">
         <div class="btn-row">
           <button type="button" class="ghost" id="icuCopy">intervals.icu 用にコピー</button>
@@ -1383,10 +1398,11 @@
       const isToday = isoDate(date) === today;
       const rec = found && C.isKeySession(found.menu) ? state.sessionLog[isoDate(date)] : null;
       if (rec && rec.result) meta = rec.result === 'skipped' ? '休んだ' : rec.rpe ? `RPE${rec.rpe}` : '✓';
+      if (found && found.menu.kind === 'event') { meta = 'レース'; bar = 'var(--z7)'; }
       return `<button type="button" role="tab" aria-selected="${day === sel.day}" data-day="${day}">
         <span class="dname${isToday ? ' today-mark' : ''}">${C.DAY_LABELS[day]}</span>
         <span class="dbar" style="background:${bar}"></span>
-        <span class="dmeta">${meta}</span>${window.Strength.planFor(date, menus) ? '<span class="dlift">DL</span>' : ''}</button>`;
+        <span class="dmeta">${meta}</span>${liftPlan(date) ? '<span class="dlift">DL</span>' : ''}</button>`;
     }).join('');
   }
 

@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P3 レース期1 回復週 日 Z2 2h（軽めの週）</name>
+  <description>P3 レース期1（外のロードレース4〜5本、アタック反復）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="7200" Power="0.6"/>
+  </workout>
+</workout_file>

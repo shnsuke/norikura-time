@@ -1,0 +1,19 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P1 冬季ベース 13週目 土 20分テスト＋5秒・1分の最大（ローラー）</name>
+  <description>P1 冬季ベース（有酸素の土台と VO2max、筋力（山なし））
+2月末のテスト。合格ライン FTP 325W・1分 580W</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="1200" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="1" OnDuration="5" OffDuration="180" OnPower="2" OffPower="0.5"/>
+    <SteadyState Duration="5" Power="2"/>
+    <SteadyState Duration="60" Power="1.5"/>
+    <SteadyState Duration="600" Power="0.55"/>
+    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1"/>
+    <FreeRide Duration="1200"/>
+    <Cooldown Duration="900" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

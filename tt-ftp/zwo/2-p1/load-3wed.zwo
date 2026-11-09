@@ -1,0 +1,11 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P1 冬季ベース 負荷週 水 Z2 75分</name>
+  <description>P1 冬季ベース（有酸素の土台と VO2max、筋力（山なし））
+ローラー。スプリントは入れない（目的は VO2max）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="4500" Power="0.65"/>
+  </workout>
+</workout_file>

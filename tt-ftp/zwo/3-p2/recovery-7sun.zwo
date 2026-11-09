@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P2 ビルド 回復週 日 Z2 2h（軽めの週）</name>
+  <description>P2 ビルド（閾値・VO2、登り、疲労後の強度）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="7200" Power="0.6"/>
+  </workout>
+</workout_file>

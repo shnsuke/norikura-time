@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P6 テーパー 1週目 日 Z2 2.5h</name>
+  <description>P6 テーパー（強度を残して量を落とす）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="9000" Power="0.65"/>
+  </workout>
+</workout_file>

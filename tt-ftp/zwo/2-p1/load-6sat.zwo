@@ -1,0 +1,15 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P1 冬季ベース 負荷週 土 平地ロング 4h（テンポ 2×20分）</name>
+  <description>P1 冬季ベース（有酸素の土台と VO2max、筋力（山なし））
+冬は山に行かない。凍結や雨の日はローラー 2.5h に切り替える
+補給の練習：1時間あたり炭水化物 60g から始める</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="4800" Power="0.65"/>
+    <IntervalsT Repeat="1" OnDuration="1200" OffDuration="600" OnPower="0.805" OffPower="0.6"/>
+    <SteadyState Duration="1200" Power="0.805"/>
+    <SteadyState Duration="6600" Power="0.65"/>
+  </workout>
+</workout_file>

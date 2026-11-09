@@ -100,66 +100,67 @@ test('タイム文字列のパース', () => {
 
 const d = (s) => Calc.parseDate(s);
 
-test('期の区切りと週数: 12 / 12 / 15 / 4 週 = 43週', () => {
+test('期の区切りと週数: P0 3 / P1 13 / P2 8 / P3 10 / P4 8 / P5 8 / P6 3 = 53週、レースは 2027/11/14', () => {
   const weeks = menus.phases.map((p) => Calc.getPhaseAndWeek(d(p.end), menus).totalWeeks);
-  assert.deepEqual(weeks, [12, 12, 15, 4]);
-  // 期の開始日はすべて月曜
+  assert.deepEqual(weeks, [3, 13, 8, 10, 8, 8, 3]);
+  assert.deepEqual(menus.phases.map((p) => p.id), ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6']);
+  assert.equal(menus.phases[0].start, '2026-11-09');
+  assert.equal(menus.raceDate, '2027-11-14');
+  assert.equal(menus.phases[menus.phases.length - 1].end, menus.raceDate);
+  // 期と期の間に隙間がなく、どの期も月曜に始まる
+  for (let i = 1; i < menus.phases.length; i++) {
+    assert.equal(Calc.daysBetween(d(menus.phases[i - 1].end), d(menus.phases[i].start)), 1, menus.phases[i].name);
+  }
   for (const p of menus.phases) assert.equal(d(p.start).getDay(), 1, p.name);
 });
 
 test('シーズン前・後', () => {
-  const before = Calc.getPhaseAndWeek(d('2026-10-28'), menus);
+  const before = Calc.getPhaseAndWeek(d('2026-11-02'), menus);
   assert.equal(before.status, 'before');
-  assert.equal(before.daysUntilStart, 5);
-  const after = Calc.getPhaseAndWeek(d('2027-08-30'), menus);
+  assert.equal(before.daysUntilStart, 7);
+  const after = Calc.getPhaseAndWeek(d('2027-11-15'), menus);
   assert.equal(after.status, 'after');
 });
 
-test('基礎期: 3週1ブロック、3週目が回復週', () => {
-  const w1 = Calc.getPhaseAndWeek(d('2026-11-02'), menus);
-  assert.equal(w1.phase.id, 'base');
+test('P1 冬季ベース: 3週1ブロック、3週目が軽めの週。13週目は5ブロック目の1週目', () => {
+  const w1 = Calc.getPhaseAndWeek(d('2026-11-30'), menus);
+  assert.equal(w1.phase.id, 'p1');
   assert.deepEqual([w1.week, w1.block, w1.weekInBlock, w1.isRecovery, w1.day], [1, 1, 1, false, 'mon']);
-  const w3 = Calc.getPhaseAndWeek(d('2026-11-22'), menus); // 3週目の日曜
+  const w3 = Calc.getPhaseAndWeek(d('2026-12-20'), menus); // 3週目の日曜
   assert.deepEqual([w3.week, w3.weekInBlock, w3.isRecovery, w3.day], [3, 3, true, 'sun']);
-  const w4 = Calc.getPhaseAndWeek(d('2026-11-23'), menus);
+  const w4 = Calc.getPhaseAndWeek(d('2026-12-21'), menus);
   assert.deepEqual([w4.week, w4.block, w4.weekInBlock, w4.isRecovery], [4, 2, 1, false]);
-  const last = Calc.getPhaseAndWeek(d('2027-01-24'), menus);
-  assert.deepEqual([last.phase.id, last.week, last.block, last.isRecovery], ['base', 12, 4, true]);
+  const last = Calc.getPhaseAndWeek(d('2027-02-28'), menus);
+  assert.deepEqual([last.phase.id, last.week, last.block, last.weekInBlock, last.isRecovery], ['p1', 13, 5, 1, false]);
 });
 
-test('期の境界: ビルド期・特異期・ピーク期', () => {
-  const b = Calc.getPhaseAndWeek(d('2027-01-25'), menus);
-  assert.deepEqual([b.phase.id, b.week, b.block], ['build', 1, 1]);
-  const s = Calc.getPhaseAndWeek(d('2027-08-01'), menus);
-  assert.deepEqual([s.phase.id, s.week, s.block, s.isRecovery], ['specific', 15, 5, true]);
-  const p = Calc.getPhaseAndWeek(d('2027-08-02'), menus);
-  assert.deepEqual([p.phase.id, p.week, p.weekType, p.isRecovery], ['peak', 1, 'week1', false]);
-  const race = Calc.getPhaseAndWeek(d('2027-08-29'), menus);
-  assert.deepEqual([race.phase.id, race.week, race.weekType, race.day], ['peak', 4, 'week4', 'sun']);
+test('期の境界: P0・P2・P3・P6', () => {
+  const p0 = Calc.getPhaseAndWeek(d('2026-11-09'), menus);
+  assert.deepEqual([p0.phase.id, p0.week, p0.weekType, p0.isRecovery], ['p0', 1, 'week1', false]);
+  const p2 = Calc.getPhaseAndWeek(d('2027-03-01'), menus);
+  assert.deepEqual([p2.phase.id, p2.week, p2.block], ['p2', 1, 1]);
+  const p3 = Calc.getPhaseAndWeek(d('2027-07-04'), menus);
+  assert.deepEqual([p3.phase.id, p3.week, p3.block, p3.weekInBlock], ['p3', 10, 4, 1]);
+  const race = Calc.getPhaseAndWeek(d('2027-11-14'), menus);
+  assert.deepEqual([race.phase.id, race.week, race.weekType, race.day], ['p6', 3, 'week3', 'sun']);
+  const ev = Calc.findDayMenu(race.phase, race, 'sun').menu;
+  assert.deepEqual([ev.kind, ev.racePriority], ['event', 'A']);
 });
 
-test('メニュー検索: block{B} → load{W} → load、回復週は recovery', () => {
-  const base = menus.phases[0];
-  // 基礎期ブロック1の木曜 → load (3×15)
-  let info = Calc.getPhaseAndWeek(d('2026-11-05'), menus);
-  assert.equal(Calc.findDayMenu(base, info, 'thu').key, 'load');
-  // 基礎期ブロック4の木曜 → block4 (2×30)
-  info = Calc.getPhaseAndWeek(d('2027-01-07'), menus);
-  assert.equal(info.block, 4);
-  assert.equal(Calc.findDayMenu(base, info, 'thu').menu.title, 'SST 2×30分');
-  assert.equal(Calc.findDayMenu(base, info, 'sat').key, 'load');
-  // 回復週の土曜 → FTPテスト
-  info = Calc.getPhaseAndWeek(d('2026-11-21'), menus);
-  assert.equal(Calc.findDayMenu(base, info, 'sat').menu.title, 'FTPテスト（峠TT）');
-  // 月曜は定義なし → null (休養)
-  assert.equal(Calc.findDayMenu(base, info, 'mon'), null);
-
-  // 特異期: 火曜は週ごとに 30/15 と 4〜6分走を交互
-  const spec = menus.phases[2];
-  const i1 = Calc.getPhaseAndWeek(d('2027-04-20'), menus);
-  const i2 = Calc.getPhaseAndWeek(d('2027-04-27'), menus);
-  assert.equal(Calc.findDayMenu(spec, i1, 'tue').menu.title, 'VO2 30/15');
-  assert.equal(Calc.findDayMenu(spec, i2, 'tue').menu.title, 'VO2 4〜6分走');
+test('メニュー検索: week{N} → block{B} → load{W} → load、軽めの週は recovery', () => {
+  const p1 = menus.phases[1];
+  const find = (date, day) => Calc.findDayMenu(p1, Calc.getPhaseAndWeek(d(date), menus), day);
+  assert.equal(find('2026-12-03', 'thu').key, 'load');                 // ふだんの木曜 = Rattlesnake
+  assert.match(find('2026-12-03', 'thu').menu.title, /Rattlesnake/);
+  assert.equal(find('2027-02-04', 'thu').key, 'week10');               // 2月は A1 30/30 を交互に
+  assert.match(find('2027-02-04', 'thu').menu.title, /A1 30\/30/);
+  assert.equal(find('2027-02-27', 'sat').menu.kind, 'test');           // 2月末のテスト
+  assert.equal(find('2026-12-19', 'sat').key, 'recovery');             // 軽めの週の土曜
+  assert.equal(find('2026-12-19', 'mon'), null);                       // 月曜は休養
+  // P3: 火曜は週ごとに V2 5×4分 と VO2 4×5分 を交互
+  const p3 = menus.phases[3];
+  assert.match(Calc.findDayMenu(p3, Calc.getPhaseAndWeek(d('2027-04-27'), menus), 'tue').menu.title, /5×4分/);
+  assert.match(Calc.findDayMenu(p3, Calc.getPhaseAndWeek(d('2027-05-04'), menus), 'tue').menu.title, /4×5分/);
 });
 
 test('menus.json: 全期の負荷週・回復週で火木土のキーセッションが定義されている', () => {
@@ -228,79 +229,17 @@ test('restFirst: (つなぎ→本番)×reps で合計時間を数える', () => 
 });
 
 test('Rattlesnake: 2セットのワークアウト本体が44分45秒、%どおりにFTPから換算される', () => {
-  const tue = menus.phases[0].templates.load.tue;
-  const body = tue.segments.filter((s) => !['Z2', 'CD'].includes(s.label));
-  const r = Calc.resolveMenu({ ...tue, segments: body }, 250, 60);
+  const thu = menus.phases[1].templates.load.thu;
+  const body = thu.segments.filter((s) => !['Z2', 'CD'].includes(s.label));
+  const r = Calc.resolveMenu({ ...thu, segments: body }, 250, 60);
   assert.equal(r.totalSec, 44 * 60 + 45);
   const pcts = r.segments.filter((s) => s.type === 'interval').map((s) => s.work.pct[0]);
   assert.deepEqual(pcts, [120, 117, 114, 112, 110, 120, 117, 114, 112, 110]);
   // FTP 250W の 140% = 350W
   assert.deepEqual(r.segments.find((s) => s.label === 'セット1：入り').w, [350, 350]);
-  // ビルド期は3セット
-  const build = menus.phases[1].templates.load2.tue.segments;
-  assert.equal(build.filter((s) => /：入り$/.test(s.label)).length, 3);
-});
-
-// ---------- 乗鞍の予想タイム ----------
-
-test('乗鞍コース: 20.5km・標高差1260m', () => {
-  const segs = Calc.NORIKURA_COURSE.segments;
-  close(segs.reduce((a, s) => a + s.distanceKm, 0), 20.5, 1e-9);
-  assert.equal(segs.reduce((a, s) => a + (s.endElevM - s.startElevM), 0), 1260);
-});
-
-test('speedForPower は estimatePower の逆関数になっている', () => {
-  const seg = { distanceKm: 8.3, gainM: 480, avgAltM: 2110, riderKg: 63 };
-  const v = Calc.speedForPower({ ...seg, powerW: 300 });
-  const minutes = (8300 / v) / 60;
-  close(Calc.estimatePower({ ...seg, minutes }).power, 300, 1e-6);
-});
-
-test('予想タイム(高地補正なし): パワーとタイムが FTP 推定の式と釣り合う', () => {
-  const r = Calc.predictClimb({ ftp: 323.4, riderKg: 63, altitude: false });
-  // 予想した平均パワーと所要時間を FTP 推定に戻すと元の FTP になる
-  close(Calc.ftpFromPower(r.powerW, r.totalSec / 60), 323.4, 0.01);
-  close(r.totalSec, 56 * 60 + 42, 3); // 56:42
-  close(r.wkg, 5.15, 0.01);
-  close(r.altitudeLossPct, 0, 1e-9);
-  // 区間タイムの合計 = 全体
-  close(r.segments.reduce((a, s) => a + s.sec, 0), r.totalSec, 1e-6);
-});
-
-test('高地のパワー低下: Bassett et al. (1999) の式', () => {
-  close(Calc.altitudePowerFactor(0), 1, 1e-12);
-  close(Calc.altitudePowerFactor(2000), 0.87564, 1e-9); // 0.178·8 − 1.43·4 − 4.07·2 + 100
-  close(Calc.altitudePowerFactor(2000, true), 0.916348, 1e-9); // 99.921 − 1.122·4 − 1.8991·2
-  assert.ok(Calc.altitudePowerFactor(2720) < Calc.altitudePowerFactor(1460));
-  assert.ok(Calc.altitudePowerFactor(2500, true) > Calc.altitudePowerFactor(2500, false));
-});
-
-test('予想タイム(高地補正あり): 標高が上がるほど区間のパワーが下がり、補正なしより遅い', () => {
-  const opts = { ftp: 315, riderKg: 63 };
-  const flat = Calc.predictClimb({ ...opts, altitude: false });
-  const alt = Calc.predictClimb(opts);
-  const accl = Calc.predictClimb({ ...opts, acclimatized: true });
-  const fromHill = Calc.predictClimb({ ...opts, ftpAltM: 500 });
-  assert.ok(alt.totalSec > accl.totalSec && accl.totalSec > flat.totalSec);
-  assert.ok(fromHill.totalSec < alt.totalSec); // FTPを標高500mで測っていれば低下は小さい
-  const p = alt.segments.map((s) => s.powerW);
-  assert.ok(p[0] > p[1] && p[1] > p[2]);
-  // 1区間目(1460〜1870m)の平均パワーは基準パワー × その標高帯の係数の範囲に入る
-  assert.ok(p[0] < alt.basePowerW * Calc.altitudePowerFactor(1460) && p[0] > alt.basePowerW * Calc.altitudePowerFactor(1870));
-  close(alt.altitudeLossPct, (1 - alt.powerW / alt.basePowerW) * 100, 1e-9);
-  close(alt.totalSec, 65 * 60 + 34, 3); // 1:05:34
-});
-
-test('予想タイム: 体重が軽い・FTPが高いほど速い', () => {
-  const base = Calc.predictClimb({ ftp: 300, riderKg: 63 }).totalSec;
-  assert.ok(Calc.predictClimb({ ftp: 300, riderKg: 58 }).totalSec < base);
-  assert.ok(Calc.predictClimb({ ftp: 320, riderKg: 63 }).totalSec < base);
-  assert.ok(Calc.predictClimb({ ftp: 300, riderKg: 63, bikeKg: 7 }).totalSec < base);
-});
-
-test('時刻表示', () => {
-  assert.equal(Calc.formatClock(56 * 60 + 42), '56:42');
-  assert.equal(Calc.formatClock(3600 + 5 * 60 + 3), '1:05:03');
+  // P2 以降は3セット
+  const p2 = menus.phases[2].templates.load.thu.segments;
+  assert.equal(p2.filter((s) => /：入り$/.test(s.label)).length, 3);
 });
 
 // ---------- 体重 ----------
@@ -311,53 +250,53 @@ test('週の月曜', () => {
   assert.equal(Calc.mondayOf(d('2026-11-08')).getDate(), 2); // 日曜 → その週の月曜
 });
 
-test('減量計画: 下限値で 1/24 に60kg、4/18 に58kg、以降は58kgを維持', () => {
+test('体重の計画: 減量しない。61〜62kg(62kg)を維持', () => {
+  const flat = Calc.weightPlan(menus, 62);
+  assert.ok(flat.every((p) => p.kg === 62));
+  assert.equal(flat.length, 8); // 開始 + 7つの期の終わり
+  // 62kg より重く始めた場合は P0 の終わり(11/29)までに 62kg、その後は維持
   const plan = Calc.weightPlan(menus, 63);
-  assert.deepEqual(plan.map((p) => [p.date.getMonth() + 1, p.date.getDate(), p.kg]),
-    [[11, 2, 63], [1, 24, 60], [4, 18, 58], [8, 1, 58], [8, 29, 58]]);
-  assert.equal(Calc.targetWeightAt(plan, d('2026-10-26')), 63);
-  assert.equal(Calc.targetWeightAt(plan, d('2027-01-24')), 60);
-  // 11/2〜1/24 は83日で3kg → 中間の日は 63 − 3×(41/83)
-  close(Calc.targetWeightAt(plan, d('2026-12-13')), 63 - 3 * 41 / 83, 1e-9);
-  assert.equal(Calc.targetWeightAt(plan, d('2027-06-01')), 58);
-  assert.equal(Calc.targetWeightAt(plan, d('2027-09-30')), 58);
+  assert.deepEqual(plan.slice(0, 2).map((p) => [p.date.getMonth() + 1, p.date.getDate(), p.kg]), [[11, 9, 63], [11, 29, 62]]);
+  assert.equal(Calc.targetWeightAt(plan, d('2027-06-01')), 62);
 });
 
-test('体重の集計: 目標との差・必要なペース・直近のペース', () => {
-  const plan = Calc.weightPlan(menus, 63);
+test('体重の集計: 目標との差・直近のペース', () => {
+  const plan = Calc.weightPlan(menus, 62);
   const log = [
-    { date: d('2026-11-02'), kg: 63.0 },
-    { date: d('2026-11-09'), kg: 62.8 },
-    { date: d('2026-11-16'), kg: 62.7 },
-    { date: d('2026-11-23'), kg: 62.5 },
-    { date: d('2026-11-30'), kg: 62.4 },
+    { date: d('2026-11-09'), kg: 62.0 },
+    { date: d('2026-11-16'), kg: 62.3 },
+    { date: d('2026-11-23'), kg: 62.1 },
+    { date: d('2026-11-30'), kg: 61.8 },
+    { date: d('2026-12-07'), kg: 61.9 },
   ];
   const s = Calc.weightStats(log, plan, menus);
-  assert.equal(s.latest.kg, 62.4);
-  close(s.target, 63 - 3 * 28 / 83, 1e-9);
-  close(s.diff, 62.4 - s.target, 1e-9);
-  assert.equal(s.next.kg, 60);
-  close(s.next.weeks, 55 / 7, 1e-9); // 11/30 → 1/24
-  close(s.next.pacePerWeek, (60 - 62.4) / (55 / 7), 1e-9);
-  close(s.recentPace, (62.4 - 63.0) / 4, 1e-9); // ちょうど4週前の 11/2 と比較
-  close(s.lastChange, -0.1, 1e-9);
+  assert.equal(s.latest.kg, 61.9);
+  close(s.target, 62, 1e-9);
+  close(s.diff, -0.1, 1e-9);
+  close(s.recentPace, (61.9 - 62.0) / 4, 1e-9); // ちょうど4週前の 11/9 と比較
+  close(s.lastChange, 0.1, 1e-9);
   assert.deepEqual(s.warnings, []);
   assert.equal(Calc.weightStats([], plan, menus), null);
 });
 
-test('体重の注意: 急な減量・特異期の減らしすぎ・計画より重い', () => {
-  const plan = Calc.weightPlan(menus, 63);
-  const fast = Calc.weightStats([{ date: d('2026-11-02'), kg: 63 }, { date: d('2026-11-09'), kg: 62.2 }], plan, menus);
-  assert.deepEqual(fast.warnings.map((w) => w.code), ['fast-loss']);
-  const spec = Calc.weightStats([{ date: d('2027-05-03'), kg: 59.5 }, { date: d('2027-05-17'), kg: 58.6 }], plan, menus);
-  assert.deepEqual(spec.warnings.map((w) => w.code), ['specific-deficit']);
-  const behind = Calc.weightStats([{ date: d('2027-01-18'), kg: 61.5 }], plan, menus);
+test('体重の注意: 急な減量・維持の時期の減らしすぎ・計画より重い', () => {
+  const plan = Calc.weightPlan(menus, 62);
+  const fast = Calc.weightStats([{ date: d('2026-12-07'), kg: 62 }, { date: d('2026-12-14'), kg: 61.2 }], plan, menus);
+  // 1週間で体重の1%超の減少。維持の時期でもあるので両方の注意が出る
+  assert.deepEqual(fast.warnings.map((w) => w.code).sort(), ['fast-loss', 'maintain-deficit']);
+  // 維持の時期: 2週で 0.9kg 減 → 注意
+  const keep = Calc.weightStats([{ date: d('2027-05-03'), kg: 62.0 }, { date: d('2027-05-17'), kg: 61.1 }], plan, menus);
+  assert.deepEqual(keep.warnings.map((w) => w.code), ['maintain-deficit']);
+  // 63kg から始めて P0 で 62kg に向かう間は、維持の注意は出ない
+  const losing = Calc.weightStats([{ date: d('2026-11-09'), kg: 63 }, { date: d('2026-11-23'), kg: 62.3 }], Calc.weightPlan(menus, 63), menus);
+  assert.ok(!losing.warnings.some((w) => w.code === 'maintain-deficit'));
+  const behind = Calc.weightStats([{ date: d('2027-03-01'), kg: 63.2 }], plan, menus);
   assert.deepEqual(behind.warnings.map((w) => w.code), ['behind']);
 });
 
 // ---------- セッションの種類 ----------
 
-test('menus.json: すべてのメニューに kind があり、負荷週の火・木・土はキーセッション', () => {
+test('menus.json: すべてのメニューに kind があり、負荷週の火・木・土はキーセッション(テストの日を除く)', () => {
   for (const phase of menus.phases) {
     for (const [key, days] of Object.entries(phase.templates)) {
       for (const [day, menu] of Object.entries(days)) {
@@ -369,11 +308,12 @@ test('menus.json: すべてのメニューに kind があり、負荷週の火�
     for (let t = d(phase.start); t <= d(phase.end); t.setDate(t.getDate() + 1)) {
       const info = Calc.getPhaseAndWeek(t, menus);
       if (info.isRecovery || !['tue', 'thu', 'sat'].includes(info.day)) continue;
-      assert.ok(Calc.isKeySession(Calc.findDayMenu(phase, info, info.day).menu), `${phase.name} ${info.week}週目 ${info.day}`);
+      const menu = Calc.findDayMenu(phase, info, info.day).menu;
+      assert.ok(Calc.isKeySession(menu) || menu.kind === 'test', `${phase.name} ${info.week}週目 ${info.day}`);
     }
   }
-  // 回復週はキーセッションが木曜の1本だけ
-  const rec = menus.phases[0].templates.recovery;
+  // 軽めの週はキーセッションが木曜の1本だけ
+  const rec = menus.phases[1].templates.recovery;
   assert.deepEqual(Object.keys(rec).filter((day) => Calc.isKeySession(rec[day])), ['thu']);
 });
 
@@ -389,9 +329,41 @@ test('menus.json: 火曜・木曜のメニューはすべて 1時間15分以内'
   }
 });
 
-test('menus.json: 基礎期の負荷週の日曜は Z2 3時間45分(ほかの期は変えない)', () => {
-  const min = (phaseIdx, key) => Calc.resolveMenu(menus.phases[phaseIdx].templates[key].sun, 300, 60).totalSec / 60;
-  assert.equal(min(0, 'load'), 225);
-  assert.equal(min(0, 'recovery'), 150);
-  assert.equal(min(1, 'load'), 180);
+test('menus.json: ローラー(火・水・木)にスプリントは入れない。強度メニューの目的は VO2max', () => {
+  for (const phase of menus.phases) {
+    for (const [key, days] of Object.entries(phase.templates)) {
+      for (const day of ['tue', 'wed', 'thu']) {
+        const menu = days[day];
+        if (!menu) continue;
+        const where = `${phase.name} ${key} ${day} ${menu.title}`;
+        for (const seg of menu.segments) {
+          assert.ok(!/スプリント/.test(seg.label), where);
+          const pcts = [seg.pct, seg.work && seg.work.pct].filter((x) => x !== undefined).flat();
+          assert.ok(pcts.every((x) => x < 180), `${where}: ${JSON.stringify(pcts)}`);
+        }
+        assert.ok(['vo2', 'z2', 'opener'].includes(menu.kind), `${where}: ${menu.kind}`);
+      }
+    }
+  }
+});
+
+test('menus.json: テストと200kmシミュレーションの日(計画の日程どおり)', () => {
+  const kindOn = (date) => {
+    const info = Calc.getPhaseAndWeek(d(date), menus);
+    const f = Calc.findDayMenu(info.phase, info, info.day);
+    return f && `${f.menu.kind}:${f.menu.title}`;
+  };
+  for (const date of ['2026-11-28', '2027-02-27', '2027-04-24', '2027-04-25', '2027-07-31', '2027-08-01']) {
+    assert.match(kindOn(date), /^test:/, date);
+  }
+  for (const date of ['2027-08-21', '2027-09-25', '2027-10-16']) assert.match(kindOn(date), /^race:R1 200km/, date);
+  assert.match(kindOn('2027-09-25'), /9月末チェック/);
+});
+
+test('反復の「つなぎ」の名前は restLabel で変えられる(既定は「つなぎ」)', () => {
+  const plain = Calc.resolveSegment({ label: 'SST', reps: 2, work: { pct: 90, min: 10 }, rest: { pct: 55, min: 5 } }, 300, 60);
+  assert.equal(plain.restLabel, 'つなぎ');
+  const attack = Calc.resolveSegment({ label: 'x', reps: 1, restFirst: true, restLabel: 'アタック', work: { pct: 115, min: 5 }, rest: { pct: 150, sec: 30 } }, 300, 60);
+  assert.equal(attack.restLabel, 'アタック');
+  assert.equal(attack.totalSec, 330);
 });
