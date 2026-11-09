@@ -1,13 +1,18 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>ビルド期 負荷週 木 閾値 2×20分</name>
-  <description>ビルド期（閾値＋VO2強化）</description>
+  <name>ビルド期 負荷週 木 普久川17分 → 学校坂5分 ×2</name>
+  <description>ビルド期（閾値・VO2。普久川（17分）のあとに学校坂（5分）を出す力）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
     <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
-    <IntervalsT Repeat="1" OnDuration="1200" OffDuration="600" OnPower="1" OffPower="0.55"/>
-    <SteadyState Duration="1200" Power="1"/>
+    <SteadyState Duration="1020" Power="0.945"/>
+    <SteadyState Duration="180" Power="0.55"/>
+    <SteadyState Duration="300" Power="1.1"/>
+    <SteadyState Duration="480" Power="0.55"/>
+    <SteadyState Duration="1020" Power="0.945"/>
+    <SteadyState Duration="180" Power="0.55"/>
+    <SteadyState Duration="300" Power="1.1"/>
     <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

@@ -1,0 +1,22 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>持久期 負荷週 土 ロング 5h（レースの順番どおり）</name>
+  <description>持久期（長時間の持久力。レースの順番どおりに走って、3.5時間後の5分を出し切る）
+補給の練習：1時間あたり炭水化物 60〜90g（レースと同じ補給食で）
+学校坂（約5分・7%前後）は残り約60km。ここで前に残れるかが勝負</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="6780" Power="0.7"/>
+    <SteadyState Duration="1020" Power="0.905"/>
+    <SteadyState Duration="2400" Power="0.7"/>
+    <SteadyState Duration="1020" Power="0.925"/>
+    <SteadyState Duration="900" Power="0.55"/>
+    <SteadyState Duration="300" Power="1.105"/>
+    <SteadyState Duration="600" Power="0.9"/>
+    <SteadyState Duration="3600" Power="0.75"/>
+    <SteadyState Duration="540" Power="0.975"/>
+    <SteadyState Duration="840" Power="0.7"/>
+    <SteadyState Duration="20" Power="1.5"/>
+  </workout>
+</workout_file>

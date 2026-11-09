@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>特異期 負荷週 日 回復 Z2</name>
+  <description>特異期（学校坂（5分）・羽地（9分）・スプリントの再現）</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="7200" Power="0.6"/>
+  </workout>
+</workout_file>

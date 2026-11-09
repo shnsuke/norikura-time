@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>移行期 2週目 水 Z2（軽め）</name>
+  <description>移行期（軽く維持して疲れを抜く（2週））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="3600" Power="0.6"/>
+  </workout>
+</workout_file>
