@@ -1,10 +1,14 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P0 回復・移行 1週目 土 Z2 2.5h</name>
-  <description>P0 回復・移行（疲労を抜き、月末にFTPテスト）</description>
+  <name>P0 回復・移行 1週目 土 平地ロング 3.5h（テンポ 2×15分）</name>
+  <description>P0 回復・移行（1〜2週目は P1 と同じ強度で負荷をかけ、3週目は軽めにして月末にFTPテスト）
+補給の練習：1時間あたり炭水化物 60g から始める</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="9000" Power="0.65"/>
+    <SteadyState Duration="4500" Power="0.65"/>
+    <IntervalsT Repeat="1" OnDuration="900" OffDuration="600" OnPower="0.805" OffPower="0.6"/>
+    <SteadyState Duration="900" Power="0.805"/>
+    <SteadyState Duration="5700" Power="0.65"/>
   </workout>
 </workout_file>

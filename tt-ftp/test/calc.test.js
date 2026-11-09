@@ -367,3 +367,14 @@ test('反復の「つなぎ」の名前は restLabel で変えられる(既定�
   assert.equal(attack.restLabel, 'アタック');
   assert.equal(attack.totalSec, 330);
 });
+
+test('menus.json: P0 は1〜2週目に P1 と同じ強度(火・木・土がキーセッション)、FTPテストの3週目は軽め', () => {
+  const t = menus.phases.find((p) => p.id === 'p0').templates;
+  for (const w of ['week1', 'week2']) {
+    assert.deepEqual(['tue', 'thu', 'sat'].map((day) => Calc.isKeySession(t[w][day])), [true, true, true], w);
+  }
+  assert.equal(t.week3.sat.kind, 'test');
+  const total = (w) => Object.values(t[w]).reduce((a, m) => a + Calc.resolveMenu(m, 300, 60).totalSec, 0);
+  assert.ok(total('week3') < total('week1'));
+  assert.ok(!Calc.isKeySession(t.week3.tue)); // テスト前は火曜を軽く
+});
