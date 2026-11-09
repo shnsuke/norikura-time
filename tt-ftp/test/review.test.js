@@ -83,14 +83,14 @@ test('調整案: FTP の上昇と合わせて W の上昇は +5% まで', () => 
 
 test('ブロックの範囲と次のブロック', () => {
   const r = R.blockRange(menus, 1, 2); // P1 のブロック2
-  assert.deepEqual([r.start.getMonth() + 1, r.start.getDate(), r.end.getMonth() + 1, r.end.getDate()], [12, 21, 1, 10]);
+  assert.deepEqual([r.start.getMonth() + 1, r.start.getDate(), r.end.getMonth() + 1, r.end.getDate()], [12, 14, 1, 3]);
   assert.deepEqual(R.nextBlock(menus, 0, null), { phaseIndex: 1, phase: 'p1', block: 1 }); // P0 → P1
   assert.deepEqual(R.nextBlock(menus, 1, 2), { phaseIndex: 1, phase: 'p1', block: 3 });
-  assert.deepEqual(R.nextBlock(menus, 1, 5), { phaseIndex: 2, phase: 'p2', block: 1 });   // P1 は13週 = 5ブロック目まで
-  assert.deepEqual(R.nextBlock(menus, 5, 3), { phaseIndex: 6, phase: 'p6', block: null });
-  assert.equal(R.nextBlock(menus, 6, null), null);
-  const p6 = R.blockRange(menus, 6, null);
-  assert.equal(Calc.daysBetween(p6.start, p6.end), 20);
+  assert.deepEqual(R.nextBlock(menus, 1, 4), { phaseIndex: 2, phase: 'p2', block: 1 });   // P1 は12週 = 4ブロック
+  assert.deepEqual(R.nextBlock(menus, 3, 4), { phaseIndex: 4, phase: 'p4', block: null });
+  assert.equal(R.nextBlock(menus, 4, null), null);
+  const p4 = R.blockRange(menus, 4, null);
+  assert.equal(Calc.daysBetween(p4.start, p4.end), 27);
 });
 
 test('調整の適用: 同じ期では強度を累積、Z2 はそのブロックだけ', () => {
@@ -99,32 +99,31 @@ test('調整の適用: 同じ期では強度を累積、Z2 はそのブロック
     'p1:3': { kinds: { vo2: 1 }, z2Pct: 0 },
     'p2:1': { kinds: { vo2: -2 }, z2Pct: 0 },
   };
-  assert.deepEqual(R.adjustmentFor(d('2026-12-01'), menus, adjustments), { kinds: {}, z2Pct: 0 }); // ブロック1
-  assert.deepEqual(R.adjustmentFor(d('2026-12-22'), menus, adjustments), { kinds: { vo2: 1, sst: 2 }, z2Pct: -20 });
-  assert.deepEqual(R.adjustmentFor(d('2027-01-12'), menus, adjustments), { kinds: { vo2: 2, sst: 2 }, z2Pct: 0 });
-  assert.deepEqual(R.adjustmentFor(d('2027-03-02'), menus, adjustments), { kinds: { vo2: -2 }, z2Pct: 0 }); // 期が変わるとリセット
+  assert.deepEqual(R.adjustmentFor(d('2026-11-24'), menus, adjustments), { kinds: {}, z2Pct: 0 }); // ブロック1
+  assert.deepEqual(R.adjustmentFor(d('2026-12-15'), menus, adjustments), { kinds: { vo2: 1, sst: 2 }, z2Pct: -20 });
+  assert.deepEqual(R.adjustmentFor(d('2027-01-05'), menus, adjustments), { kinds: { vo2: 2, sst: 2 }, z2Pct: 0 });
+  assert.deepEqual(R.adjustmentFor(d('2027-02-16'), menus, adjustments), { kinds: { vo2: -2 }, z2Pct: 0 }); // 期が変わるとリセット
 });
 
 test('調整の適用: 本番区間の % だけを動かし、Z2 は時間を減らす', () => {
   const p1 = menus.phases[1].templates;
   const sat = R.applyAdjustment(p1.load.sat, { kinds: { sst: 2 }, z2Pct: 0 });
   const tempo = sat.segments.find((s) => s.label === 'テンポ');
-  assert.deepEqual(tempo.work.pct, [78, 87]);
+  assert.deepEqual(tempo.work.pct, [82, 87]);
   assert.deepEqual(tempo.rest.pct, 60); // つなぎは変えない
-  assert.deepEqual(sat.segments[0].pct, [60, 70]); // Z2 も変えない
+  assert.deepEqual(sat.segments[0].pct, [56, 74]); // Z2 も変えない
   assert.equal(sat.adjusted, '強度 +2%');
-  assert.deepEqual(p1.load.sat.segments.find((s) => s.label === 'テンポ').work.pct, [76, 85]); // 元は変更しない
+  assert.deepEqual(p1.load.sat.segments.find((s) => s.label === 'テンポ').work.pct, [80, 85]); // 元は変更しない
   const sun = R.applyAdjustment(p1.load.sun, { kinds: {}, z2Pct: -20 });
-  assert.equal(sun.segments[0].min, 120); // 150分 × 0.8
+  assert.equal(sun.segments[0].min, 144); // 180分 × 0.8
   assert.equal(sun.adjusted, '量 -20%');
-  // 一定区間でも 85% 以上なら本番扱い(登り・仕掛け・最後の閾値・スプリント)。集団走・ゴールまでは変えない
-  const d2 = R.applyAdjustment(menus.phases[3].templates.load.sat, { kinds: { race: 1 }, z2Pct: 0 });
-  const byLabel = (l) => d2.segments.filter((s) => s.label === l);
-  assert.deepEqual(byLabel('登り1')[0].pct, [101, 109]);
-  assert.ok(byLabel('仕掛け（30秒）').every((s) => s.pct === 161));
-  assert.ok(byLabel('集団走').every((s) => s.pct[0] === 65 && s.pct[1] === 75));
-  assert.deepEqual(byLabel('最後の40分：閾値')[0].pct, [96, 101]);
-  assert.deepEqual(byLabel('1分アタック')[0].work.pct, [151, 161]);
-  assert.equal(byLabel('スプリント')[0].pct, 201);
+  // レースシミュレーション: 85% 以上の一定区間(目標ペース・ペースアップ・ラスト)は本番扱い。前後の Z2 は変えない
+  const sim = R.applyAdjustment(menus.phases[3].templates.load.sat, { kinds: { race: 1 }, z2Pct: 0 });
+  const byLabel = (l) => sim.segments.filter((s) => s.label === l);
+  assert.ok(byLabel('目標ペース').every((s) => s.pct[0] === 99 && s.pct[1] === 101));
+  assert.ok(byLabel('ペースアップ').every((s) => s.pct === 131));
+  assert.deepEqual(byLabel('ラスト3分全開')[0].pct, [106, 121]);
+  assert.deepEqual(byLabel('Z2')[0].pct, [60, 70]);
+  // 水曜の低ケイデンス走(Z2 扱い)は強度の調整を受けない
   assert.equal(R.applyAdjustment(p1.load.wed, { kinds: { vo2: 3 }, z2Pct: 0 }), p1.load.wed);
 });

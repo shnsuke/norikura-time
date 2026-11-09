@@ -1,0 +1,12 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P4 ピーク 1週目 木 閾値ロング 1×60分</name>
+  <description>P4 ピーク（強度を残して量を落とす（短い高強度のみ））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
+    <SteadyState Duration="3600" Power="0.975"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

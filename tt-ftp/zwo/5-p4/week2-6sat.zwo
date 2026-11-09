@@ -1,0 +1,21 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P4 ピーク 2週目 土 レースシミュレーション1本</name>
+  <description>P4 ピーク（強度を残して量を落とす（短い高強度のみ））
+本番の機材・ギア比・補給で走る（スタート15分前にジェル1本）
+勝負どころへの対応力のため、ペースアップは削らない</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="2700" Power="0.65"/>
+    <SteadyState Duration="600" Power="0.99"/>
+    <SteadyState Duration="60" Power="1.3"/>
+    <SteadyState Duration="840" Power="0.99"/>
+    <SteadyState Duration="60" Power="1.3"/>
+    <SteadyState Duration="840" Power="0.99"/>
+    <SteadyState Duration="60" Power="1.3"/>
+    <SteadyState Duration="660" Power="0.99"/>
+    <SteadyState Duration="180" Power="1.125"/>
+    <SteadyState Duration="2700" Power="0.65"/>
+  </workout>
+</workout_file>

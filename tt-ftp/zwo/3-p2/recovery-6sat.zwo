@@ -1,11 +1,15 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P2 ビルド 回復週 土 Z2 2.5h（軽めの週）</name>
-  <description>P2 ビルド（閾値・VO2、登り、疲労後の強度）
-レースを入れてもよい</description>
+  <name>P2 ビルド 回復週 土 FTPテスト（峠TT）</name>
+  <description>P2 ビルド（閾値とVO2maxの引き上げ、3月から実坂（閾値＋VO2））
+回復週の週末テスト。前回比 +1〜2% が目安。結果で次のブロックの強度を更新する（20分テストでもよい）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="9000" Power="0.6"/>
+    <Warmup Duration="1200" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1"/>
+    <FreeRide Duration="1800"/>
+    <Cooldown Duration="1800" PowerLow="0.6" PowerHigh="0.5"/>
   </workout>
 </workout_file>

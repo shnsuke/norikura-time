@@ -1,11 +1,15 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P3 レース期1 回復週 土 Z2 2.5h（軽めの週）</name>
-  <description>P3 レース期1（外のロードレース4〜5本、アタック反復）
-レースを入れてもよい</description>
+  <name>P3 特異 回復週 土 FTPテスト（峠TT）</name>
+  <description>P3 特異（50〜60分のレースシミュレーション、ペースアップ対応（ポラライズド寄り））
+回復週の週末テスト。前回比 +1〜2% が目安。結果で次のブロックの強度を更新する</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="9000" Power="0.6"/>
+    <Warmup Duration="1200" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1"/>
+    <FreeRide Duration="1800"/>
+    <Cooldown Duration="1800" PowerLow="0.6" PowerHigh="0.5"/>
   </workout>
 </workout_file>

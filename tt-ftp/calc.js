@@ -116,6 +116,143 @@
     return parts[0] * 60 + parts[1] + parts[2] / 60;
   }
 
+  // ---------- 乗鞍ヒルクライムの予想タイム ----------
+
+  /** 乗鞍エコーライン(乗鞍観光センター → 畳平口)。公式大会要項ベースの概算区間 */
+  const NORIKURA_COURSE = Object.freeze({
+    name: '乗鞍ヒルクライム',
+    segments: Object.freeze([
+      { name: '観光センター → 三本滝ゲート', distanceKm: 8.7, startElevM: 1460, endElevM: 1870 },
+      { name: '三本滝ゲート → 位ヶ原山荘', distanceKm: 8.3, startElevM: 1870, endElevM: 2350 },
+      { name: '位ヶ原山荘 → ゴール', distanceKm: 3.5, startElevM: 2350, endElevM: 2720 },
+    ]),
+  });
+
+  /**
+   * 一定パワーで走ったときの速度(m/s)。estimatePower と同じ式を v について解く(二分法)。
+   * opts: { powerW, distanceKm, gainM, avgAltM, riderKg, bikeKg, cda, crr, drivetrainLoss }
+   */
+  function speedForPower(opts) {
+    const o = Object.assign({}, DEFAULTS, opts);
+    const geo = climbGeometry(o.distanceKm, o.gainM);
+    const rho = airDensity(o.avgAltM);
+    const mass = o.riderKg + o.bikeKg;
+    const wheel = o.powerW * (1 - o.drivetrainLoss);
+    const need = (v) => mass * G * v * (Math.sin(geo.theta) + o.crr * Math.cos(geo.theta)) + 0.5 * rho * o.cda * v * v * v;
+    let lo = 0;
+    let hi = 40;
+    for (let i = 0; i < 80; i++) {
+      const mid = (lo + hi) / 2;
+      if (need(mid) > wheel) hi = mid;
+      else lo = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  /**
+   * 標高による有酸素パワーの低下(海面 = 1.0)。Bassett et al. (1999) の回帰式、x は標高(km)。
+   *   高地順応なし: % = 0.178x³ − 1.43x² − 4.07x + 100
+   *   高地順応あり: % = −1.122x² − 1.8991x + 99.921
+   */
+  function altitudePowerFactor(altM, acclimatized = false) {
+    const x = Math.max(0, altM || 0) / 1000;
+    const pct = acclimatized
+      ? -1.122 * x * x - 1.8991 * x + 99.921
+      : 0.178 * x * x * x - 1.43 * x * x - 4.07 * x + 100;
+    return pct / 100;
+  }
+
+  /**
+   * コースを登ったときの予想タイム。
+   * 基準パワーは FTP 推定と同じ式の逆 P = FTP × (60 / t)^k で、所要時間 t に見合う値を反復で求める。
+   * altitude が true のとき、fixedLossPct (数値) があればコース全体で一律にその%だけパワーを下げる
+   * (練習計画の仮定は −6%)。無ければ各地点のパワーを altitudePowerFactor(標高) / altitudePowerFactor(FTP計測地の標高) 倍にする。
+   * 標高と空気密度の変化を反映するため、各区間を slices 個に分けて計算する(勾配は区間内で一定)。
+   * opts: { ftp, riderKg, bikeKg, cda, crr, drivetrainLoss, k, course, altitude, fixedLossPct, acclimatized, ftpAltM, slices }
+   */
+  function predictClimb(opts) {
+    const o = Object.assign({}, DEFAULTS, { course: NORIKURA_COURSE, altitude: true, acclimatized: false, ftpAltM: 0, slices: 10 }, opts);
+    assertPositive('FTP', o.ftp);
+    assertPositive('体重', o.riderKg);
+    const fixed = typeof o.fixedLossPct === 'number' && Number.isFinite(o.fixedLossPct) ? 1 - o.fixedLossPct / 100 : null;
+    const factorAt = (altM) => {
+      if (!o.altitude) return 1;
+      if (fixed !== null) return fixed;
+      return altitudePowerFactor(altM, o.acclimatized) / altitudePowerFactor(o.ftpAltM, o.acclimatized);
+    };
+    const run = (basePowerW) => o.course.segments.map((seg) => {
+      const gainM = seg.endElevM - seg.startElevM;
+      const sliceKm = seg.distanceKm / o.slices;
+      const sliceGain = gainM / o.slices;
+      let sec = 0;
+      let work = 0;
+      for (let i = 0; i < o.slices; i++) {
+        const altM = seg.startElevM + sliceGain * (i + 0.5);
+        const powerW = basePowerW * factorAt(altM);
+        const v = speedForPower({ ...o, powerW, distanceKm: sliceKm, gainM: sliceGain, avgAltM: altM });
+        const t = (sliceKm * 1000) / v;
+        sec += t;
+        work += powerW * t;
+      }
+      const geo = climbGeometry(seg.distanceKm, gainM);
+      return {
+        name: seg.name, distanceKm: seg.distanceKm, gainM, gradePct: geo.gradePct,
+        powerW: work / sec, speedKmh: (seg.distanceKm * 3600) / sec, sec,
+      };
+    });
+    let minutes = 60;
+    let basePowerW = o.ftp;
+    let segments = run(basePowerW);
+    for (let i = 0; i < 30; i++) {
+      basePowerW = o.ftp * Math.pow(60 / minutes, o.k);
+      segments = run(basePowerW);
+      const next = segments.reduce((a, s) => a + s.sec, 0) / 60;
+      if (Math.abs(next - minutes) < 1e-4) { minutes = next; break; }
+      minutes = next;
+    }
+    const totalSec = segments.reduce((a, s) => a + s.sec, 0);
+    const distanceKm = segments.reduce((a, s) => a + s.distanceKm, 0);
+    const powerW = segments.reduce((a, s) => a + s.powerW * s.sec, 0) / totalSec;
+    return {
+      totalSec,
+      powerW,
+      basePowerW,
+      altitudeLossPct: (1 - powerW / basePowerW) * 100,
+      wkg: powerW / o.riderKg,
+      pctFtp: (powerW / o.ftp) * 100,
+      speedKmh: distanceKm / (totalSec / 3600),
+      distanceKm,
+      gainM: segments.reduce((a, s) => a + s.gainM, 0),
+      segments,
+    };
+  }
+
+  /** 秒 → "1:23:45" */
+  /**
+   * 目標タイム(分)に必要な FTP。predictClimb を FTP について二分法で解く。
+   * opts は predictClimb と同じ(ftp は不要)。
+   */
+  function ftpForClimbTime(minutes, opts) {
+    assertPositive('目標タイム', minutes);
+    let lo = 50;
+    let hi = 800;
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      if (predictClimb({ ...opts, ftp: mid }).totalSec / 60 > minutes) lo = mid;
+      else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  function formatClock(sec) {
+    const t = Math.round(sec);
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const s = t % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+    return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+  }
+
   // ---------- 体重の記録と減量計画 ----------
 
   /** その日を含む週の月曜(ローカル 00:00) */
@@ -126,13 +263,16 @@
   }
 
   /**
-   * 減量計画の折れ線: シーズン開始日に startKg、各期の終わりに weightGoalKg。
+   * 減量計画の折れ線: シーズン開始日に startKg、各期の終わり(weightGoalDate があればその日)に weightGoalKg。
+   * 期の途中で目標に届く計画(4月末に58kg など)は、その日から期の終わりまで維持になる。
    * 戻り値は日付順の [{ date, kg }]
    */
   function weightPlan(menus, startKg) {
     const points = [{ date: parseDate(menus.phases[0].start), kg: startKg }];
     for (const p of menus.phases) {
-      if (typeof p.weightGoalKg === 'number') points.push({ date: parseDate(p.end), kg: p.weightGoalKg });
+      if (typeof p.weightGoalKg !== 'number') continue;
+      if (p.weightGoalDate && p.weightGoalDate !== p.end) points.push({ date: parseDate(p.weightGoalDate), kg: p.weightGoalKg });
+      points.push({ date: parseDate(p.end), kg: p.weightGoalKg });
     }
     return points;
   }
@@ -215,7 +355,7 @@
    * date が menus の何期・何週目かを判定する。
    * 戻り値 status: 'before' | 'in' | 'after'
    * ブロック制の期: block(1始まり), weekInBlock(1〜blockWeeks), isRecovery
-   * ブロック制でない期(ピーク期): weekType = 'week{N}'
+   * ブロック制でない期(P0・ピーク期): weekType = 'week{N}'
    */
   function getPhaseAndWeek(date, menus) {
     const phases = menus.phases;
@@ -388,6 +528,12 @@
     resolveSegment,
     resolveMenu,
     formatDuration,
+    NORIKURA_COURSE,
+    speedForPower,
+    altitudePowerFactor,
+    predictClimb,
+    ftpForClimbTime,
+    formatClock,
     mondayOf,
     weightPlan,
     targetWeightAt,

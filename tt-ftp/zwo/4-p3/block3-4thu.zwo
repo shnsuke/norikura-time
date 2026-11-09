@@ -1,0 +1,12 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P3 特異 B3負荷週 木 閾値ロング 1×60分</name>
+  <description>P3 特異（50〜60分のレースシミュレーション、ペースアップ対応（ポラライズド寄り））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
+    <SteadyState Duration="3600" Power="0.975"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

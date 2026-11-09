@@ -1,10 +1,10 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P0 回復・移行 2週目 日 Z2 2.5h</name>
-  <description>P0 回復・移行（1〜2週目は P1 と同じ強度で負荷をかけ、3週目は軽めにして月末にFTPテスト）</description>
+  <name>P0 リセット 2週目 日 Z2 2h</name>
+  <description>P0 リセット（疲労を抜き、11/21〜22 にFTPテスト（低強度中心））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="9000" Power="0.65"/>
+    <SteadyState Duration="7200" Power="0.65"/>
   </workout>
 </workout_file>

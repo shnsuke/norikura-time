@@ -1,10 +1,10 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P1 冬季ベース 回復週 水 Z2（軽めの週）</name>
-  <description>P1 冬季ベース（有酸素の土台と VO2max、筋力（山なし））</description>
+  <name>P1 基礎 回復週 水 Z2（回復週）</name>
+  <description>P1 基礎（有酸素量、SST、最大筋力、減量の本番（ピラミッド型 約70:20:10））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="2700" Power="0.6"/>
+    <SteadyState Duration="3600" Power="0.6"/>
   </workout>
 </workout_file>

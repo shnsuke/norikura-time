@@ -1,0 +1,14 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P1 基礎 B2負荷週 木 SST 3×20分</name>
+  <description>P1 基礎（有酸素量、SST、最大筋力、減量の本番（ピラミッド型 約70:20:10））
+ケイデンス 85〜90</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="420" PowerLow="0.55" PowerHigh="0.75"/>
+    <IntervalsT Repeat="2" OnDuration="1200" OffDuration="180" OnPower="0.91" OffPower="0.55"/>
+    <SteadyState Duration="1200" Power="0.91"/>
+    <Cooldown Duration="120" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

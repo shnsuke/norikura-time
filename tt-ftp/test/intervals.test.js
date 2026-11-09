@@ -46,22 +46,22 @@ test('menus.json の全メニュー: テキストの合計時間がアプリ表�
 });
 
 test('予定の作成: シーズン全体で休養日を除く日が登録され、日付で上書きできるIDを持つ', () => {
-  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-11-01'), Calc.parseDate('2027-11-30'));
-  // 53週 × 5日(月・金は休養)
-  assert.equal(events.length, 53 * 5);
+  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-11-01'), Calc.parseDate('2027-09-30'));
+  // 42週 × 5日(月・金は休養)
+  assert.equal(events.length, 42 * 5);
   assert.equal(events[0].start_date_local, '2026-11-10T00:00:00');
   assert.equal(events[0].external_id, 'ttftp-2026-11-10');
   assert.equal(events[0].category, 'WORKOUT');
   assert.equal(events[0].type, 'VirtualRide'); // 平日はローラー
-  assert.match(events[0].description, /^P0 回復・移行 1週目\n/);
+  assert.match(events[0].description, /^P0 リセット 1週目\n/);
   const sat = events.find((e) => e.start_date_local.startsWith('2026-11-14'));
   assert.equal(sat.type, 'Ride'); // 週末は外
   const last = events[events.length - 1];
-  assert.equal(last.start_date_local, '2027-11-14T00:00:00');
+  assert.equal(last.start_date_local, '2027-08-29T00:00:00');
   assert.equal(last.category, 'RACE_A');
-  assert.equal(last.name, 'ツール・ド・おきなわ 市民200km');
-  // P0 の3週目の土曜は 20分テスト
-  assert.equal(events.find((e) => e.start_date_local.startsWith('2026-11-28')).name, '20分テスト（ローラー）');
+  assert.equal(last.name, '乗鞍ヒルクライム');
+  // P0 の2週目の土曜は 20分テスト
+  assert.equal(events.find((e) => e.start_date_local.startsWith('2026-11-21')).name, '20分テスト（ローラー）');
 });
 
 test('登録: API キーで Basic 認証し、upsert で送る', async () => {
@@ -108,11 +108,11 @@ test('その日のライドを選ぶ: 予定と対応づいたものを優先、
 
 test('予定の作成: 調整を反映したメニューで作れる', () => {
   const R = require('../review.js');
-  const adj = { 'p1:1': { kinds: { vo2: 2 }, z2Pct: 0 } };
-  const events = Intervals.buildEvents(menus, Calc.parseDate('2026-12-01'), Calc.parseDate('2026-12-01'),
+  const adj = { 'p2:1': { kinds: { vo2: 2 }, z2Pct: 0 } };
+  const events = Intervals.buildEvents(menus, Calc.parseDate('2027-02-16'), Calc.parseDate('2027-02-16'),
     (menu, date) => menu && R.applyAdjustment(menu, R.adjustmentFor(date, menus, adj)));
   assert.match(events[0].description, /調整 強度 \+2%/);
-  assert.match(events[0].description, /- 4m 110-116%/); // V2 4×4分 108〜114% に +2
+  assert.match(events[0].description, /- 5m 112-120%/); // VO2 5×5分 110〜118% に +2
 });
 
 test('予定の削除: 外部ID(ttftp-日付)で bulk-delete する', async () => {

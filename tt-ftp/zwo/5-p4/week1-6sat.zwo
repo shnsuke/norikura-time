@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P4 ピーク 1週目 土 Z2 2.5h（翌日の最終TTに備える）</name>
+  <description>P4 ピーク（強度を残して量を落とす（短い高強度のみ））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="9000" Power="0.65"/>
+  </workout>
+</workout_file>

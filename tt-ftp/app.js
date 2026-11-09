@@ -115,7 +115,7 @@
     if (name === 'menu') renderMenu();
     if (name === 'weight') renderWeight();
     if (name === 'history') { renderHistory(); renderReviewSelect(); renderReview(); }
-    if (name === 'prefs') { renderOneRm(); renderBackup(); renderRaceList(); }
+    if (name === 'prefs') { renderPrediction(); renderOneRm(); renderBackup(); renderRaceList(); }
   }
   for (const t of TABS) $(`tab-${t}`).addEventListener('click', () => showTab(t));
 
@@ -125,8 +125,29 @@
     pWeight: 'weight', pFtp: 'ftpOverride', pBike: 'bikeKg', pCda: 'cda', pCrr: 'crr', pLoss: 'lossPct', pK: 'k',
   };
 
+  /** 高地の扱い: plan = 計画の仮定(一律 −6%)／bassett = 標高に応じて(順応なし)／accl = 同(順応あり)／off = 考慮しない */
+  function altSettings() {
+    const s = state.settings;
+    const mode = ['plan', 'bassett', 'accl', 'off'].includes(s.altMode) ? s.altMode : 'plan';
+    const planLoss = (menus && menus.goals && menus.goals.altitudeLossPct) || 6;
+    return {
+      mode,
+      planLoss,
+      opts: {
+        altitude: mode !== 'off',
+        fixedLossPct: mode === 'plan' ? planLoss : null,
+        acclimatized: mode === 'accl',
+        ftpAltM: num(s.ftpAltM) || 0,
+      },
+    };
+  }
+
   function fillPrefs() {
     $('pIcuKey').value = state.settings.icuKey || '';
+    const a = altSettings();
+    $('pAltMode').value = a.mode;
+    $('pFtpAlt').value = num(state.settings.ftpAltM) === null ? '' : state.settings.ftpAltM;
+    $('pFtpAlt').disabled = !['bassett', 'accl'].includes(a.mode);
     for (const [id, key] of Object.entries(prefFields)) {
       const v = state.settings[key];
       $(id).value = v === null || v === undefined ? '' : v;
@@ -141,11 +162,23 @@
     save();
     renderHeader();
     computeTT();
+    renderPrediction();
     $('prefsToast').hidden = false;
     clearTimeout(prefsToastTimer);
     prefsToastTimer = setTimeout(() => ($('prefsToast').hidden = true), 1500);
   });
   $('prefsForm').addEventListener('submit', (e) => e.preventDefault());
+  $('pAltMode').addEventListener('change', (e) => {
+    state.settings.altMode = e.target.value;
+    $('pFtpAlt').disabled = !['bassett', 'accl'].includes(e.target.value);
+    save();
+    renderPrediction();
+  });
+  $('pFtpAlt').addEventListener('input', (e) => {
+    state.settings.ftpAltM = num(e.target.value);
+    save();
+    renderPrediction();
+  });
   $('pIcuKey').addEventListener('input', (e) => {
     state.settings.icuKey = e.target.value.trim();
     save();
@@ -157,6 +190,7 @@
     save();
     fillPrefs();
     computeTT();
+    renderPrediction();
   });
 
   function physicsSettings() {
@@ -164,6 +198,91 @@
     const d = defaultState().settings;
     const pick = (k) => (num(s[k]) === null ? d[k] : num(s[k]));
     return { bikeKg: pick('bikeKg'), cda: pick('cda'), crr: pick('crr'), drivetrainLoss: pick('lossPct') / 100, k: pick('k') };
+  }
+
+  // ---------- 乗鞍の予想タイムと目標 ----------
+
+  function renderPrediction() {
+    const el = $('climbPrediction');
+    const { ftp } = currentFtp();
+    const weight = currentWeight();
+    const goals = (menus && menus.goals) || {};
+    const head = '<div class="eyebrow">乗鞍ヒルクライム 予想タイム</div>';
+    const ps = physicsSettings();
+    const alt = altSettings();
+    const base = { ...ps, ...alt.opts };
+    const raceKg = goals.raceWeightKg || 58;
+
+    // 目標タイムに必要な FTP(レース体重で)
+    let targets = '';
+    try {
+      const rows = (goals.targets || []).map((t) => {
+        const need = C.ftpForClimbTime(C.parseTime(t.time), { ...base, riderKg: raceKg });
+        const gap = ftp ? need - ftp : null;
+        return `<tr><td>${esc(t.label)}<br><span class="hint">${esc(t.time)}</span></td>
+          <td class="num">${fmt(need)}</td><td class="num">${fmt(need / raceKg, 2)}</td>
+          <td class="num">${gap === null ? '—' : gap <= 0 ? '到達' : `あと ${fmt(gap)}W`}</td></tr>`;
+      }).join('');
+      if (rows) {
+        targets = `<div class="scroll"><table><thead><tr><th>目標（体重 ${fmt(raceKg)}kg）</th><th class="num">必要FTP</th><th class="num">W/kg</th><th class="num">今との差</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      }
+    } catch (e) { targets = ''; }
+
+    // 次のチェックポイント
+    const todayIso = isoDate(new Date());
+    const next = (goals.checkpoints || []).filter((c) => c.date >= todayIso).slice(0, 3);
+    const cps = next.length
+      ? `<div class="scroll"><table><thead><tr><th>次のチェックポイント</th><th>合格ライン</th></tr></thead><tbody>${next.map((c) => {
+        const d = C.parseDate(c.date);
+        return `<tr><td>${d.getMonth() + 1}/${d.getDate()}（${C.DAY_LABELS[C.DAY_KEYS[d.getDay()]]}）<br><span class="hint">${esc(c.what)}</span></td><td>${esc(c.pass)}</td></tr>`;
+      }).join('')}</tbody></table></div>`
+      : '';
+
+    if (!ftp || !weight) {
+      el.innerHTML = `${head}<p class="hint">体重と FTP（TT結果か手入力）が入ると、乗鞍エコーライン 20.5km・標高差1260m の予想タイムを表示します。</p>${targets}${cps}`;
+      return;
+    }
+    const opts = { ...base, ftp, riderKg: weight };
+    let r;
+    try {
+      r = C.predictClimb(opts);
+    } catch (e) {
+      el.innerHTML = `${head}<p class="warn">${esc(e.message)}</p>`;
+      return;
+    }
+    const rows = r.segments.map((s) => `<tr>
+      <td>${esc(s.name)}<br><span class="hint">${fmt(s.distanceKm, 1)}km・${fmt(s.gradePct, 1)}%</span></td>
+      <td class="num">${fmt(s.powerW)}</td><td class="num">${fmt(s.speedKmh, 1)}</td><td class="num">${C.formatClock(s.sec)}</td></tr>`).join('');
+    const flat = alt.opts.altitude ? C.predictClimb({ ...opts, altitude: false }) : null;
+    const altLine = flat
+      ? `<p class="sub">高地で平均 <b>−${fmt(r.altitudeLossPct, 1)}</b>%（${fmt(r.basePowerW)}W → ${fmt(r.powerW)}W）。
+         高地の影響が無ければ <b>${C.formatClock(flat.totalSec)}</b>（${C.formatClock(r.totalSec - flat.totalSec)} 速い）</p>`
+      : '<p class="sub">高地によるパワー低下は考慮していません。</p>';
+    // 減量計画の目標(60kg・58kg)で試算
+    const whatIf = [60, 58].filter((w) => w < weight - 0.05).map((w) => {
+      const x = C.predictClimb({ ...opts, riderKg: w });
+      return `<tr><td>体重 ${w}kg</td><td class="num">${fmt(ftp / w, 2)} W/kg</td><td class="num">${C.formatClock(x.totalSec)}</td>
+        <td class="num">${C.formatClock(r.totalSec - x.totalSec)} 短縮</td></tr>`;
+    }).join('');
+    const altText = {
+      plan: `高地で一律 −${fmt(alt.planLoss)}%（練習計画の仮定）のパワーで`,
+      bassett: `標高に応じて下がるパワー（Bassett ら 1999 の式・高地順応なし、FTP計測地 ${fmt(alt.opts.ftpAltM)}m 基準）で`,
+      accl: `標高に応じて下がるパワー（Bassett ら 1999 の式・高地順応あり、FTP計測地 ${fmt(alt.opts.ftpAltM)}m 基準）で`,
+      off: '一定ペースで',
+    }[alt.mode];
+    el.innerHTML = `${head}
+      <div class="predict-time">${C.formatClock(r.totalSec)}</div>
+      <div class="predict-meta">
+        <span>平均 <b>${fmt(r.powerW)}</b> W</span><span><b>${fmt(r.wkg, 2)}</b> W/kg</span>
+        <span>FTPの <b>${fmt(r.pctFtp)}</b>%</span><span>平均 <b>${fmt(r.speedKmh, 1)}</b> km/h</span>
+      </div>
+      ${altLine}
+      <div class="scroll"><table>
+        <thead><tr><th>区間</th><th class="num">W</th><th class="num">km/h</th><th class="num">タイム</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+      ${whatIf ? `<div class="scroll"><table><thead><tr><th>FTP ${fmt(ftp)}W のまま</th><th class="num"></th><th class="num">予想</th><th class="num">差</th></tr></thead><tbody>${whatIf}</tbody></table></div>` : ''}
+      ${targets}${cps}
+      <p class="hint">FTP ${fmt(ftp)}W・体重 ${fmt(weight, 1)}kg・詳細設定の値で計算。所要時間に見合うパワー（FTP × (60/分)^k）を基準に、${altText}登る想定です。区間の勾配は大会要項からの概算で、風・集団走行・路面状況は考慮していません。</p>`;
   }
 
   // ---------- TT入力 ----------
@@ -1021,7 +1140,7 @@
     const t = RC().taperFor(date, state.races, menus);
     return `<details class="race-box"><summary>この日をレースにする</summary>
       <div class="grid2">
-        <label class="field">レース名<input type="text" id="raceName" placeholder="例：みやざき国際" autocomplete="off"></label>
+        <label class="field">レース名<input type="text" id="raceName" placeholder="例：富士ヒルクライム" autocomplete="off"></label>
         <label class="field">優先度<select id="racePriority">${Object.entries(pr).map(([k, v]) => `<option value="${esc(k)}">${esc(v.label)}</option>`).join('')}</select></label>
       </div>
       <button type="button" class="primary" data-race-add="${isoDate(date)}">レースにする</button>
@@ -1501,7 +1620,7 @@
       renderMenu();
       if (state.tab === 'weight') renderWeight();
       if (state.tab === 'history') { renderReviewSelect(); renderReview(); }
-      if (state.tab === 'prefs') renderOneRm();
+      if (state.tab === 'prefs') { fillPrefs(); renderPrediction(); renderOneRm(); }
     } catch (e) {
       const n = $('menuNotice');
       n.hidden = false;

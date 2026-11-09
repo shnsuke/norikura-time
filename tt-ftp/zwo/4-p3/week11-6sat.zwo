@@ -1,0 +1,14 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P3 特異 11週目 土 乗鞍試走</name>
+  <description>P3 特異（50〜60分のレースシミュレーション、ペースアップ対応（ポラライズド寄り））
+高地での出力低下・ペース配分・ギア比を確認する
+行けない日は実坂レースシミュレーション 55分に置き換える</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="1800" PowerLow="0.6" PowerHigh="0.7"/>
+    <SteadyState Duration="3600" Power="0.925"/>
+    <SteadyState Duration="3600" Power="0.575"/>
+  </workout>
+</workout_file>

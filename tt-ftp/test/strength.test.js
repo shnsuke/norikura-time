@@ -42,75 +42,85 @@ test('現在の1RM: 最新の記録、無ければ初期値 122.5kg', () => {
   assert.equal(S.daysSinceUpdate([], d('2026-12-17')), null);
 });
 
-test('頻度: P0・P1 は木・日の週2回、P2〜P5 は木曜の週1回、10/28 が最後', () => {
+test('頻度: P0〜P2 と5月中は木・日の週2回、6月から日曜の週1回、8/19 が最後', () => {
   const daysWithLift = [];
-  for (let t = d('2026-11-09'); t <= d('2027-11-14'); t.setDate(t.getDate() + 1)) {
+  for (let t = d('2026-11-09'); t <= d('2027-08-29'); t.setDate(t.getDate() + 1)) {
     if (S.planFor(t, menus)) daysWithLift.push(new Date(t));
   }
   const byPhase = (id) => daysWithLift.filter((x) => Calc.getPhaseAndWeek(x, menus).phase.id === id);
   const dows = (xs) => [...new Set(xs.map((x) => x.getDay()))].sort();
-  assert.deepEqual(dows(byPhase('p0')), [0, 4]);
-  assert.equal(byPhase('p0').length, 6);  // 3週 × 2
-  assert.deepEqual(dows(byPhase('p1')), [0, 4]);
-  assert.equal(byPhase('p1').length, 26); // 13週 × 2
-  for (const [id, weeks] of [['p2', 8], ['p3', 10], ['p4', 8], ['p5', 8]]) {
-    assert.deepEqual(dows(byPhase(id)), [4], id);
-    assert.equal(byPhase(id).length, weeks, id);
+  for (const [id, weeks] of [['p0', 2], ['p1', 12], ['p2', 12]]) {
+    assert.deepEqual(dows(byPhase(id)), [0, 4], id);
+    assert.equal(byPhase(id).length, weeks * 2, id);
   }
-  assert.deepEqual(byPhase('p6').map((x) => `${x.getMonth() + 1}/${x.getDate()}`), ['10/28']); // レース2週前で終了
+  const p3 = byPhase('p3');
+  assert.deepEqual(dows(p3.filter((x) => x < d('2027-05-31'))), [0, 4]);
+  assert.equal(p3.filter((x) => x < d('2027-05-31')).length, 6);       // 5/10〜5/30 は週2回
+  assert.deepEqual(dows(p3.filter((x) => x >= d('2027-05-31'))), [0]); // 6月から日曜だけ
+  assert.equal(p3.filter((x) => x >= d('2027-05-31')).length, 9);
+  assert.deepEqual(byPhase('p4').map((x) => `${x.getMonth() + 1}/${x.getDate()}`), ['8/8', '8/19']); // レース10日前で終了
   assert.equal(S.planFor(d('2026-11-10'), menus), null); // 火曜はやらない
 });
 
-test('P1: 1RMテストは軽めの週の木曜だけ', () => {
+test('P1: 1RMテストはブロック2・4の回復週の木曜だけ', () => {
   const tests = [];
-  for (let t = d('2026-11-09'); t <= d('2027-11-14'); t.setDate(t.getDate() + 1)) {
+  for (let t = d('2026-11-09'); t <= d('2027-08-29'); t.setDate(t.getDate() + 1)) {
     const p = S.planFor(t, menus);
     if (p && p.test) tests.push(`${t.getMonth() + 1}/${t.getDate()}`);
   }
-  assert.deepEqual(tests, ['12/17', '1/7', '1/28', '2/18']);
+  assert.deepEqual(tests, ['12/31', '2/11']);
 });
 
-test('重さ(1RM 122.5kg): P0 と P1 ブロック1〜2', () => {
+test('重さ(1RM 122.5kg): P0 と P1(4〜6回×4セット、80〜85%)', () => {
   const w = (date) => kgOf(date).work.map((x) => [x.kg, x.reps, x.sets]);
   assert.deepEqual(w('2026-11-12'), [[97.5, 3, 3]]);  // P0 木 80%
-  assert.deepEqual(w('2026-11-15'), [[105, 3, 3]]);   // P0 日 85%
-  const sun1 = kgOf('2026-12-06'); // P1 負荷週1の日曜
-  assert.deepEqual(sun1.work.map((x) => [x.kg, x.reps, x.sets]), [[105, 3, 5]]);
-  assert.deepEqual(sun1.work[0].plates, [20, 20, 2.5]);
+  assert.deepEqual(w('2026-11-15'), [[97.5, 3, 3]]);  // P0 日 80%
+  const sun1 = kgOf('2026-11-29'); // P1 負荷週1の日曜 82.5%
+  assert.deepEqual(sun1.work.map((x) => [x.kg, x.reps, x.sets]), [[100, 5, 4]]);
+  assert.deepEqual(sun1.work[0].plates, [20, 20]);
   assert.equal(sun1.timing, 'ライドの後');
-  const thu1 = kgOf('2026-12-03');
-  assert.deepEqual(thu1.work.map((x) => [x.kg, x.reps, x.sets]), [[97.5, 3, 4]]);
+  const thu1 = kgOf('2026-11-26');
+  assert.deepEqual(thu1.work.map((x) => [x.kg, x.reps, x.sets]), [[97.5, 5, 4]]);
   assert.match(thu1.timing, /夜/);
-  assert.deepEqual(w('2026-12-13'), [[107.5, 3, 4]]);
-  assert.deepEqual(w('2026-12-10'), [[100, 3, 4]]);
-  assert.deepEqual(w('2026-12-20'), [[97.5, 2, 2]]);
+  assert.deepEqual(w('2026-12-03'), [[100, 4, 4]]);   // 負荷週2 木 82.5%
+  assert.deepEqual(w('2026-12-06'), [[105, 4, 4]]);   // 負荷週2 日 85%
+  assert.deepEqual(w('2026-12-10'), [[97.5, 4, 2]]);  // 回復週は軽く
+  // P1 の負荷週はすべて 4〜6回×4セット・80〜85%
+  for (const g of st.phases.p1.groups) {
+    for (const wk of ['1', '2']) {
+      for (const day of Object.values(g.weeks[wk])) {
+        for (const x of day.sets) assert.ok(x.pct >= 80 && x.pct <= 85 && x.reps >= 4 && x.reps <= 6 && x.sets === 4);
+      }
+    }
+  }
   // ウォームアップ: バー → 40% → 60% → 75% → 85%
   assert.deepEqual(sun1.warmup.map((x) => [x.kg, x.reps]), [[20, 8], [50, 5], [72.5, 3], [92.5, 2], [105, 1]]);
 });
 
 test('重さ(1RM 122.5kg): 1RMテストの日', () => {
-  const t = kgOf('2026-12-17');
+  const t = kgOf('2026-12-31');
   assert.equal(t.test, true);
   assert.deepEqual(t.warmup.map((w) => w.kg), [20, 50, 72.5, 92.5, 105, 112.5]);
   assert.deepEqual(t.attempts.map((a) => a.kg), [122.5, 125]);
   assert.deepEqual(t.attempts[0].plates, [20, 20, 10, 1.25]);
 });
 
-test('重さ(1RM 122.5kg): P1 ブロック3〜5・P2・P3・P6', () => {
-  const w = (date) => kgOf(date).work.map((x) => [x.label, x.kg, x.reps, x.sets]);
-  assert.deepEqual(w('2027-01-17'), [['', 107.5, 2, 5]]);       // P1 B3 負荷週1 日
-  assert.deepEqual(w('2027-01-14'), [['', 100, 2, 4]]);         // P1 B3 負荷週1 木
-  assert.deepEqual(w('2027-01-24'), [['', 112.5, 2, 3]]);       // P1 B3 負荷週2 日
-  assert.deepEqual(w('2027-02-28'), [['', 107.5, 2, 5]]);       // P1 13週目(B5 負荷週1) 日
-  assert.deepEqual(w('2027-03-04'), [['', 112.5, 2, 2]]);       // P2 負荷週1 木
-  assert.deepEqual(w('2027-03-11'), [['トップシングル', 120, 1, 1], ['', 112.5, 1, 2]]); // P2 負荷週2 木
-  assert.deepEqual(w('2027-04-29'), [['', 112.5, 1, 3]]);       // P3 負荷週1 木
-  assert.deepEqual(w('2027-05-06'), [['', 117.5, 1, 2]]);       // P3 負荷週2 木
-  assert.deepEqual(w('2027-10-28'), [['', 110, 1, 2]]);         // P6 最後
+test('重さ(1RM 122.5kg): P2(2〜3回×3セット、85〜90%)・P3 の維持・P4', () => {
+  const w = (date) => kgOf(date).work.map((x) => [x.kg, x.reps, x.sets]);
+  assert.deepEqual(w('2027-02-18'), [[105, 3, 3]]);     // P2 負荷週1 木 85%
+  assert.deepEqual(w('2027-02-21'), [[107.5, 3, 3]]);   // P2 負荷週1 日 87.5%
+  assert.deepEqual(w('2027-02-28'), [[110, 2, 3]]);     // P2 負荷週2 日 90%
+  assert.deepEqual(w('2027-05-13'), [[105, 3, 3]]);     // P3 5月中はビルド期と同じ
+  assert.equal(kgOf('2027-06-03'), null);               // 6月から木曜は無し
+  assert.deepEqual(w('2027-06-06'), [[100, 3, 3]]);     // P3 維持 日 82.5%
+  assert.deepEqual(w('2027-06-13'), [[105, 2, 3]]);     // 85%
+  assert.deepEqual(w('2027-08-08'), [[97.5, 2, 3]]);    // P4 最終TTの日(ライドの後)
+  assert.deepEqual(w('2027-08-19'), [[97.5, 2, 2]]);    // P4 最後
+  assert.equal(kgOf('2027-08-22'), null);
 });
 
 test('1RMが変わると重さも変わる', () => {
-  const plan = S.planFor(d('2026-11-29'), menus); // P0 3週目の日曜: 85%
+  const plan = S.planFor(d('2026-12-06'), menus); // P1 負荷週2の日曜: 85%
   assert.equal(S.resolvePlan(plan, 125, st).work[0].kg, 107.5); // 106.25 → 107.5
   assert.equal(S.resolvePlan(plan, 130, st).work[0].kg, 110);   // 110.5 → 110
 });
