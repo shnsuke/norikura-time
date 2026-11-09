@@ -1,0 +1,15 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P3 特異 6週目 土 地元峠TT 55分前後（乗鞍10週前）</name>
+  <description>P3 特異（50〜60分のレースシミュレーション、ペースアップ対応（ポラライズド寄り））
+55分ペースの確認。本番の機材・ギア比・補給で</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="1200" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1"/>
+    <FreeRide Duration="3300"/>
+    <Cooldown Duration="1800" PowerLow="0.6" PowerHigh="0.5"/>
+  </workout>
+</workout_file>

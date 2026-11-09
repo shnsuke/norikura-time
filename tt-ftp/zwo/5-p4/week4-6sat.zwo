@@ -1,15 +1,13 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P4 夏季ボリューム 4週目 土 山で20分TT</name>
-  <description>P4 夏季ボリューム（量のピーク、暑熱順化）
-7月末のテスト。合格ライン FTP 335W</description>
+  <name>P4 ピーク 4週目 土 前日の刺激入れ 30分</name>
+  <description>P4 ピーク（強度を残して量を落とす（短い高強度のみ））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <Warmup Duration="1200" PowerLow="0.55" PowerHigh="0.65"/>
-    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1" OffPower="0.5"/>
-    <SteadyState Duration="60" Power="1"/>
-    <FreeRide Duration="1200"/>
-    <Cooldown Duration="900" PowerLow="0.55" PowerHigh="0.45"/>
+    <SteadyState Duration="1200" Power="0.6"/>
+    <IntervalsT Repeat="1" OnDuration="60" OffDuration="120" OnPower="1.025" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1.025"/>
+    <Cooldown Duration="360" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

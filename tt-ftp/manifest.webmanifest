@@ -2,7 +2,7 @@
   "id": "./",
   "name": "峠TT FTPプランナー",
   "short_name": "峠TT",
-  "description": "峠TTの結果からFTPを推定し、ツール・ド・おきなわに向けた期分けメニューの設定パワーを表示します",
+  "description": "峠TTの結果からFTPを推定し、乗鞍ヒルクライムに向けた期分けメニューの設定パワーを表示します",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",

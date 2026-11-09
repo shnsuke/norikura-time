@@ -1,11 +1,15 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P1 冬季ベース 回復週 土 Z2 2.5h（軽めの週）</name>
-  <description>P1 冬季ベース（有酸素の土台と VO2max、筋力（山なし））
-レースを入れてもよい</description>
+  <name>P1 基礎 回復週 土 20分テスト（ローラー）</name>
+  <description>P1 基礎（有酸素量、SST、最大筋力、減量の本番（ピラミッド型 約70:20:10））
+回復週の週末テスト。前回比 +1〜2% が目安。結果で次のブロックの強度を更新する（ランプテストでもよい）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="9000" Power="0.6"/>
+    <Warmup Duration="1200" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1"/>
+    <FreeRide Duration="1200"/>
+    <Cooldown Duration="900" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

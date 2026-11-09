@@ -50,7 +50,7 @@ test('休養日(月曜)にもレースを入れられる。近いレースのテ
   assert.match(menuOn('2027-06-10', two).title, /近いの2日前/);
 });
 
-test('テーパーのメニューもローラーのルール(スプリントなし)を守り、強度判定の対象外', () => {
+test('テーパーのメニューは全力のスプリントを入れず、強度判定の対象外', () => {
   for (const [n, m] of Object.entries(menus.races.taper)) {
     assert.equal(m.kind, 'opener', n);
     for (const seg of m.segments) {
@@ -68,14 +68,14 @@ test('デッドリフト: レースの日は無し、B のテーパー中は重�
   assert.ok(plan);
   assert.equal(Races.adjustStrength(plan, d('2026-12-20'), [{ date: '2026-12-20', name: 'x', priority: 'C' }], menus), null);
   // C のレースの前は変えない
-  assert.equal(Races.adjustStrength(S.planFor(d('2026-12-17'), menus), d('2026-12-17'), [{ date: '2026-12-19', name: 'x', priority: 'C' }], menus).test, true);
-  // B のレース(12/19 土)の2日前 = 12/17(木)の1RMテスト → テストせず軽く
-  const t = Races.adjustStrength(S.planFor(d('2026-12-17'), menus), d('2026-12-17'), [{ date: '2026-12-19', name: 'ロード', priority: 'B' }], menus);
+  assert.equal(Races.adjustStrength(S.planFor(d('2026-12-31'), menus), d('2026-12-31'), [{ date: '2027-01-02', name: 'x', priority: 'C' }], menus).test, true);
+  // B のレース(1/2 土)の2日前 = 12/31(木)の1RMテスト → テストせず軽く
+  const t = Races.adjustStrength(S.planFor(d('2026-12-31'), menus), d('2026-12-31'), [{ date: '2027-01-02', name: 'ロード', priority: 'B' }], menus);
   assert.equal(t.test, false);
   assert.match(t.taperNote, /重量70%/);
-  // 通常の日は各セットの % を 70% に: P3 5/13(木) 92.5%×1×3 → 64.75% → 1RM 122.5 で 80kg
-  const thu = Races.adjustStrength(S.planFor(d('2027-04-29'), menus), d('2027-04-29'), [{ date: '2027-05-02', name: 'ロード', priority: 'B' }], menus);
-  assert.deepEqual(S.resolvePlan(thu, 122.5, st).work.map((w) => [w.kg, w.reps, w.sets]), [[80, 1, 3]]);
+  // 通常の日は各セットの % を 70% に: P3 5/13(木) 85%×3×3 → 59.5% → 1RM 122.5 で 72.5kg
+  const thu = Races.adjustStrength(S.planFor(d('2027-05-13'), menus), d('2027-05-13'), [{ date: '2027-05-16', name: '富士ヒル', priority: 'B' }], menus);
+  assert.deepEqual(S.resolvePlan(thu, 122.5, st).work.map((w) => [w.kg, w.reps, w.sets]), [[72.5, 3, 3]]);
 });
 
 test('予定の作成: レースは RACE_B/C、テーパーの日も登録。レースを外す日付はテーパーの範囲ごと', () => {

@@ -1,7 +1,7 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P2 ビルド 回復週 火 Z2（軽めの週）</name>
-  <description>P2 ビルド（閾値・VO2、登り、疲労後の強度）</description>
+  <name>P2 ビルド 回復週 火 Z2（回復週）</name>
+  <description>P2 ビルド（閾値とVO2maxの引き上げ、3月から実坂（閾値＋VO2））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>

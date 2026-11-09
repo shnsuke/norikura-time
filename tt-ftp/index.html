@@ -174,6 +174,19 @@
       </div>
       <p class="hint">FTP を手入力すると、TT結果より優先されます。空欄に戻すと最新のTT結果を使います。</p>
 
+      <div class="predict" id="climbPrediction" aria-live="polite"></div>
+      <div class="grid2 alt-opts">
+        <label class="field">高地によるパワー低下
+          <select id="pAltMode">
+            <option value="plan">計画の仮定（一律 −6%）</option>
+            <option value="bassett">標高に応じて（高地順応なし）</option>
+            <option value="accl">標高に応じて（高地順応あり）</option>
+            <option value="off">考慮しない</option>
+          </select>
+        </label>
+        <label class="field">FTPを測った場所の標高 (m)<input type="number" id="pFtpAlt" inputmode="numeric" step="10" min="0" placeholder="0"></label>
+      </div>
+
       <div class="rm-box" id="rmBox">
         <h2>デッドリフト 1RM</h2>
         <div class="rm-current" id="rmCurrent"></div>

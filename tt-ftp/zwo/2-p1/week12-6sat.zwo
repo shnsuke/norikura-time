@@ -1,0 +1,16 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P1 基礎 12週目 土 20分テスト（2月末チェック）</name>
+  <description>P1 基礎（有酸素量、SST、最大筋力、減量の本番（ピラミッド型 約70:20:10））
+合格ライン：FTP 315W・体重 60kg（5.25W/kg）
+届いているかで本番の目標タイムを見直す</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="1200" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1"/>
+    <FreeRide Duration="1200"/>
+    <Cooldown Duration="900" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

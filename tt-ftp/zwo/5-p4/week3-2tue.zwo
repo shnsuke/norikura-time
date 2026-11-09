@@ -1,0 +1,13 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P4 ピーク 3週目 火 VO2 短め 4×3分</name>
+  <description>P4 ピーク（強度を残して量を落とす（短い高強度のみ））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="900" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="3" OnDuration="180" OffDuration="180" OnPower="1.115" OffPower="0.5"/>
+    <SteadyState Duration="180" Power="1.115"/>
+    <Cooldown Duration="600" PowerLow="0.55" PowerHigh="0.45"/>
+  </workout>
+</workout_file>

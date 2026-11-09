@@ -1,8 +1,7 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P0 回復・移行 1週目 水 Z2 60分</name>
-  <description>P0 回復・移行（1〜2週目は P1 と同じ強度で負荷をかけ、3週目は軽めにして月末にFTPテスト）
-ローラー。スプリントは入れない（目的は VO2max）</description>
+  <name>P0 リセット 1週目 水 Z2 60分</name>
+  <description>P0 リセット（疲労を抜き、11/21〜22 にFTPテスト（低強度中心））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>

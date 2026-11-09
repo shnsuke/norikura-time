@@ -1,11 +1,11 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P1 冬季ベース 負荷週 日 Z2 2.5h</name>
-  <description>P1 冬季ベース（有酸素の土台と VO2max、筋力（山なし））
-平坦なグループライドがあれば参加して集団走行の練習</description>
+  <name>P1 基礎 負荷週 日 Z2 3h（外）</name>
+  <description>P1 基礎（有酸素量、SST、最大筋力、減量の本番（ピラミッド型 約70:20:10））
+余裕があれば Z2 を足す。疲れている日は 2h で切り上げてよい</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="9000" Power="0.65"/>
+    <SteadyState Duration="10800" Power="0.65"/>
   </workout>
 </workout_file>

@@ -1,0 +1,11 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P3 特異 12週目 土 Z2 2.5h（回復週）</name>
+  <description>P3 特異（50〜60分のレースシミュレーション、ペースアップ対応（ポラライズド寄り））
+テストは 8/8 の最終TTで行う</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="9000" Power="0.6"/>
+  </workout>
+</workout_file>

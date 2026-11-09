@@ -1,8 +1,8 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P2 ビルド 負荷週 日 Z2 3h</name>
-  <description>P2 ビルド（閾値・VO2、登り、疲労後の強度）
-春のクリテリウムがあればレースに切り替え</description>
+  <name>P2 ビルド 負荷週 日 Z2 3h（外）</name>
+  <description>P2 ビルド（閾値とVO2maxの引き上げ、3月から実坂（閾値＋VO2））
+忙しい週はここを削る</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>

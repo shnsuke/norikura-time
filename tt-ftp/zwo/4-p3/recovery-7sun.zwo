@@ -1,7 +1,7 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P3 レース期1 回復週 日 Z2 2h（軽めの週）</name>
-  <description>P3 レース期1（外のロードレース4〜5本、アタック反復）</description>
+  <name>P3 特異 回復週 日 Z2 2h（回復週）</name>
+  <description>P3 特異（50〜60分のレースシミュレーション、ペースアップ対応（ポラライズド寄り））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>

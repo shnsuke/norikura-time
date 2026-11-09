@@ -1,14 +1,13 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P3 レース期1 負荷週2 火 VO2 4×5分</name>
-  <description>P3 レース期1（外のロードレース4〜5本、アタック反復）
-ローラー。スプリントは入れない（目的は VO2max）</description>
+  <name>P3 特異 負荷週2 火 VO2 4×6分</name>
+  <description>P3 特異（50〜60分のレースシミュレーション、ペースアップ対応（ポラライズド寄り））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
     <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
-    <IntervalsT Repeat="3" OnDuration="300" OffDuration="300" OnPower="1.115" OffPower="0.5"/>
-    <SteadyState Duration="300" Power="1.115"/>
+    <IntervalsT Repeat="3" OnDuration="360" OffDuration="300" OnPower="1.1" OffPower="0.5"/>
+    <SteadyState Duration="360" Power="1.1"/>
     <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

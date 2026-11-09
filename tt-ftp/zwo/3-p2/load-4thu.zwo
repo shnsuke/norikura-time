@@ -1,41 +1,13 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P2 ビルド 負荷週 木 VO2 Rattlesnake×3セット</name>
-  <description>P2 ビルド（閾値・VO2、登り、疲労後の強度）
-ローラー。スプリントは入れない（目的は VO2max）</description>
+  <name>P2 ビルド 負荷週 木 閾値 2×20分</name>
+  <description>P2 ビルド（閾値とVO2maxの引き上げ、3月から実坂（閾値＋VO2））</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <Warmup Duration="180" PowerLow="0.4" PowerHigh="0.6"/>
-    <SteadyState Duration="180" Power="0.65"/>
-    <SteadyState Duration="180" Power="0.8"/>
-    <SteadyState Duration="20" Power="1.2"/>
-    <SteadyState Duration="30" Power="0.4"/>
-    <SteadyState Duration="30" Power="1.2"/>
-    <SteadyState Duration="30" Power="0.4"/>
-    <SteadyState Duration="40" Power="1.2"/>
-    <SteadyState Duration="165" Power="0.5"/>
-    <SteadyState Duration="60" Power="1.4"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.2"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.17"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.14"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.12"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.1"/>
-    <SteadyState Duration="180" Power="0.5"/>
-    <SteadyState Duration="60" Power="1.4"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.2"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.17"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.14"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.12"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.1"/>
-    <SteadyState Duration="180" Power="0.5"/>
-    <SteadyState Duration="60" Power="1.4"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.2"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.17"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.14"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.12"/>
-    <IntervalsT Repeat="3" OnDuration="15" OffDuration="30" OnPower="0.4" OffPower="1.1"/>
-    <SteadyState Duration="180" Power="0.5"/>
+    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="1" OnDuration="1200" OffDuration="600" OnPower="0.985" OffPower="0.55"/>
+    <SteadyState Duration="1200" Power="0.985"/>
     <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

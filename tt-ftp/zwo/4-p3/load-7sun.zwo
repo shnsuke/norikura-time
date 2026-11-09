@@ -1,10 +1,14 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P3 レース期1 負荷週 日 Z2 2.5h</name>
-  <description>P3 レース期1（外のロードレース4〜5本、アタック反復）</description>
+  <name>P3 特異 負荷週 日 Z2 2.5h＋スプリント 5×10秒</name>
+  <description>P3 特異（50〜60分のレースシミュレーション、ペースアップ対応（ポラライズド寄り））
+最後にスプリント（集団からの踏み直し対策）</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="9000" Power="0.65"/>
+    <SteadyState Duration="8100" Power="0.65"/>
+    <IntervalsT Repeat="4" OnDuration="10" OffDuration="120" OnPower="1.5" OffPower="0.5"/>
+    <SteadyState Duration="10" Power="1.5"/>
+    <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

@@ -1,14 +1,16 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P0 回復・移行 2週目 土 平地ロング 3.5h（テンポ 2×15分）</name>
-  <description>P0 回復・移行（1〜2週目は P1 と同じ強度で負荷をかけ、3週目は軽めにして月末にFTPテスト）
-補給の練習：1時間あたり炭水化物 60g から始める</description>
+  <name>P0 リセット 2週目 土 20分テスト（ローラー）</name>
+  <description>P0 リセット（疲労を抜き、11/21〜22 にFTPテスト（低強度中心））
+基準値を決めるテスト（結果×0.95 = FTP）。近場の峠TTでもよい
+土曜にできなければ 11/22（日）に回す</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <SteadyState Duration="4500" Power="0.65"/>
-    <IntervalsT Repeat="1" OnDuration="900" OffDuration="600" OnPower="0.805" OffPower="0.6"/>
-    <SteadyState Duration="900" Power="0.805"/>
-    <SteadyState Duration="5700" Power="0.65"/>
+    <Warmup Duration="1200" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1"/>
+    <FreeRide Duration="1200"/>
+    <Cooldown Duration="900" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>

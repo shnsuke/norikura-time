@@ -1,0 +1,10 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P4 ピーク 4週目 水 Z2 45分（軽め）</name>
+  <description>P4 ピーク（強度を残して量を落とす（短い高強度のみ））</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="2700" Power="0.6"/>
+  </workout>
+</workout_file>

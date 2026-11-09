@@ -1,0 +1,17 @@
+<workout_file>
+  <author>峠TT FTPプランナー</author>
+  <name>P4 ピーク 1週目 日 最終TT（レース3週前）</name>
+  <description>P4 ピーク（強度を残して量を落とす（短い高強度のみ））
+レースペースの最終決定
+本番の機材・ギア比・補給で</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="1200" PowerLow="0.55" PowerHigh="0.65"/>
+    <IntervalsT Repeat="2" OnDuration="60" OffDuration="120" OnPower="1" OffPower="0.5"/>
+    <SteadyState Duration="60" Power="1"/>
+    <FreeRide Duration="3000"/>
+    <SteadyState Duration="3600" Power="0.6"/>
+    <Cooldown Duration="900" PowerLow="0.6" PowerHigh="0.5"/>
+  </workout>
+</workout_file>

@@ -1,15 +1,14 @@
 <workout_file>
   <author>峠TT FTPプランナー</author>
-  <name>P0 回復・移行 1週目 火 V2 VO2 4×4分</name>
-  <description>P0 回復・移行（1〜2週目は P1 と同じ強度で負荷をかけ、3週目は軽めにして月末にFTPテスト）
-ローラー。スプリントは入れない（目的は VO2max）</description>
+  <name>P0 リセット 1週目 火 Z2 1h＋スプリント 6×10秒</name>
+  <description>P0 リセット（疲労を抜き、11/21〜22 にFTPテスト（低強度中心））
+軽い刺激だけ。追い込まない</description>
   <sportType>bike</sportType>
   <tags/>
   <workout>
-    <Warmup Duration="600" PowerLow="0.55" PowerHigh="0.65"/>
-    <IntervalsT Repeat="3" OnDuration="240" OffDuration="240" OnPower="1.11" OffPower="0.5"/>
-    <SteadyState Duration="240" Power="1.11"/>
-    <SteadyState Duration="600" Power="0.65"/>
+    <SteadyState Duration="2700" Power="0.65"/>
+    <IntervalsT Repeat="5" OnDuration="10" OffDuration="120" OnPower="1.5" OffPower="0.5"/>
+    <SteadyState Duration="10" Power="1.5"/>
     <Cooldown Duration="300" PowerLow="0.55" PowerHigh="0.45"/>
   </workout>
 </workout_file>
