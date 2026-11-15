@@ -195,7 +195,7 @@ test('menus.json: 全期の負荷週・回復週で火木土のキーセッシ�
       assert.ok(found, `${phase.name} ${info.week}週目 ${info.day} のメニューがありません`);
       // すべての区間が解決できる
       const r = Calc.resolveMenu(found.menu, 300, 60);
-      assert.ok(r.totalSec > 0);
+      assert.ok(r.totalSec > 0 || /フリーライド/.test(found.menu.title));
     }
   }
 });
@@ -379,7 +379,8 @@ test('menus.json: テスト・チェックポイントの日(計画の日程ど�
     const f = Calc.findDayMenu(info.phase, info, info.day);
     return f && `${f.menu.kind}:${f.menu.title}|${(f.menu.notes || []).join(' ')}`;
   };
-  assert.match(kindOn('2026-11-21'), /^test:20分テスト/);
+  assert.match(kindOn('2026-11-19'), /^test:20分テスト/);      // 木曜にローラーで
+  assert.match(kindOn('2026-11-21'), /^z2:フリーライド/);     // 3連休はメニューなし
   assert.match(kindOn('2027-02-13'), /^test:20分テスト.*FTP 315W・体重 60kg/);
   assert.match(kindOn('2027-05-08'), /^test:実坂TT 40分以上.*FTP 330W・体重 58kg/);
   assert.match(kindOn('2027-06-19'), /^test:地元峠TT 55分前後/);
@@ -428,17 +429,26 @@ test('反復の「つなぎ」の名前は restLabel で変えられる(既定�
   assert.equal(attack.totalSec, 330);
 });
 
-test('menus.json: P0 リセットは低強度だけ(Z2＋短いスプリント)、2週目の土曜に20分テスト', () => {
+test('menus.json: P0 リセットは低強度だけ。2週目は木曜にローラーで20分テスト、週末はフリーライド', () => {
   const t = menus.phases.find((p) => p.id === 'p0').templates;
-  for (const w of ['week1', 'week2']) {
-    for (const day of ['tue', 'wed', 'thu', 'sun']) assert.equal(t[w][day].kind, 'z2', `${w} ${day}`);
-    const sprint = t[w].tue.segments.find((s) => s.label === 'スプリント');
-    assert.deepEqual([sprint.reps, sprint.work.sec], [6, 10]);
-  }
-  assert.equal(t.week1.sat.kind, 'z2');
-  assert.equal(t.week2.sat.kind, 'test');
+  for (const day of ['tue', 'wed', 'thu', 'sat', 'sun']) assert.equal(t.week1[day].kind, 'z2', day);
+  const sprint = t.week1.tue.segments.find((s) => s.label === 'スプリント');
+  assert.deepEqual([sprint.reps, sprint.work.sec], [6, 10]);
   const hours = (w) => Object.values(t[w]).reduce((a, m) => a + Calc.resolveMenu(m, 300, 60).totalSec, 0) / 3600;
   assert.ok(hours('week1') >= 7 && hours('week1') <= 9);
+  // テスト前の火・水は短く軽く(FTP を超える時間は合計5分以内)、木曜がテスト
+  assert.equal(t.week2.thu.kind, 'test');
+  for (const day of ['tue', 'wed']) {
+    const r = Calc.resolveMenu(t.week2[day], 300, 60);
+    assert.ok(r.totalSec <= 50 * 60, day);
+    const hard = r.segments.filter((s) => s.type === 'interval').reduce((a, s) => a + s.work.sec * s.reps, 0);
+    assert.ok(hard <= 180, day);
+  }
+  // 3連休(土・日)は時間もパワーも指定しない
+  for (const day of ['sat', 'sun']) {
+    assert.match(t.week2[day].title, /フリーライド/);
+    assert.equal(Calc.resolveMenu(t.week2[day], 300, 60).totalSec, 0);
+  }
 });
 
 // ---------- 乗鞍の予想タイム ----------

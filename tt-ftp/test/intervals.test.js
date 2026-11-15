@@ -60,8 +60,8 @@ test('予定の作成: シーズン全体で休養日を除く日が登録され
   assert.equal(last.start_date_local, '2027-08-29T00:00:00');
   assert.equal(last.category, 'RACE_A');
   assert.equal(last.name, '乗鞍ヒルクライム');
-  // P0 の2週目の土曜は 20分テスト
-  assert.equal(events.find((e) => e.start_date_local.startsWith('2026-11-21')).name, '20分テスト（ローラー）');
+  // P0 の2週目の木曜は 20分テスト
+  assert.equal(events.find((e) => e.start_date_local.startsWith('2026-11-19')).name, '20分テスト（ローラー）');
 });
 
 test('登録: API キーで Basic 認証し、upsert で送る', async () => {
